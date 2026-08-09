@@ -2,6 +2,8 @@
 
 Commerce OS is a governed modular-monolith foundation for evidence-backed commerce operations. Sprint 001 implements repository, customer/domain-contract, API, event/outbox, migration, testing, and CI foundations only. It does not enable AI agents, external integrations, automated financial actions, or customer-facing business workflows.
 
+> **Security status:** The Sprint 001 CRUD API does not yet enforce production authentication or authorization. Do not expose or deploy it publicly. Production credentials must be supplied through an approved external secret manager/environment mechanism; never place secrets in `.env.example`, source, client configuration, logs, or events.
+
 ## Architecture
 
 Start with the [architecture and governance index](./docs/README.md), especially:

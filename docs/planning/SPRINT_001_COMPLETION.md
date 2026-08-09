@@ -1,6 +1,6 @@
 # Sprint 001 — Completion Notes
 
-Status: implementation complete with verification blockers noted below
+Status: implementation complete; runtime/publication verification remains blocked as recorded in the [Mission 001A Runtime Validation Report](../engineering/RUNTIME_VALIDATION_REPORT_001A.md)
 
 ## Implemented scope
 
@@ -29,6 +29,8 @@ No LLM/provider calls, external integrations, AI agents, customer chatbot, ads, 
 - Documentation structure and relative links: passed.
 - Docker Compose runtime: not executed because Docker is not installed on the implementation host.
 - GitHub Actions: workflow defined but not executed because no Git remote exists.
+
+Mission 001A rechecked the environment on 2026-08-09: Docker remains unavailable and Git remains without a remote. GitHub CLI authentication is valid. See the [runtime report](../engineering/RUNTIME_VALIDATION_REPORT_001A.md) for exact evidence and handoff steps.
 
 ## Known limitations and gates
 
