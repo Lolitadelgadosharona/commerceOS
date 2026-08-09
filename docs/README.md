@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture governance baseline; no production implementation
+Status: architecture/governance baseline with Sprint 001 foundation implementation
 
 ## Governing documents
 
@@ -34,5 +34,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Implementation Dependency Graph](./architecture/IMPLEMENTATION_DEPENDENCY_GRAPH_V1_1.md)
 - [Repository Discovery and Drift](./architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md)
 - [Sprint 001 Plan](./planning/SPRINT_001_INTEGRATION_CONTRACTS_CUSTOMER_FOUNDATION.md)
+- [Sprint 001 Completion Notes](./planning/SPRINT_001_COMPLETION.md)
 
-These documents authorize planning only. Implementation requires the readiness gates in the Sprint 001 plan.
+The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

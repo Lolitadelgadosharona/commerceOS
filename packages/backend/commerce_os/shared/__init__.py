@@ -1,0 +1,1 @@
+"""Narrow shared technical primitives."""

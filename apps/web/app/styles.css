@@ -1,0 +1,29 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  margin: 12vh auto;
+  max-width: 44rem;
+  padding: 2rem;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+dl div {
+  display: flex;
+  gap: 1rem;
+}
+
+dt {
+  font-weight: 700;
+}

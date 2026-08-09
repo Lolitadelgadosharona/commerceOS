@@ -1,6 +1,6 @@
 # Sprint 001 — Integration Contracts & Customer Foundation
 
-Status: implementation plan only; **no production implementation included**
+Status: implemented foundation; see [Sprint 001 Completion Notes](./SPRINT_001_COMPLETION.md)
 
 Readiness: **READY FOR SPRINT 001 IMPLEMENTATION** under the approved technical foundation and fail-closed assumptions below; this does not authorize production deployment or business-feature execution
 

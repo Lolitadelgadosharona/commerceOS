@@ -1,6 +1,6 @@
 # Commerce OS Local Development v1.0
 
-Status: frozen environment plan; Compose files and applications are created in Sprint 001
+Status: implemented Sprint 001 local environment contract
 
 ## Baseline
 
@@ -12,7 +12,7 @@ Local development uses Docker Compose to provide reproducible infrastructure and
 | `postgres` | Canonical transactional database and outbox | Named volume; readiness probe; fixed supported major; local data is disposable, never production-derived by default |
 | `redis` | Redis Streams/consumer groups for V1 jobs/events plus bounded coordination | Named volume only if needed for stream recovery testing; readiness probe; no canonical business truth |
 
-The Next.js application and worker may initially run on the host for fast feedback or as optional Compose profiles. Before Sprint 001 closes, CI and documented container commands must prove the API/worker path against containerized PostgreSQL and Redis.
+The Compose root additionally defines `web` and `worker`. The API runs Alembic before startup; the worker checks Redis and remains idle because external delivery is out of scope. Docker was unavailable on the implementation host, so the full Compose runtime still requires verification on a Docker-capable host.
 
 ## Developer workflow contract
 
