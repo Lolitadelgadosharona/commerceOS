@@ -2,7 +2,7 @@
 
 Status: implementation plan only; **no production implementation included**
 
-Readiness: blocked pending the prerequisites in [repository discovery](../architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md)
+Readiness: **NOT READY** pending implementation-stack and executable repository foundations documented in the [Repository Reality Audit](../architecture/REPOSITORY_REALITY_AUDIT_V1_0.md)
 
 ## Objective
 
@@ -14,9 +14,9 @@ Establish versioned contracts and migration-safe customer foundations for `Custo
 2. Existing object/schema equivalence review is complete.
 3. Logical state owners are approved and accountable human owners are assigned for customer, Product Truth, order, Finance, approval, identity, security, and privacy.
 4. Tenant/project model, jurisdiction-specific legal basis, retention schedule, and numeric authority thresholds are approved.
-5. Repository language, framework, migration tool, test framework, API style, and CI conventions are established.
+5. Repository language, framework, database/migration tool, test framework, and CI conventions are established; API style follows the [API Convention](../architecture/API_CONVENTION_V1_0.md).
 
-The governance pack defines the logical rules for items 1, 3, and 4, but external-freeze reconciliation, existing-object equivalence, accountable human assignments, numeric thresholds, legal/retention specifics, and every technical convention in item 5 remain unresolved. Evidence: [governance index](../README.md) and [discovery matrix](../architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md).
+The governance pack and Mission 000C documents now define logical rules for items 1, 3, 4, and API style in item 5. Remaining blockers are: reconciliation with any external predecessor freeze; confirmation that the documentation-only checkout is the intended implementation repository; accountable human assignments; numeric approval thresholds; jurisdiction-specific legal basis/retention; and selection of language/runtime, framework, application structure, database/migration tooling, test tooling, and CI. Evidence: [governance index](../README.md) and [Repository Reality Audit](../architecture/REPOSITORY_REALITY_AUDIT_V1_0.md).
 
 ## Planned work packages
 
@@ -126,4 +126,4 @@ No production feature implementation in this planning mission. Sprint 001 itself
 
 ## Sprint readiness recommendation
 
-**NOT READY FOR SPRINT 001.** The plan is actionable only after entry criteria 1–5 are satisfied; otherwise schema and ownership decisions would be guesses.
+**NOT READY FOR SPRINT 001 IMPLEMENTATION.** Architecture planning is complete enough to select the implementation stack, but production implementation must not begin until the remaining entry criteria above are resolved and recorded. The principal blockers are the absence of an application/runtime/framework, database/migration baseline, test harness, CI, named accountable role assignments and thresholds, and jurisdiction-specific retention/legal-basis decisions.
