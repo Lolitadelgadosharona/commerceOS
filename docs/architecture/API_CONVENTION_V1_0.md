@@ -1,6 +1,6 @@
 # Commerce OS API Convention v1.0
 
-Status: technology-neutral external and inter-module contract convention
+Status: external and inter-module convention aligned to FastAPI/OpenAPI and TypeScript clients
 
 ## API style
 
@@ -54,4 +54,4 @@ Events are immutable facts named `<domain>.<past_tense_fact>` and use the envelo
 
 ## Documentation and testing
 
-Implemented APIs and events require machine-readable schemas, examples, authorization requirements, error codes, idempotency/concurrency behavior, owner, compatibility tests, and threat-focused tests. The schema technology and generation tooling are selected with the implementation stack.
+FastAPI-generated OpenAPI is the synchronous HTTP source schema, with explicit operation IDs and reviewed generated TypeScript client/types. Events use separately versioned machine-readable schemas. Implemented contracts require examples, authorization requirements, error codes, idempotency/concurrency behavior, owner, compatibility tests, and threat-focused tests. Generation tooling and artifacts must be deterministic and checked for drift in CI.

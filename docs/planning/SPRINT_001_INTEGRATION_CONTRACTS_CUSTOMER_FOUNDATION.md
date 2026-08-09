@@ -2,7 +2,7 @@
 
 Status: implementation plan only; **no production implementation included**
 
-Readiness: **NOT READY** pending implementation-stack and executable repository foundations documented in the [Repository Reality Audit](../architecture/REPOSITORY_REALITY_AUDIT_V1_0.md)
+Readiness: **READY FOR SPRINT 001 IMPLEMENTATION** under the approved technical foundation and fail-closed assumptions below; this does not authorize production deployment or business-feature execution
 
 ## Objective
 
@@ -10,13 +10,33 @@ Establish versioned contracts and migration-safe customer foundations for `Custo
 
 ## Entry criteria
 
-1. Architecture Freeze v1.1 and the governance pack are approved; any prior external freeze is available and reconciled.
-2. Existing object/schema equivalence review is complete.
-3. Logical state owners are approved and accountable human owners are assigned for customer, Product Truth, order, Finance, approval, identity, security, and privacy.
-4. Tenant/project model, jurisdiction-specific legal basis, retention schedule, and numeric authority thresholds are approved.
-5. Repository language, framework, database/migration tool, test framework, and CI conventions are established; API style follows the [API Convention](../architecture/API_CONVENTION_V1_0.md).
+1. Architecture Freeze v1.1 and the governance pack are approved; any known prior external freeze is reconciled.
+2. Repository reality and object/schema equivalence are audited; the current documentation-only repository has no legacy objects to migrate.
+3. Logical state owners and abstract authority roles are approved; named human assignments are required before corresponding production actions activate.
+4. Tenant/project and security/privacy models are approved; production PII/financial actions remain disabled pending jurisdiction-specific rules and numeric authority thresholds.
+5. Repository language, framework, database/migration tool, test framework, CI, and API conventions are established by the engineering freeze.
 
-The governance pack and Mission 000C documents now define logical rules for items 1, 3, 4, and API style in item 5. Remaining blockers are: reconciliation with any external predecessor freeze; confirmation that the documentation-only checkout is the intended implementation repository; accountable human assignments; numeric approval thresholds; jurisdiction-specific legal basis/retention; and selection of language/runtime, framework, application structure, database/migration tooling, test tooling, and CI. Evidence: [governance index](../README.md) and [Repository Reality Audit](../architecture/REPOSITORY_REALITY_AUDIT_V1_0.md).
+These criteria are satisfied for foundation implementation under the fail-closed assumptions below. Repository scaffolding, dependency/version pinning, database baseline, test harness, CI, and architecture enforcement are Sprint 001 deliverables rather than pre-Sprint blockers. Reconciliation with an external predecessor freeze remains required if one is later produced. Accountable human assignments, numeric approval thresholds, and jurisdiction-specific retention/legal-basis rules remain production-activation gates; Sprint 001 must represent them as explicit configuration with safe disabled/deny defaults. Evidence: [governance index](../README.md), [Tech Stack Decision](../architecture/TECH_STACK_DECISION_V1_0.md), and [Repository Reality Audit](../architecture/REPOSITORY_REALITY_AUDIT_V1_0.md).
+
+## Approved technical foundation
+
+- Next.js + TypeScript frontend; Python FastAPI backend and worker.
+- PostgreSQL with SQLAlchemy 2.x and Alembic; PostgreSQL transactional outbox.
+- Redis Streams/consumer groups for V1 asynchronous delivery, never canonical business truth.
+- S3-compatible object storage behind an interface.
+- Pytest and Playwright; GitHub Actions; Docker and Docker Compose.
+- Modular monolith using the [Repository Structure](../architecture/REPOSITORY_STRUCTURE_V1_0.md), [Module Boundary](../architecture/MODULE_BOUNDARY_V1_0.md), [API Convention](../architecture/API_CONVENTION_V1_0.md), [Local Development contract](../engineering/LOCAL_DEVELOPMENT_V1_0.md), and [Quality Gates](../engineering/QUALITY_GATES_V1_0.md).
+
+## Implementation assumptions and dependencies
+
+1. V1 operates one configured Organization and one accountable owner/operator; all records remain organization-scoped.
+2. No live customer PII, payment, advertising, messaging, AI provider, supplier-payment, or production credential is used in Sprint 001 foundation tests.
+3. All monetary/refund/paid-ad/custom-commitment/pricing-exception execution is disabled until named authorized approvers and numeric limits are configured and tested.
+4. Identity auto-linking defaults off except deterministic exact rules explicitly approved in test configuration; ambiguity requires handoff.
+5. Data deletion/retention automation defaults off until jurisdiction-specific schedules are approved; synthetic data is used for development/testing.
+6. Dependency versions, lock files, root commands, Compose services, Alembic baseline, CI workflows, and branch protections are established during Sprint 001.
+7. Domain code remains framework-independent; FastAPI, SQLAlchemy, Redis, S3, and provider SDKs stay in adapters/composition roots.
+8. PostgreSQL, Redis, object storage, and provider boundaries follow the [Deployment Topology](../architecture/DEPLOYMENT_TOPOLOGY_V1_0.md).
 
 ## Planned work packages
 
@@ -66,20 +86,18 @@ The event envelope follows [Freeze v1.1 §9](../architecture/ARCHITECTURE_FREEZE
 
 ## Files likely to change
 
-Exact paths cannot be responsibly named in an empty checkout. Once repository conventions exist, expect changes in the established equivalents of:
+The approved target paths are:
 
-- architecture/domain contract documentation;
-- shared ID, authorization context, event, error, and version contracts;
-- Governance approval/policy/permission and registry modules;
-- Operations customer/conversation/lead/sales-opportunity/handoff modules;
-- Intelligence signal/cluster modules;
-- Build model-performance contract module;
-- database schema and ordered migrations;
-- API schema/handlers and event schemas;
-- contract/unit/integration/migration/security tests;
-- CI architecture/schema compatibility checks.
+- `apps/web`, `apps/api`, and `apps/worker` composition roots;
+- `packages/backend/commerce_os/shared` contracts and the eight domain modules;
+- `packages/contracts` OpenAPI/event schemas and generated-client inputs;
+- `infra/docker` and `infra/compose` local/build definitions;
+- Alembic configuration and revisions under the backend persistence boundary selected during scaffolding;
+- `tests/contract`, `tests/integration`, `tests/architecture`, and `tests/e2e`;
+- `.github/workflows` quality gates;
+- architecture/domain/API/runbook documentation.
 
-Creating speculative production paths in this mission would violate the evidence rule. Evidence: [repository discovery](../architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md).
+No business feature outside Sprint 001 contracts/foundations may be enabled while establishing these paths.
 
 ## Migration and backward compatibility strategy
 
@@ -126,4 +144,4 @@ No production feature implementation in this planning mission. Sprint 001 itself
 
 ## Sprint readiness recommendation
 
-**NOT READY FOR SPRINT 001 IMPLEMENTATION.** Architecture planning is complete enough to select the implementation stack, but production implementation must not begin until the remaining entry criteria above are resolved and recorded. The principal blockers are the absence of an application/runtime/framework, database/migration baseline, test harness, CI, named accountable role assignments and thresholds, and jurisdiction-specific retention/legal-basis decisions.
+**READY FOR SPRINT 001 IMPLEMENTATION.** The stack, repository layout, module boundaries, local environment, APIs, quality gates, ownership, security, finance authority, tenant model, and MVP boundary are frozen. Sprint 001 may initialize the repository and implement only its listed contracts/foundations. Production deployment and live business execution remain blocked until named accountable roles, numeric authority thresholds, jurisdiction-specific retention/legal-basis rules, production secrets/environments, and operational readiness evidence are approved.
