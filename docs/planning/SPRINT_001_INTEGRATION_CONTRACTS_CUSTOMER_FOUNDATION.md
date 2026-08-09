@@ -10,13 +10,13 @@ Establish versioned contracts and migration-safe customer foundations for `Custo
 
 ## Entry criteria
 
-1. Prior Architecture Freeze, Constitution, and PRD are available and reconciled.
+1. Architecture Freeze v1.1 and the governance pack are approved; any prior external freeze is available and reconciled.
 2. Existing object/schema equivalence review is complete.
-3. State owners are named for customer, product truth, order, finance, approval, and identity.
-4. Tenant/project model, data classification, consent/legal basis, retention/deletion, and authority matrix are approved.
+3. Logical state owners are approved and accountable human owners are assigned for customer, Product Truth, order, Finance, approval, identity, security, and privacy.
+4. Tenant/project model, jurisdiction-specific legal basis, retention schedule, and numeric authority thresholds are approved.
 5. Repository language, framework, migration tool, test framework, API style, and CI conventions are established.
 
-The checkout provides none of these implementation facts. Evidence: [discovery matrix](../architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md).
+The governance pack defines the logical rules for items 1, 3, and 4, but external-freeze reconciliation, existing-object equivalence, accountable human assignments, numeric thresholds, legal/retention specifics, and every technical convention in item 5 remain unresolved. Evidence: [governance index](../README.md) and [discovery matrix](../architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md).
 
 ## Planned work packages
 

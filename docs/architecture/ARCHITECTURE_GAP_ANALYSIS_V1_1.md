@@ -57,7 +57,7 @@ Priority: P0 foundation, P1 first vertical foundations, P2 subsequent integratio
 
 ### Missing dependencies
 
-Prior architecture/Constitution/PRD; Product Truth and order contracts; canonical IDs and tenant/project model; financial ledger/budget/attribution contracts; authority matrix; consent, retention and deletion policy; content/asset storage; secrets/KMS; schema registry; observability; API conventions; provider/channel credential lifecycle; legal/compliance rules; deployment topology. Evidence: [discovery matrix](./REPOSITORY_DISCOVERY_AND_DRIFT.md).
+Any prior external architecture; implemented Product Truth and order contracts; canonical ID representation and tenant/project model; ledger/budget/attribution integrations; named human role assignments and thresholds; approved retention schedule/legal basis; content/asset storage; secrets/KMS; schema registry; observability; API conventions; provider/channel credential lifecycle; jurisdiction-specific legal/compliance requirements; deployment topology. Governance-level requirements are now defined in the [document index](../README.md). Evidence for implementation gaps: [discovery matrix](./REPOSITORY_DISCOVERY_AND_DRIFT.md).
 
 ### Circular-dependency controls
 

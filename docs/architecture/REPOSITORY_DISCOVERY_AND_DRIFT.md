@@ -6,7 +6,7 @@ Discovery date: 2026-08-09
 
 ## Evidence boundary
 
-The checkout contains only Git administrative metadata. There are no tracked commits, source files, architecture documents, Constitution/PRD documents, schemas, tests, workflows, or application configuration. The only repository-local configuration is `.git/config`, which contains core Git settings and no remote. Evidence: [`.git/config`](../../.git/config) and the repository root file inventory performed for this mission.
+At initial discovery, the checkout contained only Git administrative metadata. There were no tracked commits, source files, architecture documents, Constitution/PRD documents, schemas, tests, workflows, or application configuration. The only repository-local configuration was `.git/config`, which contains core Git settings and no remote. Evidence: [`.git/config`](../../.git/config) and the initial repository root inventory. Missions 000A and 000B subsequently added the documentation indexed in [the architecture and governance index](../README.md); no production implementation has been added.
 
 Consequently, this package can preserve the eight-domain frozen architecture stated in the mission brief, but it cannot reconcile that brief against a prior repository-authored freeze. All assertions below distinguish **observed repository fact** from **proposed v1.1 contract**. Absence of evidence is not treated as evidence that a capability does not exist elsewhere.
 
@@ -14,8 +14,8 @@ Consequently, this package can preserve the eight-domain frozen architecture sta
 
 | Requested area | Repository finding | Consequence |
 |---|---|---|
-| Architecture documents | None present | v1.1 is added as the first repository architecture baseline; prior freeze cannot be diffed. |
-| Constitution / PRD | None present | Product constraints come only from the mission brief and must be reconciled when source documents are imported. |
+| Architecture documents | None at initial discovery; v1.1 now present | v1.1 is the first repository architecture baseline; a prior external freeze still cannot be diffed. |
+| Constitution / PRD | None at initial discovery; v1.0 documents now present | The new repository baselines require accountable-owner approval and reconciliation with any external predecessors. |
 | Domain boundaries | None implemented or documented | Eight domains are recorded as a required frozen contract, not claimed as observed implementation. |
 | Database models | None present | Object mappings in the gap analysis are conceptual; equivalence checks remain open. |
 | Event/audit infrastructure | None present | Append-only event envelope is proposed as a foundation contract. |
@@ -40,9 +40,9 @@ There is no production implementation to contradict v1.1. The repository is inst
 
 ## Blocking evidence to resolve before Sprint 001
 
-1. Import or identify the prior frozen architecture, Constitution, and PRD.
+1. Import or identify any prior external frozen architecture and reconcile it with the repository v1.1 baseline.
 2. Confirm whether this empty checkout is the intended repository or a bootstrap repository.
-3. Identify system-of-record schemas, authority/approval owners, ledger/budget owners, identity retention rules, and existing API conventions.
+3. Confirm accountable human role assignments and identify system-of-record schemas, ledger/budget integrations, retention schedule, and API conventions.
 4. Configure the GitHub remote and restore authenticated access before publication.
 
 Until items 1–3 are resolved, the recommendation is **NOT READY FOR SPRINT 001**.

@@ -6,6 +6,8 @@ Supersedes: no repository artifact; requires reconciliation with the prior exter
 
 Evidence limitation: [repository discovery](./REPOSITORY_DISCOVERY_AND_DRIFT.md)
 
+Governed by the [AI Commerce OS Constitution](../governance/AI_COMMERCE_OS_CONSTITUTION_V1_0.md), [PRD](../product/COMMERCE_OS_PRD_V1_0.md), [Domain Ownership Model](../governance/DOMAIN_OWNERSHIP_MODEL_V1_0.md), [Data Ownership Contract](../governance/DATA_OWNERSHIP_CONTRACT_V1_0.md), [Security and Privacy Foundation](../governance/SECURITY_AND_PRIVACY_FOUNDATION_V1_0.md), [Finance Authority Model](../governance/FINANCE_AUTHORITY_MODEL_V1_0.md), and [MVP Boundary](../product/MVP_BOUNDARY_V1_0.md). The complete document map is in the [architecture index](../README.md).
+
 ## 1. Freeze contract
 
 Commerce OS remains the system of record. The frozen core retains eight domains: Intelligence, Decision, Build, Growth, Operations, Finance, Learning, and Governance. v1.1 adds contracts and bounded capabilities; it does not replace or create a competing architecture. Because no prior architecture is present in this checkout, “unchanged” below means required unchanged by the mission baseline, not verified against code. Evidence: [repository discovery](./REPOSITORY_DISCOVERY_AND_DRIFT.md).
@@ -129,4 +131,4 @@ The AI Operating Committee is a Governance workflow consuming dashboards and exc
 
 ## 12. Open decisions
 
-The prior freeze, system schemas, product truth owner, order owner, finance ledger, identity retention/legal basis, tenant model, approval authority matrix, API conventions, and deployment topology are absent from the repository. They must be resolved before implementation. Evidence: [repository discovery](./REPOSITORY_DISCOVERY_AND_DRIFT.md).
+Any prior external freeze, system schemas, concrete service boundaries, finance-ledger integrations, retention schedule/legal basis by jurisdiction, tenant model, named human role/threshold assignments, API conventions, and deployment topology are absent. Logical ownership and minimum governance rules are now defined, but these implementation inputs must be resolved before Sprint 001. Evidence: [repository discovery](./REPOSITORY_DISCOVERY_AND_DRIFT.md) and [governance index](../README.md).
