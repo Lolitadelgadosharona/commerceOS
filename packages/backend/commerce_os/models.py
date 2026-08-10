@@ -1,5 +1,12 @@
 """Import all owned persistence models for metadata and migrations."""
 
+from commerce_os.build.listing_models import (
+    ContentBrief,
+    CustomerQuestion,
+    ListingEvidence,
+    ListingStrategy,
+    ProductDiscoveryKnowledge,
+)
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.governance.models import (
@@ -58,9 +65,14 @@ from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
     "Approval",
+    "ContentBrief",
+    "CustomerQuestion",
+    "ListingEvidence",
+    "ListingStrategy",
     "Product",
     "ProductClaimPolicy",
     "ProductKnowledgeItem",
+    "ProductDiscoveryKnowledge",
     "ProductTruth",
     "ApprovalRequest",
     "AuditLog",

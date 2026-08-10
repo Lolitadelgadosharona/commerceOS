@@ -27,6 +27,7 @@ from fastapi import APIRouter
 from apps.api.crud import CrudRouter
 from apps.api.governance_routes import router as governance_router
 from apps.api.intelligence_routes import router as intelligence_router
+from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
 from apps.api.product_truth_routes import router as product_truth_router
@@ -39,6 +40,7 @@ api_router.include_router(opportunity_router)
 api_router.include_router(product_intelligence_router)
 api_router.include_router(product_truth_router)
 api_router.include_router(supplier_intelligence_router)
+api_router.include_router(listing_intelligence_router)
 
 
 @api_router.get("/health", tags=["system"])
