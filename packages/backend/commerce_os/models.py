@@ -25,7 +25,14 @@ from commerce_os.decision.creative_models import (
     CreativeStrategy,
 )
 from commerce_os.decision.models import VentureOpportunity
+from commerce_os.decision.sales_support_models import (
+    CustomerRiskSignal,
+    SalesIntelligenceProfile,
+    SalesRecommendation,
+    SupportCaseIntelligence,
+)
 from commerce_os.governance.models import (
+    AIActionPolicy,
     Approval,
     ApprovalRequest,
     AuditLog,
@@ -111,6 +118,7 @@ __all__ = [
     "ConversationThread",
     "Customer",
     "CustomerIdentity",
+    "AIActionPolicy",
     "CreativeBrief",
     "CreativeChannelFit",
     "CreativeExperiment",
@@ -157,4 +165,8 @@ __all__ = [
     "ProductSupplierMatch",
     "SupplierDecisionRecord",
     "VentureOpportunity",
+    "CustomerRiskSignal",
+    "SalesIntelligenceProfile",
+    "SalesRecommendation",
+    "SupportCaseIntelligence",
 ]

@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 011 conversation commerce foundation
+Status: architecture/governance baseline with Sprint 012 AI sales/support decision foundation
 
 ## Governing documents
 
@@ -30,6 +30,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Creative Strategy Foundation v1.0](./architecture/CREATIVE_STRATEGY_FOUNDATION_V1_0.md) | Creative strategy, hypotheses, briefs, channel fit, and experiment observations |
 | [Channel Strategy and Conversion Path Foundation v1.0](./architecture/CHANNEL_STRATEGY_CONVERSION_FOUNDATION_V1_0.md) | Evidence-led channel recommendations, deterministic scoring, B2C/B2B paths, and authority boundaries |
 | [Conversation Commerce Foundation v1.0](./architecture/CONVERSATION_COMMERCE_FOUNDATION_V1_0.md) | Operations-owned threads, messages, observations, human handoffs, and trusted-knowledge links |
+| [AI Sales and Support Decision Foundation v1.0](./architecture/AI_SALES_SUPPORT_DECISION_FOUNDATION_V1_0.md) | Evidence-grounded advisory profiles, recommendations, risk signals, and Governance-owned AI policy |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -46,6 +47,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 009 Completion Notes](./planning/SPRINT_009_COMPLETION.md) | Creative strategy implementation and acceptance evidence |
 | [Sprint 010 Completion Notes](./planning/SPRINT_010_COMPLETION.md) | Channel strategy and conversion-path implementation and acceptance evidence |
 | [Sprint 011 Completion Notes](./planning/SPRINT_011_COMPLETION.md) | Conversation commerce implementation and acceptance evidence |
+| [Sprint 012 Completion Notes](./planning/SPRINT_012_COMPLETION.md) | AI sales/support decision implementation and acceptance evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -65,5 +67,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 009 Completion Notes](./planning/SPRINT_009_COMPLETION.md)
 - [Sprint 010 Completion Notes](./planning/SPRINT_010_COMPLETION.md)
 - [Sprint 011 Completion Notes](./planning/SPRINT_011_COMPLETION.md)
+- [Sprint 012 Completion Notes](./planning/SPRINT_012_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

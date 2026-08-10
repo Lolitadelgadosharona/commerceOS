@@ -34,6 +34,7 @@ from apps.api.listing_intelligence_routes import router as listing_intelligence_
 from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
 from apps.api.product_truth_routes import router as product_truth_router
+from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
 
 api_router = APIRouter(prefix="/api/v1")
@@ -47,6 +48,7 @@ api_router.include_router(listing_intelligence_router)
 api_router.include_router(creative_strategy_router)
 api_router.include_router(channel_strategy_router, tags=["channel_strategy"])
 api_router.include_router(conversation_router, tags=["conversation_commerce"])
+api_router.include_router(sales_support_router, tags=["sales_support_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])

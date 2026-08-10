@@ -170,6 +170,19 @@ class Permission(IdMixin, TimestampMixin, VersionMixin, Base):
     )
 
 
+class AIActionPolicy(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "ai_action_policies"
+    __table_args__ = (UniqueConstraint("organization_id", "action_type"),)
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    action_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    allowed: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    requires_approval: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    domain: Mapped[str] = mapped_column(String(30), nullable=False)
+
+
 class RolePermission(IdMixin, TimestampMixin, Base):
     __tablename__ = "role_permissions"
     __table_args__ = (UniqueConstraint("role_id", "permission_id"),)

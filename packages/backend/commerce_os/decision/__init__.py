@@ -17,6 +17,12 @@ from commerce_os.decision.creative_models import (
     CreativeStrategy,
 )
 from commerce_os.decision.models import VentureOpportunity
+from commerce_os.decision.sales_support_models import (
+    CustomerRiskSignal,
+    SalesIntelligenceProfile,
+    SalesRecommendation,
+    SupportCaseIntelligence,
+)
 
 __all__ = [
     "CreativeBrief",
@@ -32,4 +38,8 @@ __all__ = [
     "ConversionPath",
     "ConversionPathStep",
     "VentureOpportunity",
+    "CustomerRiskSignal",
+    "SalesIntelligenceProfile",
+    "SalesRecommendation",
+    "SupportCaseIntelligence",
 ]
