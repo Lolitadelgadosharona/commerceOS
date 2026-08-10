@@ -12,7 +12,7 @@ Each aggregate has exactly one write-owning domain. Other domains read through a
 | Decision | Venture, creative, channel, and negotiation recommendations | Versioned recommendations and decision rationale | Execution, financial commitment, approval authority | Build, Growth, Operations, Governance |
 | Build | Approved products, append-only Product Truth, supporting product knowledge, brand claim guardrails, creative construction artifacts and model execution/performance | Governed product facts, Build lifecycle state, asset versions, QA state, generation execution | Governance approvals, Intelligence hypotheses, supplier/payment truth, paid/channel execution, ledger truth | Decision, Growth, Operations, Governance, Learning |
 | Growth | Acquisition/channel workflow and attribution evidence | Governed channel workflow state and zero-cost delegated actions | Budget authority, revenue truth, customer master | Finance, Learning, Operations |
-| Operations | Customer, supplier coordination, conversations, B2B pipeline, orders/fulfillment workflow, handoff | Operational state under policy | Ledger entries, authority policy, Product Truth | Finance, Intelligence, Learning |
+| Operations | Customer, supplier coordination, conversation threads/messages, supplied intent/emotion observations, human handoffs, B2B pipeline, orders/fulfillment workflow | Operational state under policy and references to trusted knowledge | Ledger entries, authority policy, Product Truth, identity resolution, automated reply authority | Finance, Intelligence, Build, Governance, Learning |
 | Finance | Transactions, expenses, revenue classification, financial economics | Financial truth, reconciliation, controls and approval requirements | Operational/marketing execution, AI policy exceptions | Decision, Growth, Governance, dashboards |
 | Learning | Immutable observations, experiment outcome synthesis, learning proposals | `LearningRecord` and recommendations for change | Product Truth, policies, production configuration, approvals | All domains through governed proposals |
 | Governance | Identity/permissions, policy, approval records, audit/event standards, registries | Authority policy, approvals, access, compliance controls | Domain business truth, owner intent, ledger truth | Every command and projection boundary |
@@ -29,6 +29,7 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - `SalesOpportunity` is owned by Operations; Decision may advise negotiation.
 - `Product` and `ProductTruth` are owned by Build, with Product Truth publication requiring Governance-controlled authority. Learning cannot write either.
 - `Order` is owned by Operations; `Transaction`, `Expense`, and `Revenue` are owned by Finance.
+- Conversation records are owned by Operations; they may reference but never overwrite Governance identity/authority or Build Product Truth. AI sender classification grants no execution authority.
 - `Approval` is owned by Governance; Finance defines financial approval requirements.
 - `Experiment` is owned by Governance as a registry/control record; executing domains own treatment execution, and Learning owns outcome observations.
 

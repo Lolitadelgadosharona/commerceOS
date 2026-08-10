@@ -25,6 +25,7 @@ from commerce_os.operations.schemas import (
 from fastapi import APIRouter
 
 from apps.api.channel_strategy_routes import router as channel_strategy_router
+from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
 from apps.api.crud import CrudRouter
 from apps.api.governance_routes import router as governance_router
@@ -45,6 +46,7 @@ api_router.include_router(supplier_intelligence_router)
 api_router.include_router(listing_intelligence_router)
 api_router.include_router(creative_strategy_router)
 api_router.include_router(channel_strategy_router, tags=["channel_strategy"])
+api_router.include_router(conversation_router, tags=["conversation_commerce"])
 
 
 @api_router.get("/health", tags=["system"])

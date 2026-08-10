@@ -69,6 +69,14 @@ from commerce_os.intelligence.supplier_models import (
     SupplierProfile,
     SupplierRisk,
 )
+from commerce_os.operations.conversation_models import (
+    ConversationEmotionSignal,
+    ConversationHandoff,
+    ConversationIntent,
+    ConversationKnowledgeReference,
+    ConversationMessage,
+    ConversationThread,
+)
 from commerce_os.operations.models import (
     Brand,
     Conversation,
@@ -95,6 +103,12 @@ __all__ = [
     "Brand",
     "CommercialPolicy",
     "Conversation",
+    "ConversationEmotionSignal",
+    "ConversationHandoff",
+    "ConversationIntent",
+    "ConversationKnowledgeReference",
+    "ConversationMessage",
+    "ConversationThread",
     "Customer",
     "CustomerIdentity",
     "CreativeBrief",
