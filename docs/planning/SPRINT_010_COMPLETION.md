@@ -1,6 +1,6 @@
 # Sprint 010 — Channel Strategy and Conversion Path Foundation Completion
 
-Status: implementation and runtime validation complete; remote publication pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -26,7 +26,8 @@ Decision owns recommendations and rationale. Creative Strategy remains the sourc
 - Next.js type checking/build and the Playwright foundation test passed.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished editable local package is absent from public advisory indexes.
 - The Sprint 002 authentication limitation remains enforced in documentation: the system must not be publicly deployed.
+- GitHub Draft PR #9 was created on the Sprint 009 base; backend, web, and documentation CI jobs passed.
 
 ## Recommendation
 
-**READY FOR SPRINT 011, subject to remote CI.** Local implementation, container, migration, documentation, and security gates pass. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
+**READY FOR SPRINT 011.** Local implementation, container, migration, documentation, security, and remote CI gates pass. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
