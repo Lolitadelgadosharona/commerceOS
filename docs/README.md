@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 014 CFO and revenue intelligence foundation
+Status: architecture/governance baseline with Sprint 015 AI operating committee and CEO dashboard foundation
 
 ## Governing documents
 
@@ -33,6 +33,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [AI Sales and Support Decision Foundation v1.0](./architecture/AI_SALES_SUPPORT_DECISION_FOUNDATION_V1_0.md) | Evidence-grounded advisory profiles, recommendations, risk signals, and Governance-owned AI policy |
 | [Creative Intelligence and Multi-Model Router Foundation v1.0](./architecture/CREATIVE_INTELLIGENCE_ROUTER_FOUNDATION_V1_0.md) | Asset strategy, provider evaluations, deterministic routing, economic assessment, and Creative DNA references |
 | [CFO and Revenue Intelligence Foundation v1.0](./architecture/CFO_REVENUE_INTELLIGENCE_FOUNDATION_V1_0.md) | Financial observations, deterministic profitability, unit economics, CFO recommendations, and financial risk boundaries |
+| [AI Operating Committee and CEO Dashboard Foundation v1.0](./architecture/AI_OPERATING_COMMITTEE_CEO_DASHBOARD_FOUNDATION_V1_0.md) | Cross-domain executive projections, operating signals, human decision queue, reviews, and read-only dashboards |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -52,6 +53,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 012 Completion Notes](./planning/SPRINT_012_COMPLETION.md) | AI sales/support decision implementation and acceptance evidence |
 | [Sprint 013 Completion Notes](./planning/SPRINT_013_COMPLETION.md) | Creative intelligence and router implementation and acceptance evidence |
 | [Sprint 014 Completion Notes](./planning/SPRINT_014_COMPLETION.md) | CFO/revenue intelligence implementation and acceptance evidence |
+| [Sprint 015 Completion Notes](./planning/SPRINT_015_COMPLETION.md) | Executive dashboard and operating committee implementation and acceptance evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -74,5 +76,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 012 Completion Notes](./planning/SPRINT_012_COMPLETION.md)
 - [Sprint 013 Completion Notes](./planning/SPRINT_013_COMPLETION.md)
 - [Sprint 014 Completion Notes](./planning/SPRINT_014_COMPLETION.md)
+- [Sprint 015 Completion Notes](./planning/SPRINT_015_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.
