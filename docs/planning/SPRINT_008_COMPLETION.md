@@ -1,6 +1,6 @@
 # Sprint 008 — Listing Intelligence and GEO Foundation Completion
 
-Status: implementation and runtime validation complete; publication validation pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -25,8 +25,8 @@ Product Truth remains authoritative and cannot be changed by listing intelligenc
 - Real PostgreSQL upgraded to `0008_listing_geo`, reported no schema drift, downgraded to Sprint 007, re-upgraded, and finished at the Sprint 008 head.
 - Next.js type checking/build and the Playwright foundation test passed.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished editable local package is absent from public advisory indexes.
-- GitHub publication and remote CI validation: pending.
+- GitHub Draft PR #7 was created; backend, web, and documentation CI jobs passed.
 
 ## Recommendation
 
-**NOT READY FOR SPRINT 009** until runtime migration cycling, Docker health, documentation validation, and remote CI are complete.
+**READY FOR SPRINT 009.** Sprint 008 acceptance gates are satisfied. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
