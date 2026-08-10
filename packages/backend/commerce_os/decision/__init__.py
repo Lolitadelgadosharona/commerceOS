@@ -16,6 +16,13 @@ from commerce_os.decision.creative_models import (
     CreativeHypothesis,
     CreativeStrategy,
 )
+from commerce_os.decision.creative_router_models import (
+    CreativeAssetStrategy,
+    CreativeEconomicAssessment,
+    CreativeModelProvider,
+    CreativePatternReference,
+    CreativeRoutingDecision,
+)
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.decision.sales_support_models import (
     CustomerRiskSignal,
@@ -30,6 +37,11 @@ __all__ = [
     "CreativeExperiment",
     "CreativeHypothesis",
     "CreativeStrategy",
+    "CreativeAssetStrategy",
+    "CreativeEconomicAssessment",
+    "CreativeModelProvider",
+    "CreativePatternReference",
+    "CreativeRoutingDecision",
     "ChannelCandidate",
     "ChannelDecisionEvidence",
     "ChannelMeasurementPlan",
