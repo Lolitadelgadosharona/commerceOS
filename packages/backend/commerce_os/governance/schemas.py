@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator, model_validator
 
 from commerce_os.shared.schemas import ReadModel
 
@@ -147,6 +147,43 @@ class PermissionRead(ReadModel):
     action: str
     description: str
     is_human_approval_permission: bool
+
+
+class AIActionPolicyCreate(BaseModel):
+    organization_id: UUID
+    action_type: Literal[
+        "recommend",
+        "classify",
+        "draft_response",
+        "send_message",
+        "issue_refund",
+        "change_price",
+        "create_discount",
+    ]
+    allowed: bool | None = None
+    requires_approval: bool | None = None
+    domain: Literal["decision", "operations", "governance", "finance", "build"]
+
+    @model_validator(mode="after")
+    def safe_defaults(self) -> "AIActionPolicyCreate":
+        advisory = self.action_type in {"recommend", "classify"}
+        if self.allowed is None:
+            self.allowed = advisory
+        if self.requires_approval is None:
+            self.requires_approval = not advisory
+        if advisory and (not self.allowed or self.requires_approval):
+            raise ValueError("recommend/classify must remain allowed advisory actions")
+        if not advisory and not self.requires_approval:
+            raise ValueError("non-advisory AI actions require approval")
+        return self
+
+
+class AIActionPolicyRead(ReadModel):
+    organization_id: UUID
+    action_type: str
+    allowed: bool
+    requires_approval: bool
+    domain: str
 
 
 class RolePermissionCreate(BaseModel):
