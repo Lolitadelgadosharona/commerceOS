@@ -84,5 +84,10 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `SupplierRisk` | Typed supplier risk observation | Intelligence | Intelligence supplier-risk store | Authorized Intelligence workflow | Decision, Build, Operations, Governance |
 | `ProductSupplierMatch` | Advisory fit assessment between Build Product and SupplierProfile | Intelligence | Intelligence match store | Deterministic match service | Decision, Build, Operations, Finance |
 | `SupplierDecisionRecord` | Explainable advisory supplier choice | Intelligence | Intelligence decision-evidence store | Authorized Intelligence workflow with approved profile and recommended match | Decision, Build, Operations, Governance |
+| `ListingStrategy` | Product-grounded positioning and differentiation plan; no publication authority | Build | Build listing-strategy store | Authorized Build workflow; approval requires Product Truth | Growth, Decision, Governance, Learning |
+| `CustomerQuestion` | Provenanced product discovery or purchase question | Build | Build customer-question map | Authorized Build workflow using supplied evidence | Growth, Operations, Intelligence, Learning |
+| `ProductDiscoveryKnowledge` | Confidence-scored entity relationship for future discoverability | Build | Build discovery-knowledge store | Authorized Build workflow; cannot create Product Truth | Growth, Intelligence, Learning |
+| `ContentBrief` | Human-authored product content direction grounded in truth/evidence | Build | Build content-brief store | Authorized Build workflow | Growth, Governance, Learning |
+| `ListingEvidence` | Provenanced support for product content planning | Build | Build listing-evidence store | Authorized Build workflow; specification references require matching Product Truth | Growth, Governance, Learning |
 
 `MarketOpportunity` is intentionally distinct from Decision-owned `VentureOpportunity` and Operations-owned `SalesOpportunity`. Qualification or a high score is evidence for a later decision; it is not investment authority, a product commitment, or a customer deal.

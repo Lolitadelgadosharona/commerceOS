@@ -42,6 +42,11 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `SupplierRisk` | Intelligence | Intelligence supplier-risk observations | Authorized Intelligence workflow; risk status is not approval | Decision, Build, Operations, Governance | Supplier lineage, type, severity, status, description |
 | `ProductSupplierMatch` | Intelligence | Intelligence product/supplier fit store | Deterministic matching service | Decision, Build, Operations, Finance | Product/profile lineage, score, recommendation threshold, reason |
 | `SupplierDecisionRecord` | Intelligence | Explainable advisory supplier decision evidence | Authorized Intelligence workflow; cannot procure or pay | Decision, Build, Operations, Governance | Product/profile lineage, reason, evidence reference, actor/time |
+| `ListingStrategy` | Build | Product-grounded Build listing-strategy store | Authorized Build workflow; approval requires Product Truth and grants no publishing authority | Growth, Decision, Governance, Learning | Product lineage, positioning fields, lifecycle, actor/version |
+| `CustomerQuestion` | Build | Build product-question map | Authorized Build workflow using supplied source references | Growth, Operations, Intelligence, Learning | Product/type/question, source, importance, actor/version |
+| `ProductDiscoveryKnowledge` | Build | Build GEO discovery-relationship store | Authorized Build workflow; cannot create Product Truth | Growth, Intelligence, Learning | Product/entity/relationship, description, confidence, actor/version |
+| `ContentBrief` | Build | Build content-direction store | Authorized Build workflow; no generation or publication authority | Growth, Governance, Learning | Product, human-authored directions/lists, actor/version |
+| `ListingEvidence` | Build | Build content-evidence store | Authorized Build workflow; Product Truth scope checked for specifications | Growth, Governance, Learning | Product/type/source/content/confidence, actor/version |
 
 ## Naming and projection constraints
 
