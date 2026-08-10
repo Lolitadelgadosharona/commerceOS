@@ -8,6 +8,7 @@ from commerce_os.build.listing_models import (
     ProductDiscoveryKnowledge,
 )
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
+from commerce_os.decision.cfo_models import CFOInsight
 from commerce_os.decision.channel_models import (
     ChannelCandidate,
     ChannelDecisionEvidence,
@@ -37,6 +38,14 @@ from commerce_os.decision.sales_support_models import (
     SalesIntelligenceProfile,
     SalesRecommendation,
     SupportCaseIntelligence,
+)
+from commerce_os.finance.models import (
+    ContributionProfitAssessment,
+    CostObservation,
+    FinancialPeriod,
+    FinancialRiskSignal,
+    RevenueObservation,
+    UnitEconomicAssessment,
 )
 from commerce_os.governance.models import (
     AIActionPolicy,
@@ -131,6 +140,7 @@ __all__ = [
     "CreativeExperiment",
     "CreativeHypothesis",
     "CreativeStrategy",
+    "CFOInsight",
     "CreativeAssetStrategy",
     "CreativeEconomicAssessment",
     "CreativeModelProvider",
@@ -177,6 +187,12 @@ __all__ = [
     "ProductSupplierMatch",
     "SupplierDecisionRecord",
     "VentureOpportunity",
+    "ContributionProfitAssessment",
+    "CostObservation",
+    "FinancialPeriod",
+    "FinancialRiskSignal",
+    "RevenueObservation",
+    "UnitEconomicAssessment",
     "CustomerRiskSignal",
     "SalesIntelligenceProfile",
     "SalesRecommendation",

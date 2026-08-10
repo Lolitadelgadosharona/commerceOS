@@ -1,5 +1,6 @@
 """Decision domain public boundary."""
 
+from commerce_os.decision.cfo_models import CFOInsight
 from commerce_os.decision.channel_models import (
     ChannelCandidate,
     ChannelDecisionEvidence,
@@ -37,6 +38,7 @@ __all__ = [
     "CreativeExperiment",
     "CreativeHypothesis",
     "CreativeStrategy",
+    "CFOInsight",
     "CreativeAssetStrategy",
     "CreativeEconomicAssessment",
     "CreativeModelProvider",
