@@ -29,12 +29,14 @@ from apps.api.governance_routes import router as governance_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
+from apps.api.product_truth_routes import router as product_truth_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(governance_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(opportunity_router)
 api_router.include_router(product_intelligence_router)
+api_router.include_router(product_truth_router)
 
 
 @api_router.get("/health", tags=["system"])

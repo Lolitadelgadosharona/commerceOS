@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 005 product intelligence foundation
+Status: architecture/governance baseline with Sprint 006 Product Truth foundation
 
 ## Governing documents
 
@@ -24,6 +24,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Customer Intelligence Foundation v1.0](./architecture/CUSTOMER_INTELLIGENCE_FOUNDATION_V1_0.md) | Signal lineage, deterministic clustering, insight evidence, and scope limits |
 | [Opportunity Intelligence Foundation v1.0](./architecture/OPPORTUNITY_INTELLIGENCE_FOUNDATION_V1_0.md) | Market observations, evidence, product hypotheses, deterministic scoring, and risks |
 | [Product Intelligence Foundation v1.0](./architecture/PRODUCT_INTELLIGENCE_FOUNDATION_V1_0.md) | Product hypotheses, economics, supplier references, risks, and deterministic investment scoring |
+| [Product Truth Foundation v1.0](./architecture/PRODUCT_TRUTH_FOUNDATION_V1_0.md) | Authoritative products, approved truth versions, product knowledge, and brand claim guardrails |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -34,6 +35,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 003 Completion Notes](./planning/SPRINT_003_COMPLETION.md) | Customer intelligence implementation and acceptance evidence |
 | [Sprint 004 Completion Notes](./planning/SPRINT_004_COMPLETION.md) | Opportunity intelligence implementation and acceptance evidence |
 | [Sprint 005 Completion Notes](./planning/SPRINT_005_COMPLETION.md) | Product intelligence implementation and acceptance evidence |
+| [Sprint 006 Completion Notes](./planning/SPRINT_006_COMPLETION.md) | Product Truth implementation and acceptance evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -47,5 +49,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 003 Completion Notes](./planning/SPRINT_003_COMPLETION.md)
 - [Sprint 004 Completion Notes](./planning/SPRINT_004_COMPLETION.md)
 - [Sprint 005 Completion Notes](./planning/SPRINT_005_COMPLETION.md)
+- [Sprint 006 Completion Notes](./planning/SPRINT_006_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

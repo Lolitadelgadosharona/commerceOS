@@ -35,6 +35,8 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `SupplierCandidate` | Intelligence | Intelligence supplier-reference store | Authorized Intelligence workflow; no connector, selection, or payment authority | Build, Operations, Finance, Governance | Source/reference, estimates, MOQ/lead time, notes, risk, actor |
 | `ProductRisk` | Intelligence | Intelligence product-risk observations | Authorized Intelligence workflow; accepting risk does not grant approval | Decision, Build, Governance, Finance | Type, severity, description, status, hypothesis lineage |
 | `ProductInvestmentScore` | Intelligence | One current versioned deterministic score per ProductHypothesis | Frozen scoring service only | Decision, Finance, Governance, Learning | Derived inputs, explicit competition input, result, formula version, timestamp |
+| `ProductKnowledgeItem` | Build | Build product-knowledge store subordinate to Product Truth | Authorized Build workflow; approval status alone cannot publish truth | Growth, Operations, Intelligence, Learning | Product/type/content, confidence, approval state, optimistic version changes |
+| `ProductClaimPolicy` | Build | Brand-scoped Build claim-policy registry | Authorized Build/Governance workflow; policy does not replace publication approval | Build, Growth, Operations, Governance | Brand/type, allowed flag, reason, evidence requirement, actor/version |
 
 ## Naming and projection constraints
 
