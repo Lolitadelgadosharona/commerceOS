@@ -30,6 +30,11 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `ProductCandidate` | Intelligence | Intelligence product-hypothesis records | Authorized Intelligence workflow; selection remains non-authoritative until a later governed product/venture workflow | Decision, Build, Finance | Opportunity link, need, estimated margin, risk/status changes |
 | `OpportunityScore` | Intelligence | Versioned deterministic score record | Frozen scoring service only | Decision, Finance, Governance, Learning | Inputs, overall score, formula version, timestamp |
 | `OpportunityRisk` | Intelligence | Intelligence opportunity-risk observations | Authorized Intelligence workflow; accepting risk here does not grant business authority | Decision, Governance, Finance, Build | Type, severity, status, description, opportunity lineage |
+| `ProductHypothesis` | Intelligence | Intelligence product-hypothesis aggregate | Authorized Intelligence workflow; cannot create Build Product/Product Truth | Decision, Build, Finance, Governance | Opportunity lineage, problem/solution, target, confidence, lifecycle actor |
+| `ProductEconomics` | Intelligence | One current versioned economics record per ProductHypothesis | Frozen deterministic economics service | Decision, Finance, Build | All inputs, currency, result, formula semantics, timestamp/version |
+| `SupplierCandidate` | Intelligence | Intelligence supplier-reference store | Authorized Intelligence workflow; no connector, selection, or payment authority | Build, Operations, Finance, Governance | Source/reference, estimates, MOQ/lead time, notes, risk, actor |
+| `ProductRisk` | Intelligence | Intelligence product-risk observations | Authorized Intelligence workflow; accepting risk does not grant approval | Decision, Build, Governance, Finance | Type, severity, description, status, hypothesis lineage |
+| `ProductInvestmentScore` | Intelligence | One current versioned deterministic score per ProductHypothesis | Frozen scoring service only | Decision, Finance, Governance, Learning | Derived inputs, explicit competition input, result, formula version, timestamp |
 
 ## Naming and projection constraints
 

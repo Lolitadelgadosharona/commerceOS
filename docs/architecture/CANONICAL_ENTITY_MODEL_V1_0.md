@@ -72,5 +72,10 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `ProductCandidate` | Non-authoritative product hypothesis for an opportunity | Intelligence | Intelligence candidate store | Authorized Intelligence workflow; cannot create Product Truth | Decision, Build, Finance |
 | `OpportunityScore` | Reproducible deterministic evaluation inputs and result | Intelligence | One current versioned score per MarketOpportunity | Frozen scoring service | Decision, Finance, Governance, Learning |
 | `OpportunityRisk` | Typed risk observation for an opportunity | Intelligence | Intelligence opportunity-risk store | Authorized Intelligence workflow | Decision, Governance, Finance, Build |
+| `ProductHypothesis` | Detailed proposed solution for a MarketOpportunity; not a Build Product | Intelligence | Intelligence product-hypothesis store | Authorized Intelligence workflow | Decision, Build, Finance, Governance |
+| `ProductEconomics` | Deterministic estimated unit economics for a hypothesis | Intelligence | One current versioned economics row per ProductHypothesis | Frozen economics service | Decision, Finance, Build |
+| `SupplierCandidate` | Non-authoritative manually supplied supplier reference | Intelligence | Intelligence supplier-candidate store | Authorized Intelligence workflow; no procurement authority | Build, Operations, Finance, Governance |
+| `ProductRisk` | Typed product-specific risk observation | Intelligence | Intelligence product-risk store | Authorized Intelligence workflow; risk status is not approval | Decision, Build, Governance, Finance |
+| `ProductInvestmentScore` | Reproducible deterministic hypothesis evaluation | Intelligence | One current versioned score per ProductHypothesis | Frozen scoring service | Decision, Finance, Governance, Learning |
 
 `MarketOpportunity` is intentionally distinct from Decision-owned `VentureOpportunity` and Operations-owned `SalesOpportunity`. Qualification or a high score is evidence for a later decision; it is not investment authority, a product commitment, or a customer deal.
