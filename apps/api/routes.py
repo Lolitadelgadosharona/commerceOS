@@ -26,9 +26,11 @@ from fastapi import APIRouter
 
 from apps.api.crud import CrudRouter
 from apps.api.governance_routes import router as governance_router
+from apps.api.intelligence_routes import router as intelligence_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(governance_router)
+api_router.include_router(intelligence_router)
 
 
 @api_router.get("/health", tags=["system"])

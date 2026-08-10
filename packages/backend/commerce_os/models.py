@@ -16,6 +16,14 @@ from commerce_os.governance.models import (
     User,
     UserRole,
 )
+from commerce_os.intelligence.models import (
+    CustomerInsight,
+    CustomerSignal,
+    CustomerVoiceCluster,
+    InsightEvidence,
+    SignalClusterMembership,
+    SignalSource,
+)
 from commerce_os.operations.models import (
     Brand,
     Conversation,
@@ -47,5 +55,11 @@ __all__ = [
     "Store",
     "User",
     "UserRole",
+    "CustomerInsight",
+    "CustomerSignal",
+    "CustomerVoiceCluster",
+    "InsightEvidence",
+    "SignalClusterMembership",
+    "SignalSource",
     "VentureOpportunity",
 ]

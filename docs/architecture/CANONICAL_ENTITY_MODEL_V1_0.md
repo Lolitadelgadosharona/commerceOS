@@ -53,3 +53,12 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `UserRole` | Revocable organization/project-scoped role assignment | Governance | Governance assignment registry | Authorized Governance administrator | Authorization, approvals, audit |
 | `ApprovalRequest` | V1 stateful request for a precisely scoped human decision | Governance | Governance approval-request store | Requester may request/cancel; distinct authorized human may approve/reject | Executing domains and audit |
 | `AuditLog` | Append-only security and authority evidence | Governance | Governance audit store | Internal services append; no update/delete API | Governance, security, compliance |
+
+## Sprint 003 customer intelligence extensions
+
+| Entity | Purpose | Owning domain | Source of truth | Write authority | Primary consumers |
+|---|---|---|---|---|---|
+| `SignalSource` | Organization-scoped registry of permitted signal channel types | Intelligence | Intelligence source registry | Authorized internal Intelligence workflow | CustomerSignal ingestion and Governance review |
+| `CustomerSignal` | Classified, confidence-scored observation retaining its source and content reference | Intelligence | Intelligence signal store | Authorized Intelligence ingestion after tenant/source validation | Clustering, insights, Decision, Build, Growth, Operations, Learning |
+| `CustomerVoiceCluster` | Named deterministic grouping of explicitly selected signals | Intelligence | Cluster aggregate and membership rows | Authorized Intelligence workflow | Insights and affected domain owners |
+| `CustomerInsight` | Business interpretation and recommended action grounded in explicit signal evidence | Intelligence | Insight aggregate and evidence rows | Authorized Intelligence workflow; human/rule supplied in V1 | Decision and affected domain owners, Governance, Learning |

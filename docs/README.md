@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 002 governance and identity foundation
+Status: architecture/governance baseline with Sprint 003 customer intelligence foundation
 
 ## Governing documents
 
@@ -21,6 +21,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Tenant Model v1.0](./architecture/TENANT_MODEL_V1_0.md) | Single-operator V1 scope with future-compatible hierarchy |
 | [Deployment Topology v1.0](./architecture/DEPLOYMENT_TOPOLOGY_V1_0.md) | Vendor-neutral logical runtime and integration topology |
 | [API Convention v1.0](./architecture/API_CONVENTION_V1_0.md) | Synchronous API, errors, auth, versioning, and event conventions |
+| [Customer Intelligence Foundation v1.0](./architecture/CUSTOMER_INTELLIGENCE_FOUNDATION_V1_0.md) | Signal lineage, deterministic clustering, insight evidence, and scope limits |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -28,6 +29,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Quality Gates v1.0](./engineering/QUALITY_GATES_V1_0.md) | Mandatory PR, test, migration, documentation, and security checks |
 | [Mission 001A Runtime Validation Report](./engineering/RUNTIME_VALIDATION_REPORT_001A.md) | Docker, PostgreSQL/Redis, environment, CI, and GitHub publication status |
 | [Sprint 002 Completion Notes](./planning/SPRINT_002_COMPLETION.md) | Governance/identity implementation, validation evidence, and known activation limits |
+| [Sprint 003 Completion Notes](./planning/SPRINT_003_COMPLETION.md) | Customer intelligence implementation and acceptance evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -38,5 +40,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 001 Plan](./planning/SPRINT_001_INTEGRATION_CONTRACTS_CUSTOMER_FOUNDATION.md)
 - [Sprint 001 Completion Notes](./planning/SPRINT_001_COMPLETION.md)
 - [Sprint 002 Completion Notes](./planning/SPRINT_002_COMPLETION.md)
+- [Sprint 003 Completion Notes](./planning/SPRINT_003_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.
