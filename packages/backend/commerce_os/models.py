@@ -69,6 +69,11 @@ from commerce_os.governance.models import (
     User,
     UserRole,
 )
+from commerce_os.intelligence.analysis_models import (
+    MarketSignalAnalysis,
+    OpportunityAssessment,
+    OpportunityReport,
+)
 from commerce_os.intelligence.market_models import (
     MarketDataSource,
     MarketSignal,
@@ -228,6 +233,9 @@ __all__ = [
     "MarketSignalClusterMembership",
     "MarketSignalEvidence",
     "MarketSignalOpportunityLink",
+    "MarketSignalAnalysis",
+    "OpportunityAssessment",
+    "OpportunityReport",
     "ActionPlan",
     "ExecutionBlocker",
     "ExecutionTask",

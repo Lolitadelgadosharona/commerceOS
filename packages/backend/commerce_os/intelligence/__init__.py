@@ -1,5 +1,10 @@
 """Intelligence domain boundary."""
 
+from commerce_os.intelligence.analysis_models import (
+    MarketSignalAnalysis,
+    OpportunityAssessment,
+    OpportunityReport,
+)
 from commerce_os.intelligence.market_models import (
     MarketDataSource,
     MarketSignal,
@@ -46,6 +51,9 @@ __all__ = [
     "MarketSignalClusterMembership",
     "MarketSignalEvidence",
     "MarketSignalOpportunityLink",
+    "MarketSignalAnalysis",
+    "OpportunityAssessment",
+    "OpportunityReport",
     "CustomerSignal",
     "CustomerVoiceCluster",
     "InsightEvidence",
