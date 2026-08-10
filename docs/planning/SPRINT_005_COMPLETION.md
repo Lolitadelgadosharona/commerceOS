@@ -1,6 +1,6 @@
 # Sprint 005 — Product Intelligence Foundation Completion
 
-Status: implementation and runtime validation complete; publication validation pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -25,8 +25,8 @@ All new records are owned by Intelligence and are advisory. They cannot write De
 - Real PostgreSQL upgraded to `0005_product_intelligence`, reported no schema drift, downgraded to Sprint 004, re-upgraded, and finished at the Sprint 005 head.
 - Next.js type checking/build and the Playwright foundation test passed.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished editable local package is absent from public advisory indexes.
-- GitHub publication and remote CI validation: pending.
+- GitHub Draft PR #4 was created; backend, web, and documentation CI jobs passed.
 
 ## Recommendation
 
-**NOT READY FOR SPRINT 006** until runtime migration cycling, Docker health, documentation validation, and remote CI are complete.
+**READY FOR SPRINT 006.** Sprint 005 acceptance gates are satisfied. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
