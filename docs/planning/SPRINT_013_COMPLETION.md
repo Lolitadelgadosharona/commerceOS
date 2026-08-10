@@ -1,6 +1,6 @@
 # Sprint 013 — Creative Intelligence and Multi-Model Router Foundation Completion
 
-Status: implementation and runtime validation complete; remote publication pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -26,7 +26,8 @@ Decision owns strategy and recommendations; Build retains future artifact owners
 - Next.js type checking/build and one Playwright foundation test passed.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished editable local package is absent from public advisory indexes.
 - The Sprint 002 authentication limitation remains enforced: the API must not be publicly deployed.
+- GitHub Draft PR #12 was created on the Sprint 012 base; backend, web, and documentation CI jobs passed.
 
 ## Recommendation
 
-**READY FOR SPRINT 014, subject to remote CI.** Local implementation, runtime, migration, documentation, and security gates pass.
+**READY FOR SPRINT 014.** Local implementation, runtime, migration, documentation, security, and remote CI gates pass.
