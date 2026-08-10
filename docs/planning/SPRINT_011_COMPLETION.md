@@ -1,6 +1,6 @@
 # Sprint 011 — Conversation Commerce Foundation Completion
 
-Status: implementation and runtime validation complete; remote publication pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -26,7 +26,8 @@ Operations owns interaction state. Governance retains identity, roles, users, ap
 - Next.js type checking/build and one Playwright foundation test passed.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished editable local package is absent from public advisory indexes.
 - The Sprint 002 authentication limitation remains enforced: the API must not be publicly deployed.
+- GitHub Draft PR #10 was created on the Sprint 010 base; backend, web, and documentation CI jobs passed.
 
 ## Recommendation
 
-**READY FOR SPRINT 012, subject to remote CI.** Local implementation, runtime, migration, documentation, and security gates pass.
+**READY FOR SPRINT 012.** Local implementation, runtime, migration, documentation, security, and remote CI gates pass.
