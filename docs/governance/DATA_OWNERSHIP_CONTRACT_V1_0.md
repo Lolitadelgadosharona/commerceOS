@@ -21,6 +21,10 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `Approval` | Governance | Append-only approval decision record | Authenticated authorized human; service may request/expire, never self-approve | Command owners, Finance, audit, dashboards | Request/decision, scope, before/after, policy, authority, expiry, idempotency |
 | `Experiment` | Governance | Versioned Experiment Registry | Authorized experiment owner; treatments need domain/finance approvals | Decision, Build, Growth, Intelligence, Learning | Hypothesis, metrics, population, risks, approvals, assignments, stop decision |
 | `LearningRecord` | Learning | Append-only Learning store | Learning ingestion/analysis with provenance; promotion requires owner approval | Intelligence, Decision, domain owners, Governance | Evidence links, model/method/version, confidence, correction/supersession |
+| `SignalSource` | Intelligence | Intelligence source registry | Authorized internal Intelligence workflow; connectors remain separate adapters | Intelligence, Governance, Learning | Source creation/state, organization, type, actor |
+| `CustomerSignal` | Intelligence | Intelligence signal store with immutable source references | Authorized Intelligence ingestion using permitted evidence; source/customer scope validated | Intelligence, Decision, Build, Growth, Operations, Learning | Source lineage, classification, confidence, actor, corrections |
+| `CustomerVoiceCluster` | Intelligence | Intelligence cluster aggregate plus explicit membership records | Authorized Intelligence workflow using selected signals; no implicit AI grouping in V1 | Intelligence, Decision, Build, Growth, Operations, Learning | Membership, count, severity/trend inputs, method/version |
+| `CustomerInsight` | Intelligence | Intelligence insight aggregate plus explicit evidence records | Authorized Intelligence workflow; text and recommended action are human/rule supplied in V1 | Decision and affected domain owners, Governance, Learning | Evidence links/count, impact, status changes, actor/method |
 
 ## Naming and projection constraints
 

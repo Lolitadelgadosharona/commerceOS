@@ -21,6 +21,28 @@ def test_alembic_upgrade_and_downgrade(tmp_path: Path) -> None:
     tables = set(inspect(create_engine(database_url)).get_table_names())
     assert "organizations" in tables
     assert "outbox_events" in tables
+    assert "customer_signals" in tables
+    assert "customer_voice_clusters" in tables
+    assert "customer_insights" in tables
+
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "downgrade", "0002_governance_identity"],
+        check=True,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+    downgraded_tables = set(inspect(create_engine(database_url)).get_table_names())
+    assert "customer_signals" not in downgraded_tables
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        check=True,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+    upgraded_tables = set(inspect(create_engine(database_url)).get_table_names())
+    assert "customer_insights" in upgraded_tables
 
     subprocess.run(
         [sys.executable, "-m", "alembic", "downgrade", "base"],
