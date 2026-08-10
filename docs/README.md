@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 001 foundation implementation
+Status: architecture/governance baseline with Sprint 002 governance and identity foundation
 
 ## Governing documents
 
@@ -27,6 +27,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Local Development v1.0](./engineering/LOCAL_DEVELOPMENT_V1_0.md) | Docker Compose services and environment rules |
 | [Quality Gates v1.0](./engineering/QUALITY_GATES_V1_0.md) | Mandatory PR, test, migration, documentation, and security checks |
 | [Mission 001A Runtime Validation Report](./engineering/RUNTIME_VALIDATION_REPORT_001A.md) | Docker, PostgreSQL/Redis, environment, CI, and GitHub publication status |
+| [Sprint 002 Completion Notes](./planning/SPRINT_002_COMPLETION.md) | Governance/identity implementation, validation evidence, and known activation limits |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -36,5 +37,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Repository Discovery and Drift](./architecture/REPOSITORY_DISCOVERY_AND_DRIFT.md)
 - [Sprint 001 Plan](./planning/SPRINT_001_INTEGRATION_CONTRACTS_CUSTOMER_FOUNDATION.md)
 - [Sprint 001 Completion Notes](./planning/SPRINT_001_COMPLETION.md)
+- [Sprint 002 Completion Notes](./planning/SPRINT_002_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

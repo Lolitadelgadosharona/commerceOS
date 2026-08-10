@@ -3,10 +3,18 @@
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.governance.models import (
     Approval,
+    ApprovalRequest,
+    AuditLog,
     CommercialPolicy,
     CustomerIdentity,
     Organization,
+    PasswordCredential,
+    Permission,
     Project,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
 )
 from commerce_os.operations.models import (
     Brand,
@@ -20,6 +28,8 @@ from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
     "Approval",
+    "ApprovalRequest",
+    "AuditLog",
     "Brand",
     "CommercialPolicy",
     "Conversation",
@@ -28,8 +38,14 @@ __all__ = [
     "MessageMetadata",
     "Organization",
     "OutboxEvent",
+    "PasswordCredential",
+    "Permission",
     "Project",
+    "Role",
+    "RolePermission",
     "SalesOpportunity",
     "Store",
+    "User",
+    "UserRole",
     "VentureOpportunity",
 ]
