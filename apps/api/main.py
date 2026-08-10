@@ -1,3 +1,4 @@
+from commerce_os.governance.errors import GovernanceError
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
@@ -5,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from apps.api.errors import (
     ApiError,
     api_error_handler,
+    governance_error_handler,
     integrity_error_handler,
     validation_error_handler,
 )
@@ -18,6 +20,7 @@ app = FastAPI(
 )
 app.middleware("http")(request_context_middleware)
 app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
+app.add_exception_handler(GovernanceError, governance_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(IntegrityError, integrity_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(RequestValidationError, validation_error_handler)  # type: ignore[arg-type]
 app.include_router(api_router)

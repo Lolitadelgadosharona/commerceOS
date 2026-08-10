@@ -39,3 +39,17 @@ Each entity has one canonical source of truth and one write-owning domain. Other
 - `Decision`, `Approval`, `Experiment`, and `LearningRecord` preserve their distinct semantics: recommendation/choice, authority, controlled test, and observation.
 
 Physical tables, indexes, storage engines, and API endpoints are Sprint 001 design decisions governed by this contract and the [Data Ownership Contract](../governance/DATA_OWNERSHIP_CONTRACT_V1_0.md).
+
+## Sprint 002 governance identity extensions
+
+These supporting entities implement, but do not change, the frozen ownership model:
+
+| Entity | Purpose | Owning domain | Source of truth | Write authority | Primary consumers |
+|---|---|---|---|---|---|
+| `User` | Internal human or service principal profile and lifecycle state | Governance | Governance user registry | Authenticated Governance administration; initial bootstrap is deployment-controlled | Authentication, authorization, audit |
+| `PasswordCredential` | One-way password verifier isolated from profile data | Governance | Credential store | Authentication service only | Authentication service |
+| `Role` | Named Owner, Approver, Operator, or Viewer authority bundle | Governance | Governance role registry | Authorized Governance administrator | Authorization and approval services |
+| `Permission` | Atomic resource/action capability | Governance | Governance permission registry | Authorized Governance administrator | Role composition and authorization checks |
+| `UserRole` | Revocable organization/project-scoped role assignment | Governance | Governance assignment registry | Authorized Governance administrator | Authorization, approvals, audit |
+| `ApprovalRequest` | V1 stateful request for a precisely scoped human decision | Governance | Governance approval-request store | Requester may request/cancel; distinct authorized human may approve/reject | Executing domains and audit |
+| `AuditLog` | Append-only security and authority evidence | Governance | Governance audit store | Internal services append; no update/delete API | Governance, security, compliance |

@@ -54,3 +54,11 @@ Each data class must have documented purpose/legal basis, source, owner, geograp
 ## Minimum readiness evidence
 
 Before Sprint 001 production deployment: approved threat model, data inventory/flow map, authority matrix, retention schedule, provider data-use review, access-control tests, identity-link test corpus, incident/backup recovery procedures, and named security/privacy accountable owners.
+
+## Sprint 002 implementation status
+
+The internal foundation now stores passwords only as Argon2id hashes in a credential table separate from user profiles. Organization/project-scoped, revocable role assignments and explicit permissions are persisted and audited. Human approval authority is rejected for service principals, approval decisions require a distinct human requester and approver, and every approval lifecycle transition creates an audit record in the same transaction.
+
+The `/api/v1` actor boundary currently accepts an internal `X-Actor-ID` header. It is deliberately not a verified login session or bearer-token implementation. User bootstrap and permission administration endpoints are likewise foundation interfaces, not production administration controls. Until a subsequent sprint adds verified authentication, server-enforced authorization on every endpoint, rate limiting, CSRF/session protections where applicable, and deployment hardening, the API must remain private and must not be publicly deployed.
+
+External customer identities record provider, provider identifier, confidence, verification status, and provenance. Connectors, automatic merging, and provider verification are not implemented; identity observations remain reversible evidence rather than proof of personhood.

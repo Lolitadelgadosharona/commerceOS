@@ -1,7 +1,9 @@
 import re
+from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
 
 from commerce_os.shared.schemas import ReadModel
 
@@ -52,11 +54,21 @@ class ProjectRead(ReadModel):
 class CustomerIdentityCreate(BaseModel):
     organization_id: UUID
     customer_id: UUID
-    identity_type: str = Field(min_length=1, max_length=50)
-    normalized_value: str = Field(min_length=1, max_length=320)
-    source: str = Field(min_length=1, max_length=100)
+    provider: str = Field(min_length=1, max_length=50, pattern=r"^[a-z][a-z0-9_]*$")
+    external_identifier: str = Field(min_length=1, max_length=320)
     provenance: dict[str, object] = Field(default_factory=dict)
-    confidence: float = Field(ge=0, le=1)
+    confidence_score: float = Field(ge=0, le=1)
+    verification_status: Literal["unverified", "verified", "rejected"] = "unverified"
+
+
+class CustomerIdentityRead(ReadModel):
+    organization_id: UUID
+    customer_id: UUID
+    provider: str
+    external_identifier: str
+    confidence_score: float
+    verification_status: str
+    provenance: dict[str, object]
 
 
 class ApprovalCreate(BaseModel):
@@ -74,3 +86,137 @@ class CommercialPolicyCreate(BaseModel):
     policy_key: str = Field(min_length=1, max_length=100)
     policy_version: str = Field(min_length=1, max_length=50)
     rules: dict[str, object]
+
+
+class UserCreate(BaseModel):
+    organization_id: UUID
+    email: EmailStr
+    display_name: str = Field(min_length=1, max_length=200)
+    password: SecretStr = Field(min_length=12, max_length=1024)
+    principal_type: Literal["human", "service"] = "human"
+
+
+class UserUpdate(BaseModel):
+    display_name: str | None = Field(default=None, min_length=1, max_length=200)
+    status: Literal["active", "suspended", "disabled"] | None = None
+
+
+class UserRead(ReadModel):
+    organization_id: UUID
+    email: EmailStr
+    display_name: str
+    status: str
+    principal_type: str
+
+
+class RoleCreate(BaseModel):
+    organization_id: UUID
+    name: Literal["owner", "approver", "operator", "viewer"]
+    description: str = Field(default="", max_length=500)
+    grants_human_approval_authority: bool = False
+
+
+class RoleUpdate(BaseModel):
+    description: str | None = Field(default=None, max_length=500)
+    is_active: bool | None = None
+
+
+class RoleRead(ReadModel):
+    organization_id: UUID
+    name: str
+    description: str
+    grants_human_approval_authority: bool
+    is_active: bool
+
+
+class PermissionCreate(BaseModel):
+    key: str = Field(pattern=r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$", max_length=150)
+    resource: str = Field(min_length=1, max_length=100)
+    action: str = Field(min_length=1, max_length=100)
+    description: str = Field(default="", max_length=500)
+    is_human_approval_permission: bool = False
+
+
+class PermissionUpdate(BaseModel):
+    description: str | None = Field(default=None, max_length=500)
+
+
+class PermissionRead(ReadModel):
+    key: str
+    resource: str
+    action: str
+    description: str
+    is_human_approval_permission: bool
+
+
+class RolePermissionCreate(BaseModel):
+    permission_id: UUID
+
+
+class UserRoleCreate(BaseModel):
+    user_id: UUID
+    role_id: UUID
+    organization_id: UUID
+    project_id: UUID | None = None
+
+
+class UserRoleRead(ReadModel):
+    user_id: UUID
+    role_id: UUID
+    organization_id: UUID
+    project_id: UUID | None
+    assigned_by: UUID
+    assigned_at: datetime
+    revoked_at: datetime | None
+    revoked_by: UUID | None
+    revocation_reason: str | None
+
+
+class RevokeRoleRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class ApprovalRequestCreate(BaseModel):
+    organization_id: UUID
+    project_id: UUID | None = None
+    object_type: str = Field(min_length=1, max_length=100)
+    object_id: UUID
+    requested_action: str = Field(min_length=1, max_length=150)
+    reason: str = Field(min_length=1, max_length=5000)
+
+
+class ApprovalDecision(BaseModel):
+    decision: Literal["approved", "rejected"]
+    reason: str = Field(min_length=1, max_length=5000)
+
+
+class ApprovalCancellation(BaseModel):
+    reason: str = Field(min_length=1, max_length=5000)
+
+
+class ApprovalRequestRead(ReadModel):
+    organization_id: UUID
+    project_id: UUID | None
+    requester_id: UUID
+    object_type: str
+    object_id: UUID
+    requested_action: str
+    reason: str
+    status: str
+    approver_id: UUID | None
+    decision_time: datetime | None
+    decision_reason: str | None
+
+
+class AuditLogRead(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: UUID
+    organization_id: UUID
+    actor_type: str
+    actor_id: UUID | None
+    action: str
+    entity_type: str
+    entity_id: UUID
+    timestamp: datetime
+    event_metadata: dict[str, object]

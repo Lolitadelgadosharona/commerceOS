@@ -1,5 +1,6 @@
 from typing import Any
 
+from commerce_os.governance.errors import GovernanceError
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -28,6 +29,18 @@ async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content=error_body(request, exc.code, exc.message),
+    )
+
+
+async def governance_error_handler(request: Request, exc: GovernanceError) -> JSONResponse:
+    status_code = {
+        "not_found": 404,
+        "forbidden": 403,
+        "invalid_state_transition": 409,
+    }.get(exc.code, 400)
+    return JSONResponse(
+        status_code=status_code,
+        content=error_body(request, exc.code, str(exc)),
     )
 
 

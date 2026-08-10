@@ -11,6 +11,7 @@ RUN npm run build
 
 FROM node:22.14.0-alpine AS runtime
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 RUN addgroup --system commerce && adduser --system --ingroup commerce commerce
 COPY --from=build --chown=commerce:commerce /app/.next/standalone ./
