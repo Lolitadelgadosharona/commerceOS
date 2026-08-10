@@ -29,6 +29,7 @@ from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_router_routes import router as creative_router_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
 from apps.api.crud import CrudRouter
+from apps.api.execution_routes import router as execution_router
 from apps.api.executive_routes import router as executive_router
 from apps.api.finance_routes import router as finance_router
 from apps.api.governance_routes import router as governance_router
@@ -55,6 +56,7 @@ api_router.include_router(sales_support_router, tags=["sales_support_intelligenc
 api_router.include_router(creative_router_router, tags=["creative_router"])
 api_router.include_router(finance_router, tags=["finance_intelligence"])
 api_router.include_router(executive_router, tags=["executive_dashboard"])
+api_router.include_router(execution_router, tags=["commerce_execution"])
 
 
 @api_router.get("/health", tags=["system"])
