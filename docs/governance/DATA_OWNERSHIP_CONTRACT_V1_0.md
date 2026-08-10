@@ -37,6 +37,11 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `ProductInvestmentScore` | Intelligence | One current versioned deterministic score per ProductHypothesis | Frozen scoring service only | Decision, Finance, Governance, Learning | Derived inputs, explicit competition input, result, formula version, timestamp |
 | `ProductKnowledgeItem` | Build | Build product-knowledge store subordinate to Product Truth | Authorized Build workflow; approval status alone cannot publish truth | Growth, Operations, Intelligence, Learning | Product/type/content, confidence, approval state, optimistic version changes |
 | `ProductClaimPolicy` | Build | Brand-scoped Build claim-policy registry | Authorized Build/Governance workflow; policy does not replace publication approval | Build, Growth, Operations, Governance | Brand/type, allowed flag, reason, evidence requirement, actor/version |
+| `SupplierProfile` | Intelligence | Intelligence supplier-evaluation profile; not Operations Supplier truth | Authorized Intelligence workflow; approval is evaluation-only | Decision, Build, Operations, Finance, Governance | Source, country, capabilities/certifications, lifecycle, actor/version |
+| `SupplierEvaluation` | Intelligence | Append-only deterministic evaluation store | Frozen scoring service | Decision, Build, Operations, Finance, Governance | Five inputs, confidence, result, formula version, timestamp |
+| `SupplierRisk` | Intelligence | Intelligence supplier-risk observations | Authorized Intelligence workflow; risk status is not approval | Decision, Build, Operations, Governance | Supplier lineage, type, severity, status, description |
+| `ProductSupplierMatch` | Intelligence | Intelligence product/supplier fit store | Deterministic matching service | Decision, Build, Operations, Finance | Product/profile lineage, score, recommendation threshold, reason |
+| `SupplierDecisionRecord` | Intelligence | Explainable advisory supplier decision evidence | Authorized Intelligence workflow; cannot procure or pay | Decision, Build, Operations, Governance | Product/profile lineage, reason, evidence reference, actor/time |
 
 ## Naming and projection constraints
 

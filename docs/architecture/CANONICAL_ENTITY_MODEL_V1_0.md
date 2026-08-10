@@ -79,5 +79,10 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `SupplierCandidate` | Non-authoritative manually supplied supplier reference | Intelligence | Intelligence supplier-candidate store | Authorized Intelligence workflow; no procurement authority | Build, Operations, Finance, Governance |
 | `ProductRisk` | Typed product-specific risk observation | Intelligence | Intelligence product-risk store | Authorized Intelligence workflow; risk status is not approval | Decision, Build, Governance, Finance |
 | `ProductInvestmentScore` | Reproducible deterministic hypothesis evaluation | Intelligence | One current versioned score per ProductHypothesis | Frozen scoring service | Decision, Finance, Governance, Learning |
+| `SupplierProfile` | Non-authoritative evaluated supplier observation; not the Operations Supplier master | Intelligence | Intelligence supplier-profile store | Authorized Intelligence workflow | Decision, Build, Operations, Finance, Governance |
+| `SupplierEvaluation` | Reproducible supplier evaluation evidence | Intelligence | Append-only Intelligence evaluation store | Frozen scoring service | Decision, Build, Operations, Finance, Governance |
+| `SupplierRisk` | Typed supplier risk observation | Intelligence | Intelligence supplier-risk store | Authorized Intelligence workflow | Decision, Build, Operations, Governance |
+| `ProductSupplierMatch` | Advisory fit assessment between Build Product and SupplierProfile | Intelligence | Intelligence match store | Deterministic match service | Decision, Build, Operations, Finance |
+| `SupplierDecisionRecord` | Explainable advisory supplier choice | Intelligence | Intelligence decision-evidence store | Authorized Intelligence workflow with approved profile and recommended match | Decision, Build, Operations, Governance |
 
 `MarketOpportunity` is intentionally distinct from Decision-owned `VentureOpportunity` and Operations-owned `SalesOpportunity`. Qualification or a high score is evidence for a later decision; it is not investment authority, a product commitment, or a customer deal.
