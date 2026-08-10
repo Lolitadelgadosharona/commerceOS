@@ -1,5 +1,6 @@
 from typing import Any
 
+from commerce_os.build.errors import BuildError
 from commerce_os.governance.errors import GovernanceError
 from commerce_os.intelligence.errors import IntelligenceError
 from fastapi import Request
@@ -51,6 +52,13 @@ async def intelligence_error_handler(request: Request, exc: IntelligenceError) -
         status_code=status_code,
         content=error_body(request, exc.code, str(exc)),
     )
+
+
+async def build_error_handler(request: Request, exc: BuildError) -> JSONResponse:
+    status_code = {"not_found": 404, "forbidden": 403, "invalid_state_transition": 409}.get(
+        exc.code, 400
+    )
+    return JSONResponse(status_code=status_code, content=error_body(request, exc.code, str(exc)))
 
 
 async def integrity_error_handler(request: Request, _exc: IntegrityError) -> JSONResponse:
