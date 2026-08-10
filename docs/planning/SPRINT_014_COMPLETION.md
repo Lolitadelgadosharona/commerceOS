@@ -1,6 +1,6 @@
 # Sprint 014 Completion Notes
 
-Status: implementation and local runtime validation complete; remote validation pending
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -27,7 +27,7 @@ Finance owns monetary truth and calculations. Decision owns CFO recommendations.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started successfully; health-checked services were healthy.
 - PostgreSQL: revision `0014_cfo_revenue` at head, no schema drift, and downgrade/re-upgrade passed.
 - API and web runtime health probes: passed.
-- Remote CI: pending publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #13.
 
 ## Activation limits
 
@@ -35,4 +35,4 @@ This is intelligence infrastructure, not an accounting system. It does not recon
 
 ## Readiness
 
-Local gates are complete. Sprint 015 readiness is pending green remote CI.
+All local and remote gates are complete. Sprint 014 recommends readiness for Sprint 015, subject to the existing prohibition on public deployment until authentication is activated.
