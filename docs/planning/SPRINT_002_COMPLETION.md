@@ -1,6 +1,6 @@
 # Sprint 002 — Governance & Identity Foundation Completion
 
-Status: implementation and local runtime validation complete; publication and remote CI pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -31,7 +31,7 @@ Sprint 002 implements password verification and authorization primitives, not a 
 - Redis: readiness command returned `PONG` and the worker reached its intentionally idle foundation state.
 - Web: TypeScript lint, production build, Playwright shell test, container start, and HTTP response passed.
 - Dependency review: pip-audit and npm audit found no known third-party vulnerabilities; the unpublished local `commerce-os` package is not present in public advisory indexes.
-- GitHub Actions: pending branch publication.
+- GitHub Actions: backend, web, and documentation jobs passed on Draft PR #1.
 
 ## Acceptance mapping
 
@@ -46,8 +46,8 @@ Sprint 002 implements password verification and authorization primitives, not a 
 | Migration round trip | Passed on SQLite and real PostgreSQL |
 | Automated tests | Passed locally |
 | Docker runtime | Passed for all five services |
-| Commit, push, Draft PR, CI | Pending |
+| Commit, push, Draft PR, CI | Passed |
 
 ## Recommendation
 
-**NOT READY FOR SPRINT 003** until branch publication and remote CI are complete. This recommendation will be updated after those final gates are run.
+**READY FOR SPRINT 003.** Sprint 002 acceptance gates are satisfied. Production/public deployment remains separately prohibited by the documented authentication activation limits.
