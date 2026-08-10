@@ -1,6 +1,6 @@
 # Sprint 017 Completion Notes
 
-Status: implementation and local runtime validation complete; remote validation pending
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -29,8 +29,8 @@ Intelligence owns the new records. Opportunity linking cannot create or qualify 
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started successfully; health-checked services were healthy.
 - PostgreSQL: revision `0017_market_intelligence` at head, no schema drift, and downgrade/re-upgrade passed.
 - API and web runtime health probes: passed.
-- Remote CI: pending publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #16.
 
 ## Readiness
 
-Local gates are complete. Sprint 018 readiness is pending green remote CI.
+All local and remote gates are complete. Sprint 017 recommends readiness for Sprint 018, subject to the existing prohibition on public deployment until authentication is activated.
