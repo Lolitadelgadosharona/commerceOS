@@ -22,6 +22,13 @@ from commerce_os.intelligence.product_models import (
     ProductRisk,
     SupplierCandidate,
 )
+from commerce_os.intelligence.supplier_models import (
+    ProductSupplierMatch,
+    SupplierDecisionRecord,
+    SupplierEvaluation,
+    SupplierProfile,
+    SupplierRisk,
+)
 
 __all__ = [
     "CustomerInsight",
@@ -40,4 +47,9 @@ __all__ = [
     "ProductInvestmentScore",
     "ProductRisk",
     "SupplierCandidate",
+    "SupplierProfile",
+    "SupplierEvaluation",
+    "SupplierRisk",
+    "ProductSupplierMatch",
+    "SupplierDecisionRecord",
 ]
