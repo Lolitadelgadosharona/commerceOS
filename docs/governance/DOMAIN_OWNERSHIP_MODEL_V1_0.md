@@ -8,7 +8,7 @@ Each aggregate has exactly one write-owning domain. Other domains read through a
 
 | Domain | Owns | May decide/write | Must not own or override | Publishes to |
 |---|---|---|---|---|
-| Intelligence | Evidence synthesis, customer signals/clusters, market-opportunity observations, root-cause cases, Customer 360 projection | Derived insights and scored market observations with lineage/confidence | Venture/investment decisions, Product Truth, ledger truth, approvals, execution state | Decision, Learning, authorized dashboards |
+| Intelligence | Evidence synthesis, customer signals/clusters, market opportunities, product hypotheses/economics/risks, root-cause cases, Customer 360 projection | Derived insights and deterministic scored observations with lineage/confidence | Venture/investment approval, Build Product/Product Truth, supplier selection/payment, ledger truth, approvals, execution state | Decision, Build, Finance, Learning, authorized dashboards |
 | Decision | Venture, creative, channel, and negotiation recommendations | Versioned recommendations and decision rationale | Execution, financial commitment, approval authority | Build, Growth, Operations, Governance |
 | Build | Product/creative construction artifacts and model execution/performance | Asset versions, QA state, generation execution | Product Truth publication, paid launch, business approval | Growth, Decision, Learning |
 | Growth | Acquisition/channel workflow and attribution evidence | Governed channel workflow state and zero-cost delegated actions | Budget authority, revenue truth, customer master | Finance, Learning, Operations |
@@ -25,6 +25,7 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 
 - `VentureOpportunity` is owned by Decision; Intelligence supplies evidence.
 - `MarketOpportunity` is an Intelligence observation and must not be treated as a `VentureOpportunity`, investment approval, `SalesOpportunity`, or product commitment.
+- `ProductHypothesis`, its economics, supplier references, risks, and score are Intelligence evidence. They must not be treated as a Build `Product`, Product Truth, supplier selection, procurement commitment, or investment approval.
 - `SalesOpportunity` is owned by Operations; Decision may advise negotiation.
 - `Product` and `ProductTruth` are owned by Build, with Product Truth publication requiring Governance-controlled authority. Learning cannot write either.
 - `Order` is owned by Operations; `Transaction`, `Expense`, and `Revenue` are owned by Finance.

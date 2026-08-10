@@ -26,6 +26,26 @@ def test_alembic_upgrade_and_downgrade(tmp_path: Path) -> None:
     assert "customer_insights" in tables
     assert "market_opportunities" in tables
     assert "opportunity_scores" in tables
+    assert "product_hypotheses" in tables
+    assert "product_investment_scores" in tables
+
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "downgrade", "0004_opportunity_intelligence"],
+        check=True,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+    product_downgrade = set(inspect(create_engine(database_url)).get_table_names())
+    assert "product_hypotheses" not in product_downgrade
+    assert "market_opportunities" in product_downgrade
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        check=True,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
 
     subprocess.run(
         [sys.executable, "-m", "alembic", "downgrade", "0003_customer_intelligence"],
