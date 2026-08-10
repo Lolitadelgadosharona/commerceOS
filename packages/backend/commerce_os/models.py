@@ -106,6 +106,13 @@ from commerce_os.operations.conversation_models import (
     ConversationMessage,
     ConversationThread,
 )
+from commerce_os.operations.execution_models import (
+    ActionPlan,
+    ExecutionBlocker,
+    ExecutionTask,
+    LaunchMilestone,
+    ProductLaunch,
+)
 from commerce_os.operations.models import (
     Brand,
     Conversation,
@@ -207,4 +214,9 @@ __all__ = [
     "SalesIntelligenceProfile",
     "SalesRecommendation",
     "SupportCaseIntelligence",
+    "ActionPlan",
+    "ExecutionBlocker",
+    "ExecutionTask",
+    "LaunchMilestone",
+    "ProductLaunch",
 ]
