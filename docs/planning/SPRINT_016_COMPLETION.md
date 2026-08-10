@@ -1,6 +1,6 @@
 # Sprint 016 Completion Notes
 
-Status: implementation and local runtime validation complete; remote validation pending
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -29,8 +29,8 @@ Operations owns execution state. A matching approved Governance request is manda
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started successfully; health-checked services were healthy.
 - PostgreSQL: revision `0016_commerce_execution` at head, no schema drift, and downgrade/re-upgrade passed.
 - API and web runtime health probes: passed.
-- Remote CI: pending publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #15.
 
 ## Readiness
 
-Local gates are complete. Sprint 017 readiness is pending green remote CI.
+All local and remote gates are complete. Sprint 016 recommends readiness for Sprint 017, subject to the existing prohibition on public deployment until authentication is activated.
