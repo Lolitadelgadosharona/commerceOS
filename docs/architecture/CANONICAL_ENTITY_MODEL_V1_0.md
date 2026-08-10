@@ -62,3 +62,15 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `CustomerSignal` | Classified, confidence-scored observation retaining its source and content reference | Intelligence | Intelligence signal store | Authorized Intelligence ingestion after tenant/source validation | Clustering, insights, Decision, Build, Growth, Operations, Learning |
 | `CustomerVoiceCluster` | Named deterministic grouping of explicitly selected signals | Intelligence | Cluster aggregate and membership rows | Authorized Intelligence workflow | Insights and affected domain owners |
 | `CustomerInsight` | Business interpretation and recommended action grounded in explicit signal evidence | Intelligence | Insight aggregate and evidence rows | Authorized Intelligence workflow; human/rule supplied in V1 | Decision and affected domain owners, Governance, Learning |
+
+## Sprint 004 opportunity intelligence extensions
+
+| Entity | Purpose | Owning domain | Source of truth | Write authority | Primary consumers |
+|---|---|---|---|---|---|
+| `MarketOpportunity` | Evidence-backed observation of a possible market opening | Intelligence | Intelligence market-opportunity store | Authorized Intelligence workflow | Decision, Build, Finance, Learning |
+| `OpportunityEvidence` | Supporting reference and supplied summary linked to a market observation | Intelligence | Intelligence opportunity-evidence store | Authorized Intelligence workflow | Scoring, Decision, Governance, Learning |
+| `ProductCandidate` | Non-authoritative product hypothesis for an opportunity | Intelligence | Intelligence candidate store | Authorized Intelligence workflow; cannot create Product Truth | Decision, Build, Finance |
+| `OpportunityScore` | Reproducible deterministic evaluation inputs and result | Intelligence | One current versioned score per MarketOpportunity | Frozen scoring service | Decision, Finance, Governance, Learning |
+| `OpportunityRisk` | Typed risk observation for an opportunity | Intelligence | Intelligence opportunity-risk store | Authorized Intelligence workflow | Decision, Governance, Finance, Build |
+
+`MarketOpportunity` is intentionally distinct from Decision-owned `VentureOpportunity` and Operations-owned `SalesOpportunity`. Qualification or a high score is evidence for a later decision; it is not investment authority, a product commitment, or a customer deal.

@@ -8,6 +8,13 @@ from commerce_os.intelligence.models import (
     SignalClusterMembership,
     SignalSource,
 )
+from commerce_os.intelligence.opportunity_models import (
+    MarketOpportunity,
+    OpportunityEvidence,
+    OpportunityRisk,
+    OpportunityScore,
+    ProductCandidate,
+)
 
 __all__ = [
     "CustomerInsight",
@@ -16,4 +23,9 @@ __all__ = [
     "InsightEvidence",
     "SignalClusterMembership",
     "SignalSource",
+    "MarketOpportunity",
+    "OpportunityEvidence",
+    "OpportunityRisk",
+    "OpportunityScore",
+    "ProductCandidate",
 ]
