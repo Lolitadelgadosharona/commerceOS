@@ -36,6 +36,7 @@ from apps.api.governance_routes import router as governance_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
+from apps.api.opportunity_analysis_routes import router as opportunity_analysis_router
 from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
 from apps.api.product_truth_routes import router as product_truth_router
@@ -59,6 +60,7 @@ api_router.include_router(finance_router, tags=["finance_intelligence"])
 api_router.include_router(executive_router, tags=["executive_dashboard"])
 api_router.include_router(execution_router, tags=["commerce_execution"])
 api_router.include_router(market_intelligence_router, tags=["market_intelligence"])
+api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
 
 
 @api_router.get("/health", tags=["system"])
