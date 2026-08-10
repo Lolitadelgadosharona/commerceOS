@@ -1,6 +1,6 @@
 # Sprint 003 — Customer Intelligence Foundation Completion
 
-Status: implementation and runtime validation complete; publication and remote CI pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -26,7 +26,7 @@ Intelligence owns the new aggregates and uses only the shared database/session a
 - Redis readiness returned `PONG`.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished local package is not present in public advisory indexes.
 - Next.js lint/build and the Playwright foundation test passed.
-- GitHub Draft PR and CI: pending.
+- GitHub Draft PR #2 created; backend, web, and documentation CI jobs passed.
 
 ## Acceptance mapping
 
@@ -39,8 +39,8 @@ Intelligence owns the new aggregates and uses only the shared database/session a
 | Migration | Passed on SQLite and real PostgreSQL |
 | Automated tests | Passed locally |
 | Docker runtime | Passed |
-| GitHub Draft PR and CI | Pending |
+| GitHub Draft PR and CI | Passed |
 
 ## Recommendation
 
-**NOT READY FOR SPRINT 004** until publication and remote CI gates pass.
+**READY FOR SPRINT 004.** Sprint 003 acceptance gates are satisfied. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
