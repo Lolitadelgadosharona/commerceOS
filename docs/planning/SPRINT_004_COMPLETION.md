@@ -1,6 +1,6 @@
 # Sprint 004 — Opportunity Intelligence Foundation Completion
 
-Status: implementation and runtime validation complete; publication and remote CI pending
+Status: implementation, runtime validation, publication, and remote CI complete
 
 ## Delivered scope
 
@@ -26,7 +26,7 @@ The new records belong to Intelligence and cannot write Decision venture state, 
 - Redis readiness returned `PONG`.
 - pip-audit and npm audit found no known third-party dependency vulnerabilities; the unpublished local package is absent from public advisory indexes.
 - Next.js lint/build and the Playwright foundation test passed.
-- Publication and CI: pending.
+- GitHub Draft PR #3 created; backend, web, and documentation CI jobs passed.
 
 ## Acceptance mapping
 
@@ -39,8 +39,8 @@ The new records belong to Intelligence and cannot write Decision venture state, 
 | Migration | Passed on SQLite and real PostgreSQL |
 | Automated tests | Passed locally |
 | Docker runtime | Passed |
-| GitHub Draft PR and CI | Pending |
+| GitHub Draft PR and CI | Passed |
 
 ## Recommendation
 
-**NOT READY FOR SPRINT 005** until publication and remote CI gates pass.
+**READY FOR SPRINT 005.** Sprint 004 acceptance gates are satisfied. Public deployment remains separately prohibited by the Sprint 002 authentication activation limits.
