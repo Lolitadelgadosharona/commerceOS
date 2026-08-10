@@ -1,6 +1,6 @@
 # Sprint 015 Completion Notes
 
-Status: implementation and local runtime validation complete; remote validation pending
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -28,8 +28,8 @@ Dashboard projections do not modify source truth. Recommendations cannot execute
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started successfully; health-checked services were healthy.
 - PostgreSQL: revision `0015_operating_dashboard` at head, no schema drift, and downgrade/re-upgrade passed.
 - API and web runtime health probes: passed.
-- Remote CI: pending publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #14.
 
 ## Readiness
 
-Local gates are complete. Sprint 016 readiness is pending green remote CI.
+All local and remote gates are complete. Sprint 015 recommends readiness for Sprint 016, subject to the existing prohibition on public deployment until authentication is activated.
