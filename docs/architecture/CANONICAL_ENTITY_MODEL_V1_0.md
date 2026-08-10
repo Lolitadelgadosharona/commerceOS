@@ -89,5 +89,10 @@ These supporting entities implement, but do not change, the frozen ownership mod
 | `ProductDiscoveryKnowledge` | Confidence-scored entity relationship for future discoverability | Build | Build discovery-knowledge store | Authorized Build workflow; cannot create Product Truth | Growth, Intelligence, Learning |
 | `ContentBrief` | Human-authored product content direction grounded in truth/evidence | Build | Build content-brief store | Authorized Build workflow | Growth, Governance, Learning |
 | `ListingEvidence` | Provenanced support for product content planning | Build | Build listing-evidence store | Authorized Build workflow; specification references require matching Product Truth | Growth, Governance, Learning |
+| `CreativeStrategy` | Explainable product promotion strategy without execution authority | Decision | Decision creative-strategy store | Authorized Decision workflow | Build, Growth, Governance, Learning |
+| `CreativeHypothesis` | Falsifiable creative behavior hypothesis | Decision | Decision creative-hypothesis store | Authorized Decision workflow | Build, Growth, Governance, Learning |
+| `CreativeBrief` | Platform/content-format creative direction; not a generated artifact | Decision | Decision creative-brief store | Authorized Decision workflow | Build, Growth, Governance |
+| `CreativeChannelFit` | Product/channel suitability assessment and rationale | Decision | Decision channel-fit store | Authorized Decision workflow | Growth, Build, Governance |
+| `CreativeExperiment` | Creative test-plan/result observation; not Governance Experiment registry | Decision | Decision creative-experiment store | Authorized Decision workflow; cannot execute treatments | Governance, Growth, Learning |
 
 `MarketOpportunity` is intentionally distinct from Decision-owned `VentureOpportunity` and Operations-owned `SalesOpportunity`. Qualification or a high score is evidence for a later decision; it is not investment authority, a product commitment, or a customer deal.
