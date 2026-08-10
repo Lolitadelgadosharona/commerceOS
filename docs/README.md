@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 016 commerce execution and launch workflow foundation
+Status: architecture/governance baseline with Sprint 017 market intelligence data foundation
 
 ## Governing documents
 
@@ -35,6 +35,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [CFO and Revenue Intelligence Foundation v1.0](./architecture/CFO_REVENUE_INTELLIGENCE_FOUNDATION_V1_0.md) | Financial observations, deterministic profitability, unit economics, CFO recommendations, and financial risk boundaries |
 | [AI Operating Committee and CEO Dashboard Foundation v1.0](./architecture/AI_OPERATING_COMMITTEE_CEO_DASHBOARD_FOUNDATION_V1_0.md) | Cross-domain executive projections, operating signals, human decision queue, reviews, and read-only dashboards |
 | [Commerce Execution and Launch Workflow Foundation v1.0](./architecture/COMMERCE_EXECUTION_LAUNCH_WORKFLOW_FOUNDATION_V1_0.md) | Governed product launches, ordered milestones, assigned tasks, action plans, blockers, and non-execution boundaries |
+| [Market Intelligence Data Foundation v1.0](./architecture/MARKET_INTELLIGENCE_DATA_FOUNDATION_V1_0.md) | Registered market sources, normalized signals, evidence, clusters, and evidence-only opportunity links |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -56,6 +57,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 014 Completion Notes](./planning/SPRINT_014_COMPLETION.md) | CFO/revenue intelligence implementation and acceptance evidence |
 | [Sprint 015 Completion Notes](./planning/SPRINT_015_COMPLETION.md) | Executive dashboard and operating committee implementation and acceptance evidence |
 | [Sprint 016 Completion Notes](./planning/SPRINT_016_COMPLETION.md) | Commerce execution workflow implementation and acceptance evidence |
+| [Sprint 017 Completion Notes](./planning/SPRINT_017_COMPLETION.md) | Market intelligence data-contract implementation and acceptance evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -80,5 +82,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 014 Completion Notes](./planning/SPRINT_014_COMPLETION.md)
 - [Sprint 015 Completion Notes](./planning/SPRINT_015_COMPLETION.md)
 - [Sprint 016 Completion Notes](./planning/SPRINT_016_COMPLETION.md)
+- [Sprint 017 Completion Notes](./planning/SPRINT_017_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.
