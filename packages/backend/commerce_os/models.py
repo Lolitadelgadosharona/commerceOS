@@ -8,6 +8,15 @@ from commerce_os.build.listing_models import (
     ProductDiscoveryKnowledge,
 )
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
+from commerce_os.decision.channel_models import (
+    ChannelCandidate,
+    ChannelDecisionEvidence,
+    ChannelMeasurementPlan,
+    ChannelOpportunityScore,
+    ChannelStrategy,
+    ConversionPath,
+    ConversionPathStep,
+)
 from commerce_os.decision.creative_models import (
     CreativeBrief,
     CreativeChannelFit,
@@ -93,6 +102,13 @@ __all__ = [
     "CreativeExperiment",
     "CreativeHypothesis",
     "CreativeStrategy",
+    "ChannelCandidate",
+    "ChannelDecisionEvidence",
+    "ChannelMeasurementPlan",
+    "ChannelOpportunityScore",
+    "ChannelStrategy",
+    "ConversionPath",
+    "ConversionPathStep",
     "MessageMetadata",
     "Organization",
     "OutboxEvent",
