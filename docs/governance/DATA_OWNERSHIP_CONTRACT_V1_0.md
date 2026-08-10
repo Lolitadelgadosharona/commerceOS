@@ -47,6 +47,11 @@ The source of truth is the authoritative Commerce OS aggregate or ledger named b
 | `ProductDiscoveryKnowledge` | Build | Build GEO discovery-relationship store | Authorized Build workflow; cannot create Product Truth | Growth, Intelligence, Learning | Product/entity/relationship, description, confidence, actor/version |
 | `ContentBrief` | Build | Build content-direction store | Authorized Build workflow; no generation or publication authority | Growth, Governance, Learning | Product, human-authored directions/lists, actor/version |
 | `ListingEvidence` | Build | Build content-evidence store | Authorized Build workflow; Product Truth scope checked for specifications | Growth, Governance, Learning | Product/type/source/content/confidence, actor/version |
+| `CreativeStrategy` | Decision | Decision creative-strategy store | Authorized Decision workflow; approval grants no execution authority | Build, Growth, Governance, Learning | Product lineage, strategic fields, lifecycle, actor/version |
+| `CreativeHypothesis` | Decision | Decision creative-hypothesis store | Authorized Decision workflow | Build, Growth, Governance, Learning | Strategy lineage, hypothesis/behavior/metric/confidence/status |
+| `CreativeBrief` | Decision | Decision creative-brief store | Authorized Decision workflow; cannot generate or publish artifacts | Build, Growth, Governance | Strategy/platform/format, direction fields, actor/version |
+| `CreativeChannelFit` | Decision | Decision product/channel-fit store | Authorized Decision workflow | Growth, Build, Governance | Product/channel, bounded score, reason, actor/version |
+| `CreativeExperiment` | Decision | Decision creative test-plan/result observations | Authorized Decision workflow; no treatment execution or Governance authority | Governance, Growth, Learning | Hypothesis/variant/objective/metric/result/status, actor/version |
 
 ## Naming and projection constraints
 

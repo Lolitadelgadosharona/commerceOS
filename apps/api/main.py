@@ -1,4 +1,5 @@
 from commerce_os.build.errors import BuildError
+from commerce_os.decision.errors import DecisionError
 from commerce_os.governance.errors import GovernanceError
 from commerce_os.intelligence.errors import IntelligenceError
 from fastapi import FastAPI
@@ -9,6 +10,7 @@ from apps.api.errors import (
     ApiError,
     api_error_handler,
     build_error_handler,
+    decision_error_handler,
     governance_error_handler,
     integrity_error_handler,
     intelligence_error_handler,
@@ -25,6 +27,7 @@ app = FastAPI(
 app.middleware("http")(request_context_middleware)
 app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(BuildError, build_error_handler)  # type: ignore[arg-type]
+app.add_exception_handler(DecisionError, decision_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(GovernanceError, governance_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(IntelligenceError, intelligence_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(IntegrityError, integrity_error_handler)  # type: ignore[arg-type]

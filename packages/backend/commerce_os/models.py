@@ -8,6 +8,13 @@ from commerce_os.build.listing_models import (
     ProductDiscoveryKnowledge,
 )
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
+from commerce_os.decision.creative_models import (
+    CreativeBrief,
+    CreativeChannelFit,
+    CreativeExperiment,
+    CreativeHypothesis,
+    CreativeStrategy,
+)
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.governance.models import (
     Approval,
@@ -81,6 +88,11 @@ __all__ = [
     "Conversation",
     "Customer",
     "CustomerIdentity",
+    "CreativeBrief",
+    "CreativeChannelFit",
+    "CreativeExperiment",
+    "CreativeHypothesis",
+    "CreativeStrategy",
     "MessageMetadata",
     "Organization",
     "OutboxEvent",
