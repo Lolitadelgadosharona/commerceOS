@@ -1,5 +1,10 @@
 """Import all owned persistence models for metadata and migrations."""
 
+from commerce_os.build.creative_asset_models import (
+    CreativeAsset,
+    CreativeAssetVersion,
+    CreativePerformanceObservation,
+)
 from commerce_os.build.listing_models import (
     ContentBrief,
     CustomerQuestion,
@@ -181,6 +186,9 @@ from commerce_os.operations.models import (
 from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
+    "CreativeAsset",
+    "CreativeAssetVersion",
+    "CreativePerformanceObservation",
     "AIDiscoveryReadinessAssessment",
     "GeoKnowledgeAsset",
     "ListingBlueprint",

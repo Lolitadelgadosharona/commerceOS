@@ -92,8 +92,31 @@ class CreativePlanningService:
         return self._save(CreativeHypothesis(**payload.model_dump()))
 
     def create_brief(self, payload: CreativeBriefCreate) -> CreativeBrief:
-        scoped_strategy(self.session, payload.strategy_id, payload.organization_id)
-        return self._save(CreativeBrief(**payload.model_dump()))
+        strategy_id = payload.creative_strategy_id or payload.strategy_id
+        if strategy_id is None:  # enforced by the schema; keeps typing explicit
+            raise DecisionStateError("Creative strategy is required.")
+        strategy = scoped_strategy(self.session, strategy_id, payload.organization_id)
+        if payload.product_id is not None and payload.product_id != strategy.product_id:
+            raise DecisionScopeError("Creative strategy does not belong to the supplied product.")
+        proof_requirements = payload.proof_requirements or payload.proof_points
+        cta_strategy = payload.cta_strategy or payload.cta
+        if proof_requirements is None or cta_strategy is None:
+            raise DecisionStateError("Brief proof and CTA strategy are required.")
+        values = payload.model_dump(exclude={"creative_strategy_id", "product_id", "strategy_id"})
+        values.update(
+            {
+                "organization_id": payload.organization_id,
+                "product_id": strategy.product_id,
+                "strategy_id": strategy.id,
+                "objective": payload.objective or strategy.marketing_objective,
+                "key_message": payload.key_message or strategy.core_message,
+                "proof_requirements": proof_requirements,
+                "cta_strategy": cta_strategy,
+                "proof_points": payload.proof_points or proof_requirements,
+                "cta": payload.cta or cta_strategy,
+            }
+        )
+        return self._save(CreativeBrief(**values))
 
     def create_channel_fit(self, payload: CreativeChannelFitCreate) -> CreativeChannelFit:
         if not reference_belongs_to_organization(

@@ -58,9 +58,13 @@ class CreativeHypothesis(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class CreativeBrief(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "creative_briefs"
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),)
 
     organization_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    product_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
     strategy_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("creative_strategies.id", ondelete="CASCADE"), nullable=False, index=True
@@ -72,6 +76,15 @@ class CreativeBrief(IdMixin, TimestampMixin, VersionMixin, Base):
     proof_points: Mapped[str] = mapped_column(Text, nullable=False)
     cta: Mapped[str] = mapped_column(Text, nullable=False)
     content_format: Mapped[str] = mapped_column(String(30), nullable=False)
+    objective: Mapped[str] = mapped_column(Text, nullable=False)
+    key_message: Mapped[str] = mapped_column(Text, nullable=False)
+    proof_requirements: Mapped[str] = mapped_column(Text, nullable=False)
+    cta_strategy: Mapped[str] = mapped_column(Text, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+
+    @property
+    def creative_strategy_id(self) -> UUID:
+        return self.strategy_id
 
 
 class CreativeChannelFit(IdMixin, TimestampMixin, VersionMixin, Base):
