@@ -28,6 +28,7 @@ from apps.api.channel_strategy_routes import router as channel_strategy_router
 from apps.api.commercial_risk_routes import router as commercial_risk_router
 from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_asset_routes import router as creative_asset_router
+from apps.api.creative_generation_routes import router as creative_generation_router
 from apps.api.creative_router_routes import router as creative_router_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
 from apps.api.crud import CrudRouter
@@ -79,6 +80,7 @@ api_router.include_router(economics_intelligence_router, tags=["product_economic
 api_router.include_router(launch_preparation_router, tags=["launch_preparation"])
 api_router.include_router(discovery_listing_router, tags=["ai_discovery_listing"])
 api_router.include_router(creative_asset_router, tags=["creative_assets"])
+api_router.include_router(creative_generation_router, tags=["creative_generation"])
 
 
 @api_router.get("/health", tags=["system"])

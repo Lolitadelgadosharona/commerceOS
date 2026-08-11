@@ -5,6 +5,12 @@ from commerce_os.build.creative_asset_models import (
     CreativeAssetVersion,
     CreativePerformanceObservation,
 )
+from commerce_os.build.creative_generation_models import (
+    CreativeGenerationJob,
+    CreativeGenerationRequest,
+    CreativeProviderCapability,
+    CreativeQualityReview,
+)
 from commerce_os.build.listing_models import (
     ContentBrief,
     CustomerQuestion,
@@ -189,6 +195,10 @@ __all__ = [
     "CreativeAsset",
     "CreativeAssetVersion",
     "CreativePerformanceObservation",
+    "CreativeGenerationJob",
+    "CreativeGenerationRequest",
+    "CreativeProviderCapability",
+    "CreativeQualityReview",
     "AIDiscoveryReadinessAssessment",
     "GeoKnowledgeAsset",
     "ListingBlueprint",
