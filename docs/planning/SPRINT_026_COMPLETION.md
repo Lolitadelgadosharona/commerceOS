@@ -1,6 +1,6 @@
 # Sprint 026 Completion Notes
 
-Status: implementation and local validation complete; remote CI pending
+Status: complete
 
 ## Delivered scope
 
@@ -25,8 +25,8 @@ Decision owns the new advisory records while Build Product Truth, Growth executi
 - Playwright: 1 test passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; health checks passed.
 - Migration validation: fresh SQLite and containerized PostgreSQL upgrade/downgrade/upgrade cycles passed; schema drift check passed.
-- Remote CI: pending branch publication.
+- Remote CI: backend, web, and documentation jobs passed on Draft PR #25.
 
 ## Readiness
 
-Sprint 027 readiness is determined after remote CI completes.
+All Sprint 026 acceptance gates pass. The repository is ready for Sprint 027, subject to the existing prohibition on public deployment until production authentication is approved.
