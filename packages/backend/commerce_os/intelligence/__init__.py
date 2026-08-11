@@ -5,6 +5,11 @@ from commerce_os.intelligence.analysis_models import (
     OpportunityAssessment,
     OpportunityReport,
 )
+from commerce_os.intelligence.commercial_risk_models import (
+    CommercialViabilityAssessment,
+    ProductRiskAssessment,
+    ProductRiskSignal,
+)
 from commerce_os.intelligence.connector_models import (
     CustomerPainCandidate,
     MarketConnectorDefinition,
@@ -65,6 +70,9 @@ from commerce_os.intelligence.voice_models import (
 )
 
 __all__ = [
+    "CommercialViabilityAssessment",
+    "ProductRiskAssessment",
+    "ProductRiskSignal",
     "CustomerInsight",
     "CustomerBackedOpportunityAssessment",
     "CustomerNeed",
