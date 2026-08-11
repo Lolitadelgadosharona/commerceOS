@@ -51,6 +51,12 @@ from commerce_os.intelligence.supplier_models import (
     SupplierProfile,
     SupplierRisk,
 )
+from commerce_os.intelligence.voice_models import (
+    CustomerLanguageInsight,
+    CustomerPainCluster,
+    PainClusterMembership,
+    PurchaseIntentSignal,
+)
 
 __all__ = [
     "CustomerInsight",
@@ -90,4 +96,8 @@ __all__ = [
     "SupplierRisk",
     "ProductSupplierMatch",
     "SupplierDecisionRecord",
+    "CustomerLanguageInsight",
+    "CustomerPainCluster",
+    "PainClusterMembership",
+    "PurchaseIntentSignal",
 ]

@@ -120,6 +120,12 @@ from commerce_os.intelligence.supplier_models import (
     SupplierProfile,
     SupplierRisk,
 )
+from commerce_os.intelligence.voice_models import (
+    CustomerLanguageInsight,
+    CustomerPainCluster,
+    PainClusterMembership,
+    PurchaseIntentSignal,
+)
 from commerce_os.operations.conversation_models import (
     ConversationEmotionSignal,
     ConversationHandoff,
@@ -257,4 +263,8 @@ __all__ = [
     "ExecutionTask",
     "LaunchMilestone",
     "ProductLaunch",
+    "CustomerLanguageInsight",
+    "CustomerPainCluster",
+    "PainClusterMembership",
+    "PurchaseIntentSignal",
 ]
