@@ -42,6 +42,7 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - Customer pain clusters, cluster memberships, customer-language insights, and purchase-intent signals are Intelligence-owned evidence assets. Downstream domains may consume them but cannot treat them as Product Truth, opportunity approval, customer consent, or execution authority.
 - Customer needs, pain mappings, product solution hypotheses, and customer-backed opportunity assessments are Intelligence evidence. They cannot create or approve opportunities, become Build Product Truth, override Finance economics, select suppliers, or execute commerce.
 - Product commercial risk signals, risk assessments, and viability assessments are Intelligence evidence. Their `GO`, `TEST`, `REVIEW`, and `REJECT` labels are advisory and cannot modify Product Truth, financial truth, approvals, supplier state, or execution state.
+- Product economic profiles, profit simulations, scenarios, and risk-adjusted profit assessments are Intelligence assumptions and advisory estimates. Finance retains monetary truth; these records cannot create revenue/cost observations, move money, authorize purchasing, approve products, or execute commerce.
 - `Approval` is owned by Governance; Finance defines financial approval requirements.
 - `Experiment` is owned by Governance as a registry/control record; executing domains own treatment execution, and Learning owns outcome observations.
 
