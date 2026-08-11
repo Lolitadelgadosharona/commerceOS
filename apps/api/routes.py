@@ -38,6 +38,7 @@ from apps.api.executive_routes import router as executive_router
 from apps.api.finance_routes import router as finance_router
 from apps.api.governance_routes import router as governance_router
 from apps.api.intelligence_routes import router as intelligence_router
+from apps.api.launch_preparation_routes import router as launch_preparation_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.market_connector_routes import router as market_connector_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
@@ -73,6 +74,7 @@ api_router.include_router(customer_voice_router, tags=["customer_voice_intellige
 api_router.include_router(customer_need_router, tags=["product_opportunity_intelligence"])
 api_router.include_router(commercial_risk_router, tags=["product_commercial_risk_intelligence"])
 api_router.include_router(economics_intelligence_router, tags=["product_economics_intelligence"])
+api_router.include_router(launch_preparation_router, tags=["launch_preparation"])
 
 
 @api_router.get("/health", tags=["system"])
