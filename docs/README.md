@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 022 product opportunity intelligence foundation
+Status: architecture/governance baseline with Sprint 023 product commercial risk intelligence foundation
 
 ## Governing documents
 
@@ -41,6 +41,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Reddit Market Intelligence Connector v1](./architecture/REDDIT_MARKET_INTELLIGENCE_CONNECTOR_V1.md) | Read-only Reddit ingestion, raw records, pain detection, evidence, and safety boundaries |
 | [Customer Voice Intelligence Foundation v1.0](./architecture/CUSTOMER_VOICE_INTELLIGENCE_FOUNDATION_V1_0.md) | Pain clusters, customer-language assets, deterministic severity and intent scoring, and source traceability |
 | [Customer Need to Product Opportunity Foundation v1.0](./architecture/CUSTOMER_NEED_PRODUCT_OPPORTUNITY_FOUNDATION_V1_0.md) | Customer needs, pain mappings, solution hypotheses, and customer-backed opportunity assessment |
+| [Product Commercial Risk Intelligence Foundation v1.0](./architecture/PRODUCT_COMMERCIAL_RISK_INTELLIGENCE_FOUNDATION_V1_0.md) | Product risk evidence, deterministic assessments, commercial viability, and advisory authority boundaries |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -68,6 +69,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 020 Completion Notes](./planning/SPRINT_020_COMPLETION.md) | Reddit connector implementation and validation evidence |
 | [Sprint 021 Completion Notes](./planning/SPRINT_021_COMPLETION.md) | Customer voice intelligence implementation and validation evidence |
 | [Sprint 022 Completion Notes](./planning/SPRINT_022_COMPLETION.md) | Customer need and product opportunity intelligence implementation evidence |
+| [Sprint 023 Completion Notes](./planning/SPRINT_023_COMPLETION.md) | Product commercial risk intelligence implementation and validation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -98,5 +100,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 020 Completion Notes](./planning/SPRINT_020_COMPLETION.md)
 - [Sprint 021 Completion Notes](./planning/SPRINT_021_COMPLETION.md)
 - [Sprint 022 Completion Notes](./planning/SPRINT_022_COMPLETION.md)
+- [Sprint 023 Completion Notes](./planning/SPRINT_023_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

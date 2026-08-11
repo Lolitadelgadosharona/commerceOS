@@ -25,6 +25,7 @@ from commerce_os.operations.schemas import (
 from fastapi import APIRouter
 
 from apps.api.channel_strategy_routes import router as channel_strategy_router
+from apps.api.commercial_risk_routes import router as commercial_risk_router
 from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_router_routes import router as creative_router_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
@@ -69,6 +70,7 @@ api_router.include_router(opportunity_analysis_router, tags=["opportunity_analys
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
 api_router.include_router(customer_voice_router, tags=["customer_voice_intelligence"])
 api_router.include_router(customer_need_router, tags=["product_opportunity_intelligence"])
+api_router.include_router(commercial_risk_router, tags=["product_commercial_risk_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])
