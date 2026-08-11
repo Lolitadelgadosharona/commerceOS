@@ -1,6 +1,6 @@
 # Sprint 021 Completion Notes
 
-Status: implementation and local runtime validation complete
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -28,8 +28,8 @@ Intelligence owns customer voice analysis assets. Decision recommendations, Buil
 - PostgreSQL: revision `0021_customer_voice` at head, no schema drift, and downgrade/re-upgrade passed.
 - Fresh SQLite migration upgrade/downgrade/re-upgrade: passed.
 - API and web runtime health probes: passed.
-- GitHub Actions: pending Draft PR publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #20.
 
 ## Readiness
 
-Local implementation gates are complete. Sprint 022 readiness is determined after Draft PR CI completes.
+All implementation, local runtime, and remote CI gates are complete. Sprint 021 recommends readiness for Sprint 022, subject to the existing prohibition on public deployment until verified authentication is activated.
