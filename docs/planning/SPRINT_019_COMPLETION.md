@@ -1,6 +1,6 @@
 # Sprint 019 Completion Notes
 
-Status: implementation and local runtime validation complete
+Status: implementation, runtime validation, and remote CI complete
 
 ## Delivered scope
 
@@ -28,8 +28,8 @@ Intelligence owns ingestion and normalization records. Sprint 017 source provena
 - PostgreSQL: revision `0019_market_connectors` at head, no schema drift, and downgrade/re-upgrade passed.
 - Fresh SQLite migration upgrade/downgrade/re-upgrade: passed.
 - API and web runtime health probes: passed.
-- GitHub Actions: pending Draft PR publication.
+- GitHub Actions: backend, docs, and web checks passed on Draft PR #18.
 
 ## Readiness
 
-Local gates are complete. Sprint 020 readiness is determined after Draft PR CI completes.
+All local and remote gates are complete. Sprint 019 recommends readiness for Sprint 020, subject to the existing prohibition on public deployment until authentication is activated.
