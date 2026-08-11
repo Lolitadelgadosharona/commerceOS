@@ -6,10 +6,13 @@ from commerce_os.intelligence.analysis_models import (
     OpportunityReport,
 )
 from commerce_os.intelligence.connector_models import (
+    CustomerPainCandidate,
     MarketConnectorDefinition,
     MarketDataRecord,
     MarketIngestionJob,
     NormalizedMarketItem,
+    PainEvidence,
+    RedditConnector,
 )
 from commerce_os.intelligence.market_models import (
     MarketDataSource,
@@ -51,10 +54,13 @@ from commerce_os.intelligence.supplier_models import (
 
 __all__ = [
     "CustomerInsight",
+    "CustomerPainCandidate",
     "MarketConnectorDefinition",
     "MarketDataRecord",
     "MarketIngestionJob",
     "NormalizedMarketItem",
+    "PainEvidence",
+    "RedditConnector",
     "MarketDataSource",
     "MarketSignal",
     "MarketSignalCluster",

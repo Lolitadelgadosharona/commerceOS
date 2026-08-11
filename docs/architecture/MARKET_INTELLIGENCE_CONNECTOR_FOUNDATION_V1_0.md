@@ -35,6 +35,6 @@ Starting and terminal timestamps are recorded by the service. Record count is no
 - APIs list only records explicitly scoped to an organization.
 - Connector configuration stores a schema, never credentials or secrets.
 - No endpoint executes a live sync, creates a market signal, creates an opportunity, recommends an action, or grants approval.
-- No Reddit, Amazon, Etsy, Google, social, or news API integration is present.
+- This Sprint 019 statement is superseded for Reddit by the [Sprint 020 Reddit connector](./REDDIT_MARKET_INTELLIGENCE_CONNECTOR_V1.md); Amazon, Etsy, Google, social, and news integrations remain absent.
 - No scraping, LLM, agent, autonomous research, or external network behavior is present.
 - The existing authentication limitation continues to prohibit public deployment.

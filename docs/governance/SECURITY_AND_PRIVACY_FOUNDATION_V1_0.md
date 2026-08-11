@@ -62,3 +62,7 @@ The internal foundation now stores passwords only as Argon2id hashes in a creden
 The `/api/v1` actor boundary currently accepts an internal `X-Actor-ID` header. It is deliberately not a verified login session or bearer-token implementation. User bootstrap and permission administration endpoints are likewise foundation interfaces, not production administration controls. Until a subsequent sprint adds verified authentication, server-enforced authorization on every endpoint, rate limiting, CSRF/session protections where applicable, and deployment hardening, the API must remain private and must not be publicly deployed.
 
 External customer identities record provider, provider identifier, confidence, verification status, and provenance. Connectors, automatic merging, and provider verification are not implemented; identity observations remain reversible evidence rather than proof of personhood.
+
+## Sprint 020 Reddit connector status
+
+Reddit OAuth client credentials and the required descriptive User-Agent are external environment configuration and are never stored in connector records. The adapter is read-only and minimizes author identity to an opaque provider reference when present. Reddit content is subject to provider deletion requirements; production activation requires a scheduled reconciliation/deletion process and a reviewed retention schedule. Until that process and verified API authentication/authorization are operational, Reddit ingestion remains controlled private-environment functionality.
