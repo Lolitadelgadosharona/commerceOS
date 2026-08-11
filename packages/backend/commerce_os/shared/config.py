@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+pysqlite:///./commerce_os.db"
     redis_url: str = "redis://localhost:6379/0"
     log_level: str = "INFO"
+    reddit_client_id: str | None = None
+    reddit_client_secret: str | None = None
+    reddit_user_agent: str | None = None
 
 
 @lru_cache

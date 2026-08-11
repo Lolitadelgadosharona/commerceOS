@@ -41,6 +41,7 @@ from apps.api.opportunity_analysis_routes import router as opportunity_analysis_
 from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
 from apps.api.product_truth_routes import router as product_truth_router
+from apps.api.reddit_intelligence_routes import router as reddit_intelligence_router
 from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
 
@@ -63,6 +64,7 @@ api_router.include_router(execution_router, tags=["commerce_execution"])
 api_router.include_router(market_intelligence_router, tags=["market_intelligence"])
 api_router.include_router(market_connector_router, tags=["market_connectors"])
 api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
+api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])
