@@ -1,6 +1,6 @@
 # Sprint 029 Completion Notes
 
-Status: implementation complete; local validation passed; remote validation pending
+Status: implementation complete; local and remote validation passed
 
 ## Delivered
 
@@ -28,4 +28,4 @@ Status: implementation complete; local validation passed; remote validation pend
 - Playwright: 1 passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; health and HTTP checks passed.
 - PostgreSQL migration: `0029_creative_execution` upgrade, downgrade to `0028_creative_generation`, upgrade, current-head, and schema check passed.
-- GitHub Actions: pending publication.
+- GitHub Actions: backend, docs, and web jobs passed on Draft PR 28.
