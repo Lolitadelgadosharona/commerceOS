@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 029 creative execution adapter foundation
+Status: architecture/governance baseline with Sprint 030 channel execution foundation
 
 ## Governing documents
 
@@ -48,6 +48,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Creative Asset Intelligence Foundation v1.0](./architecture/CREATIVE_ASSET_INTELLIGENCE_FOUNDATION_V1_0.md) | Human-planned creative briefs, artifact registry, sequential versions, and supplied performance observations |
 | [Creative Generation Workflow Foundation v1.0](./architecture/CREATIVE_GENERATION_WORKFLOW_FOUNDATION_V1_0.md) | Provider-neutral requests, capability contracts, pending jobs, and human quality review records |
 | [Creative Execution Adapter Foundation v1.0](./architecture/CREATIVE_EXECUTION_ADAPTER_FOUNDATION_V1_0.md) | Abstract adapter contract, controlled job state, artifact links, execution records, and cost observations |
+| [Channel Execution and Creative Distribution Foundation v1.0](./architecture/CHANNEL_EXECUTION_FOUNDATION_V1_0.md) | Growth-owned channel plans, experiment designs, governed distribution state, and performance observations |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -82,6 +83,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 027 Completion Notes](./planning/SPRINT_027_COMPLETION.md) | Creative asset intelligence implementation and validation evidence |
 | [Sprint 028 Completion Notes](./planning/SPRINT_028_COMPLETION.md) | Creative generation workflow implementation and validation evidence |
 | [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md) | Creative execution adapter implementation and validation evidence |
+| [Sprint 030 Completion Notes](./planning/SPRINT_030_COMPLETION.md) | Channel execution and distribution workflow implementation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -119,5 +121,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 027 Completion Notes](./planning/SPRINT_027_COMPLETION.md)
 - [Sprint 028 Completion Notes](./planning/SPRINT_028_COMPLETION.md)
 - [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md)
+- [Sprint 030 Completion Notes](./planning/SPRINT_030_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

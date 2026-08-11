@@ -24,6 +24,7 @@ from commerce_os.operations.schemas import (
 )
 from fastapi import APIRouter
 
+from apps.api.channel_execution_routes import router as channel_execution_router
 from apps.api.channel_strategy_routes import router as channel_strategy_router
 from apps.api.commercial_risk_routes import router as commercial_risk_router
 from apps.api.conversation_routes import router as conversation_router
@@ -64,6 +65,7 @@ api_router.include_router(supplier_intelligence_router)
 api_router.include_router(listing_intelligence_router)
 api_router.include_router(creative_strategy_router)
 api_router.include_router(channel_strategy_router, tags=["channel_strategy"])
+api_router.include_router(channel_execution_router, tags=["channel_execution"])
 api_router.include_router(conversation_router, tags=["conversation_commerce"])
 api_router.include_router(sales_support_router, tags=["sales_support_intelligence"])
 api_router.include_router(creative_router_router, tags=["creative_router"])

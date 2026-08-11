@@ -97,6 +97,12 @@ from commerce_os.governance.models import (
     User,
     UserRole,
 )
+from commerce_os.growth.channel_execution_models import (
+    ChannelExecutionPlan,
+    ChannelPerformanceObservation,
+    CreativeChannelExperiment,
+    DistributionRecord,
+)
 from commerce_os.intelligence.analysis_models import (
     MarketSignalAnalysis,
     OpportunityAssessment,
@@ -233,6 +239,10 @@ __all__ = [
     "ProductDiscoveryKnowledge",
     "ProductTruth",
     "ApprovalRequest",
+    "ChannelExecutionPlan",
+    "ChannelPerformanceObservation",
+    "CreativeChannelExperiment",
+    "DistributionRecord",
     "AuditLog",
     "Brand",
     "CommercialPolicy",

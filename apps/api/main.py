@@ -2,6 +2,7 @@ from commerce_os.build.errors import BuildError
 from commerce_os.decision.errors import DecisionError
 from commerce_os.finance.errors import FinanceError
 from commerce_os.governance.errors import GovernanceError
+from commerce_os.growth.errors import GrowthError
 from commerce_os.intelligence.errors import IntelligenceError
 from commerce_os.operations.errors import OperationsError
 from fastapi import FastAPI
@@ -15,6 +16,7 @@ from apps.api.errors import (
     decision_error_handler,
     finance_error_handler,
     governance_error_handler,
+    growth_error_handler,
     integrity_error_handler,
     intelligence_error_handler,
     operations_error_handler,
@@ -34,6 +36,7 @@ app.add_exception_handler(BuildError, build_error_handler)  # type: ignore[arg-t
 app.add_exception_handler(DecisionError, decision_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(FinanceError, finance_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(GovernanceError, governance_error_handler)  # type: ignore[arg-type]
+app.add_exception_handler(GrowthError, growth_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(IntelligenceError, intelligence_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(OperationsError, operations_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(IntegrityError, integrity_error_handler)  # type: ignore[arg-type]
