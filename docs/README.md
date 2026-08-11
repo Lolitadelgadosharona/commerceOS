@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 028 creative generation workflow foundation
+Status: architecture/governance baseline with Sprint 029 creative execution adapter foundation
 
 ## Governing documents
 
@@ -47,6 +47,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [AI Discovery Listing Intelligence Foundation v1.0](./architecture/AI_DISCOVERY_LISTING_INTELLIGENCE_FOUNDATION_V1_0.md) | Evidence-backed listing blueprints, GEO knowledge, quality scoring, and AI discovery readiness |
 | [Creative Asset Intelligence Foundation v1.0](./architecture/CREATIVE_ASSET_INTELLIGENCE_FOUNDATION_V1_0.md) | Human-planned creative briefs, artifact registry, sequential versions, and supplied performance observations |
 | [Creative Generation Workflow Foundation v1.0](./architecture/CREATIVE_GENERATION_WORKFLOW_FOUNDATION_V1_0.md) | Provider-neutral requests, capability contracts, pending jobs, and human quality review records |
+| [Creative Execution Adapter Foundation v1.0](./architecture/CREATIVE_EXECUTION_ADAPTER_FOUNDATION_V1_0.md) | Abstract adapter contract, controlled job state, artifact links, execution records, and cost observations |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -80,6 +81,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 026 Completion Notes](./planning/SPRINT_026_COMPLETION.md) | AI discovery listing intelligence implementation and validation evidence |
 | [Sprint 027 Completion Notes](./planning/SPRINT_027_COMPLETION.md) | Creative asset intelligence implementation and validation evidence |
 | [Sprint 028 Completion Notes](./planning/SPRINT_028_COMPLETION.md) | Creative generation workflow implementation and validation evidence |
+| [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md) | Creative execution adapter implementation and validation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -116,5 +118,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 026 Completion Notes](./planning/SPRINT_026_COMPLETION.md)
 - [Sprint 027 Completion Notes](./planning/SPRINT_027_COMPLETION.md)
 - [Sprint 028 Completion Notes](./planning/SPRINT_028_COMPLETION.md)
+- [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

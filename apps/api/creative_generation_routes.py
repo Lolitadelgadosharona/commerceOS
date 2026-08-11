@@ -1,6 +1,8 @@
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
+from commerce_os.build.creative_execution_schemas import JobStateUpdate
+from commerce_os.build.creative_execution_services import CreativeExecutionService
 from commerce_os.build.creative_generation_models import (
     CreativeGenerationJob,
     CreativeGenerationRequest,
@@ -85,6 +87,15 @@ def create_job(payload: GenerationJobCreate, session: SessionDependency) -> Crea
 @router.get("/creative-generation-jobs", response_model=list[GenerationJobRead])
 def list_jobs(organization_id: UUID, session: SessionDependency) -> list[CreativeGenerationJob]:
     return _list(session, CreativeGenerationJob, organization_id)
+
+
+@router.patch("/creative-generation-jobs/{job_id}", response_model=GenerationJobRead)
+def update_job(
+    job_id: UUID, payload: JobStateUpdate, session: SessionDependency
+) -> CreativeGenerationJob:
+    return CreativeExecutionService(session).transition_job(
+        job_id, payload.organization_id, payload.status, payload.failure_reason
+    )
 
 
 @router.post("/creative-quality-reviews", response_model=QualityReviewRead, status_code=201)

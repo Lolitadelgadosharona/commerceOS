@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
@@ -7,6 +8,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    DateTime,
     ForeignKey,
     Numeric,
     String,
@@ -89,6 +91,10 @@ class CreativeGenerationJob(IdMixin, TimestampMixin, VersionMixin, Base):
     estimated_cost: Mapped[Decimal] = mapped_column(Numeric(19, 6), nullable=False)
     actual_cost: Mapped[Decimal | None] = mapped_column(Numeric(19, 6), nullable=True)
     latency: Mapped[float | None] = mapped_column(nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retry_count: Mapped[int] = mapped_column(nullable=False, default=0)
 
 
 class CreativeQualityReview(IdMixin, TimestampMixin, VersionMixin, Base):
