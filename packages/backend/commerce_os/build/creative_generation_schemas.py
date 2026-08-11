@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import Any, Literal
 from uuid import UUID
@@ -74,6 +75,10 @@ class GenerationJobRead(ReadModel):
     estimated_cost: Decimal
     actual_cost: Decimal | None
     latency: float | None
+    started_at: datetime | None
+    completed_at: datetime | None
+    failure_reason: str | None
+    retry_count: int
 
 
 class QualityReviewCreate(BaseModel):
