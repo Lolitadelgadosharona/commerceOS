@@ -99,6 +99,12 @@ from commerce_os.intelligence.models import (
     SignalClusterMembership,
     SignalSource,
 )
+from commerce_os.intelligence.need_models import (
+    CustomerBackedOpportunityAssessment,
+    CustomerNeed,
+    PainNeedMapping,
+    ProductSolutionHypothesis,
+)
 from commerce_os.intelligence.opportunity_models import (
     MarketOpportunity,
     OpportunityEvidence,
@@ -211,6 +217,10 @@ __all__ = [
     "User",
     "UserRole",
     "CustomerInsight",
+    "CustomerBackedOpportunityAssessment",
+    "CustomerNeed",
+    "PainNeedMapping",
+    "ProductSolutionHypothesis",
     "CustomerSignal",
     "CustomerVoiceCluster",
     "InsightEvidence",

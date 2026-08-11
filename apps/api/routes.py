@@ -29,6 +29,7 @@ from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_router_routes import router as creative_router_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
 from apps.api.crud import CrudRouter
+from apps.api.customer_need_routes import router as customer_need_router
 from apps.api.customer_voice_routes import router as customer_voice_router
 from apps.api.execution_routes import router as execution_router
 from apps.api.executive_routes import router as executive_router
@@ -67,6 +68,7 @@ api_router.include_router(market_connector_router, tags=["market_connectors"])
 api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
 api_router.include_router(customer_voice_router, tags=["customer_voice_intelligence"])
+api_router.include_router(customer_need_router, tags=["product_opportunity_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])
