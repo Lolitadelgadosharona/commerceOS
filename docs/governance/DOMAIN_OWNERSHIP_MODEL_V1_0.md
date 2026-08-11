@@ -39,6 +39,7 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - Signal analyses, deterministic opportunity assessments, and opportunity reports are Intelligence-owned advisory records. Report links create Governance review prompts only and cannot create recommendations, approvals, opportunity state changes, or execution.
 - Connector definitions, raw market records, normalized items, and ingestion jobs are Intelligence-owned contracts and state. They do not execute connectors, create signals or opportunities, or store credentials.
 - The read-only Reddit adapter is Intelligence-owned and may ingest configured posts/comments into raw records and deterministic pain evidence. It cannot post, reply, contact users, recommend opportunities, or execute actions.
+- Customer pain clusters, cluster memberships, customer-language insights, and purchase-intent signals are Intelligence-owned evidence assets. Downstream domains may consume them but cannot treat them as Product Truth, opportunity approval, customer consent, or execution authority.
 - `Approval` is owned by Governance; Finance defines financial approval requirements.
 - `Experiment` is owned by Governance as a registry/control record; executing domains own treatment execution, and Learning owns outcome observations.
 
