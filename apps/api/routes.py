@@ -32,6 +32,7 @@ from apps.api.creative_strategy_routes import router as creative_strategy_router
 from apps.api.crud import CrudRouter
 from apps.api.customer_need_routes import router as customer_need_router
 from apps.api.customer_voice_routes import router as customer_voice_router
+from apps.api.economics_intelligence_routes import router as economics_intelligence_router
 from apps.api.execution_routes import router as execution_router
 from apps.api.executive_routes import router as executive_router
 from apps.api.finance_routes import router as finance_router
@@ -71,6 +72,7 @@ api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence
 api_router.include_router(customer_voice_router, tags=["customer_voice_intelligence"])
 api_router.include_router(customer_need_router, tags=["product_opportunity_intelligence"])
 api_router.include_router(commercial_risk_router, tags=["product_commercial_risk_intelligence"])
+api_router.include_router(economics_intelligence_router, tags=["product_economics_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])

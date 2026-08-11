@@ -19,6 +19,12 @@ from commerce_os.intelligence.connector_models import (
     PainEvidence,
     RedditConnector,
 )
+from commerce_os.intelligence.economics_models import (
+    ProductEconomicProfile,
+    ProductProfitAssessment,
+    ProfitScenarioAssessment,
+    RiskAdjustedProfitAssessment,
+)
 from commerce_os.intelligence.market_models import (
     MarketDataSource,
     MarketSignal,
@@ -70,6 +76,10 @@ from commerce_os.intelligence.voice_models import (
 )
 
 __all__ = [
+    "ProductEconomicProfile",
+    "ProductProfitAssessment",
+    "ProfitScenarioAssessment",
+    "RiskAdjustedProfitAssessment",
     "CommercialViabilityAssessment",
     "ProductRiskAssessment",
     "ProductRiskSignal",
