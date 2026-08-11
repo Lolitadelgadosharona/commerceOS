@@ -1,6 +1,6 @@
 # Sprint 027 Completion Notes
 
-Status: implementation complete; local validation passed; remote validation pending
+Status: implementation complete; local and remote validation passed
 
 ## Delivered
 
@@ -27,7 +27,7 @@ Status: implementation complete; local validation passed; remote validation pend
 - Playwright: 1 passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; required health and HTTP checks passed.
 - PostgreSQL migration: `0027_creative_assets` upgrade, downgrade to `0026_ai_discovery_listing`, upgrade, current-head, and schema check passed.
-- GitHub Actions: pending publication.
+- GitHub Actions: backend, docs, and web jobs passed on Draft PR 26.
 
 ## Known activation limits
 
