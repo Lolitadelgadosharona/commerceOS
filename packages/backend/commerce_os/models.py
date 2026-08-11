@@ -74,6 +74,12 @@ from commerce_os.intelligence.analysis_models import (
     OpportunityAssessment,
     OpportunityReport,
 )
+from commerce_os.intelligence.connector_models import (
+    MarketConnectorDefinition,
+    MarketDataRecord,
+    MarketIngestionJob,
+    NormalizedMarketItem,
+)
 from commerce_os.intelligence.market_models import (
     MarketDataSource,
     MarketSignal,
@@ -228,6 +234,10 @@ __all__ = [
     "SalesRecommendation",
     "SupportCaseIntelligence",
     "MarketDataSource",
+    "MarketConnectorDefinition",
+    "MarketDataRecord",
+    "MarketIngestionJob",
+    "NormalizedMarketItem",
     "MarketSignal",
     "MarketSignalCluster",
     "MarketSignalClusterMembership",
