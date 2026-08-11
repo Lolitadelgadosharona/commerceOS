@@ -1,6 +1,6 @@
 # Sprint 022 Completion Notes
 
-Status: implementation and local validation complete; remote CI pending
+Status: complete
 
 ## Delivered scope
 
@@ -25,8 +25,8 @@ Intelligence owns needs and evidence. Decision recommendations, Build Product Tr
 - Playwright: 1 test passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; API and web health checks passed.
 - Migration validation: fresh SQLite and containerized PostgreSQL upgrade/downgrade/upgrade cycles passed; schema drift check passed.
-- Remote CI: pending branch publication.
+- Remote CI: backend, web, and documentation jobs passed on Draft PR #21.
 
 ## Readiness
 
-Sprint 023 readiness is determined after remote CI completes.
+All Sprint 022 acceptance gates pass. The repository is ready for Sprint 023, subject to the existing prohibition on public deployment until production authentication is approved.
