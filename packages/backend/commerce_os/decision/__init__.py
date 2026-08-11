@@ -29,6 +29,12 @@ from commerce_os.decision.executive_models import (
     OperatingCommitteeReview,
     OperatingSignal,
 )
+from commerce_os.decision.launch_models import (
+    LaunchPreparationPackage,
+    OfferStrategy,
+    ProductObjectionMap,
+    ProductPositioning,
+)
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.decision.sales_support_models import (
     CustomerRiskSignal,
@@ -38,6 +44,10 @@ from commerce_os.decision.sales_support_models import (
 )
 
 __all__ = [
+    "LaunchPreparationPackage",
+    "OfferStrategy",
+    "ProductObjectionMap",
+    "ProductPositioning",
     "CreativeBrief",
     "CreativeChannelFit",
     "CreativeExperiment",
