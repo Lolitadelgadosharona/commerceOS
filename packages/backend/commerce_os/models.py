@@ -32,6 +32,12 @@ from commerce_os.decision.creative_router_models import (
     CreativePatternReference,
     CreativeRoutingDecision,
 )
+from commerce_os.decision.discovery_listing_models import (
+    AIDiscoveryReadinessAssessment,
+    GeoKnowledgeAsset,
+    ListingBlueprint,
+    ListingQualityAssessment,
+)
 from commerce_os.decision.executive_models import (
     ExecutiveMetricSnapshot,
     OperatingCommitteeReview,
@@ -175,6 +181,10 @@ from commerce_os.operations.models import (
 from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
+    "AIDiscoveryReadinessAssessment",
+    "GeoKnowledgeAsset",
+    "ListingBlueprint",
+    "ListingQualityAssessment",
     "LaunchPreparationPackage",
     "OfferStrategy",
     "ProductObjectionMap",

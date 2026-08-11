@@ -24,6 +24,12 @@ from commerce_os.decision.creative_router_models import (
     CreativePatternReference,
     CreativeRoutingDecision,
 )
+from commerce_os.decision.discovery_listing_models import (
+    AIDiscoveryReadinessAssessment,
+    GeoKnowledgeAsset,
+    ListingBlueprint,
+    ListingQualityAssessment,
+)
 from commerce_os.decision.executive_models import (
     ExecutiveMetricSnapshot,
     OperatingCommitteeReview,
@@ -44,6 +50,10 @@ from commerce_os.decision.sales_support_models import (
 )
 
 __all__ = [
+    "AIDiscoveryReadinessAssessment",
+    "GeoKnowledgeAsset",
+    "ListingBlueprint",
+    "ListingQualityAssessment",
     "LaunchPreparationPackage",
     "OfferStrategy",
     "ProductObjectionMap",

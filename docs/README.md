@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 025 product launch preparation foundation
+Status: architecture/governance baseline with Sprint 026 AI discovery listing intelligence foundation
 
 ## Governing documents
 
@@ -44,6 +44,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Product Commercial Risk Intelligence Foundation v1.0](./architecture/PRODUCT_COMMERCIAL_RISK_INTELLIGENCE_FOUNDATION_V1_0.md) | Product risk evidence, deterministic assessments, commercial viability, and advisory authority boundaries |
 | [Product Economics and Margin Intelligence Foundation v1.0](./architecture/PRODUCT_ECONOMICS_MARGIN_INTELLIGENCE_FOUNDATION_V1_0.md) | Decimal economic assumptions, profit simulation, scenarios, and risk-adjusted advisory scoring |
 | [Product Launch Preparation Foundation v1.0](./architecture/PRODUCT_LAUNCH_PREPARATION_FOUNDATION_V1_0.md) | Positioning, offer strategy, objections, and deterministic pre-execution readiness packages |
+| [AI Discovery Listing Intelligence Foundation v1.0](./architecture/AI_DISCOVERY_LISTING_INTELLIGENCE_FOUNDATION_V1_0.md) | Evidence-backed listing blueprints, GEO knowledge, quality scoring, and AI discovery readiness |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -74,6 +75,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 023 Completion Notes](./planning/SPRINT_023_COMPLETION.md) | Product commercial risk intelligence implementation and validation evidence |
 | [Sprint 024 Completion Notes](./planning/SPRINT_024_COMPLETION.md) | Product economics and margin intelligence implementation and validation evidence |
 | [Sprint 025 Completion Notes](./planning/SPRINT_025_COMPLETION.md) | Product launch preparation implementation and validation evidence |
+| [Sprint 026 Completion Notes](./planning/SPRINT_026_COMPLETION.md) | AI discovery listing intelligence implementation and validation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -107,5 +109,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 023 Completion Notes](./planning/SPRINT_023_COMPLETION.md)
 - [Sprint 024 Completion Notes](./planning/SPRINT_024_COMPLETION.md)
 - [Sprint 025 Completion Notes](./planning/SPRINT_025_COMPLETION.md)
+- [Sprint 026 Completion Notes](./planning/SPRINT_026_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

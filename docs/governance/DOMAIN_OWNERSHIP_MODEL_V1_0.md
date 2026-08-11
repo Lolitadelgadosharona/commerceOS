@@ -44,6 +44,7 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - Product commercial risk signals, risk assessments, and viability assessments are Intelligence evidence. Their `GO`, `TEST`, `REVIEW`, and `REJECT` labels are advisory and cannot modify Product Truth, financial truth, approvals, supplier state, or execution state.
 - Product economic profiles, profit simulations, scenarios, and risk-adjusted profit assessments are Intelligence assumptions and advisory estimates. Finance retains monetary truth; these records cannot create revenue/cost observations, move money, authorize purchasing, approve products, or execute commerce.
 - Product positioning, offer strategy, objection guidance, and launch preparation packages are Decision-owned advisory records. They cannot modify Build Product Truth, Finance truth, Governance approvals, Operations launch state, or Growth execution state.
+- Listing blueprints, GEO knowledge assets, listing quality assessments, and AI discovery readiness assessments are Decision-owned advisory records. They read Build Product Truth through governed projections and cannot generate or publish content, modify Product Truth, approve claims, or execute Growth distribution.
 - `Approval` is owned by Governance; Finance defines financial approval requirements.
 - `Experiment` is owned by Governance as a registry/control record; executing domains own treatment execution, and Learning owns outcome observations.
 
