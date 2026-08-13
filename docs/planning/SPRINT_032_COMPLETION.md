@@ -1,6 +1,6 @@
 # Sprint 032 Completion Notes
 
-Status: implementation complete; local validation passed; remote validation pending
+Status: implementation complete; local and remote validation passed
 
 ## Delivered
 
@@ -28,4 +28,4 @@ Status: implementation complete; local validation passed; remote validation pend
 - Playwright: 1 passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; API and web HTTP checks passed.
 - PostgreSQL migration: `0032_strategic_accounts` upgrade, downgrade to `0031_customer_360`, upgrade, current-head, and schema comparison passed.
-- GitHub Actions: pending Draft PR creation.
+- GitHub Actions: backend, docs, and web jobs passed on Draft PR 31.
