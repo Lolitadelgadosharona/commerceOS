@@ -26,6 +26,11 @@ from commerce_os.build.creative_generation_models import (
     CreativeProviderCapability,
     CreativeQualityReview,
 )
+from commerce_os.build.creative_production_models import (
+    CreativeProductionAIProvenance,
+    CreativeProductionRequest,
+    CreativeProductionWork,
+)
 from commerce_os.build.listing_models import (
     ContentBrief,
     CustomerQuestion,
@@ -251,6 +256,9 @@ __all__ = [
     "CreativeGenerationRequest",
     "CreativeProviderCapability",
     "CreativeQualityReview",
+    "CreativeProductionRequest",
+    "CreativeProductionWork",
+    "CreativeProductionAIProvenance",
     "CreativeArtifact",
     "CreativeExecutionRecord",
     "CreativeGenerationCostObservation",

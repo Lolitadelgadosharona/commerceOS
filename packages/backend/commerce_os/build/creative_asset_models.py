@@ -41,6 +41,11 @@ class CreativeAsset(IdMixin, TimestampMixin, VersionMixin, Base):
     source: Mapped[str] = mapped_column(String(200), nullable=False)
     asset_metadata: Mapped[dict[str, Any]] = mapped_column("metadata", JSON, nullable=False)
     approval_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    production_request_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("creative_production_requests.id"), index=True
+    )
+    review_status: Mapped[str] = mapped_column(String(30), default="unreviewed", nullable=False)
+    quality_score: Mapped[float | None] = mapped_column(nullable=True)
 
 
 class CreativeAssetVersion(IdMixin, TimestampMixin, VersionMixin, Base):
