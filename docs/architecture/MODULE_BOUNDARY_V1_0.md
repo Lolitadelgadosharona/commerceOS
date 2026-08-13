@@ -8,6 +8,8 @@ The eight domains are Python modules in one deployable backend for V1, not eight
 
 `shared` contains only typed identifiers, time/money primitives, event envelope, authorization context, common errors, and transaction abstractions. If a type has business lifecycle or policy, it belongs to a domain rather than `shared`.
 
+`ai_runtime` is cross-cutting execution infrastructure rather than a ninth business domain. It owns provider/model metadata, governed request/provenance records, prompt versions/evaluations, and advisory usage costs. Governance supplies authority policy; requesting domains retain purpose and source truth. The runtime cannot approve, execute business workflows, or write owning-domain aggregates.
+
 ## Domain boundaries
 
 | Module | Ownership | Responsibilities | Prohibited dependencies |

@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 034 production authentication and authorization foundation
+Status: Sprint 035 provider-neutral AI runtime foundation
 
 ## Governing documents
 
@@ -53,6 +53,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Customer 360 Identity Resolution Foundation v1.0](./architecture/CUSTOMER_360_IDENTITY_RESOLUTION_FOUNDATION_V1_0.md) | Operations identity observations, Intelligence journey projection, and advisory customer value assessment |
 | [Strategic Account Intelligence Foundation v1.0](./architecture/STRATEGIC_ACCOUNT_INTELLIGENCE_FOUNDATION_V1_0.md) | Account state, supplied stakeholders, replenishment, expansion, next-best actions, and deterministic strategic scoring |
 | [Opportunity-to-Launch Integration v1.0](./architecture/OPPORTUNITY_TO_LAUNCH_INTEGRATION_V1_0.md) | First end-to-end investment memo, readiness, Governance review, launch activation, and action-plan composition |
+| [AI Runtime Foundation v1.0](./architecture/AI_RUNTIME_FOUNDATION_V1_0.md) | Provider/model metadata, governed request lifecycle, prompt versioning, output authority, and advisory costs |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -92,6 +93,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md) | Strategic account, replenishment, expansion, next-best action, and dashboard implementation evidence |
 | [Sprint 033 Completion Notes](./planning/SPRINT_033_COMPLETION.md) | Opportunity-to-launch orchestration and architecture-integration evidence |
 | [Sprint 034 Completion Notes](./planning/SPRINT_034_COMPLETION.md) | Production authentication, universal authorization, session revocation, and audit evidence |
+| [Sprint 035 Completion Notes](./planning/SPRINT_035_COMPLETION.md) | Provider-neutral AI registry, request, prompt, output-governance, and cost foundation |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -134,5 +136,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md)
 - [Sprint 033 Completion Notes](./planning/SPRINT_033_COMPLETION.md)
 - [Sprint 034 Completion Notes](./planning/SPRINT_034_COMPLETION.md)
+- [Sprint 035 Completion Notes](./planning/SPRINT_035_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

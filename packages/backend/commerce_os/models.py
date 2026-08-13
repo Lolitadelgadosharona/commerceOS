@@ -1,5 +1,15 @@
 """Import all owned persistence models for metadata and migrations."""
 
+from commerce_os.ai_runtime.models import (
+    AICostObservation,
+    AIModelCapability,
+    AIProvider,
+    AIRequest,
+    PromptEvaluation,
+    PromptPurpose,
+    PromptTemplate,
+    PromptVersion,
+)
 from commerce_os.build.creative_asset_models import (
     CreativeAsset,
     CreativeAssetVersion,
@@ -217,6 +227,10 @@ from commerce_os.operations.strategic_account_models import (
 from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
+    "AICostObservation",
+    "AIModelCapability",
+    "AIProvider",
+    "AIRequest",
     "CreativeAsset",
     "CreativeAssetVersion",
     "CreativePerformanceObservation",
@@ -375,5 +389,9 @@ __all__ = [
     "CustomerLanguageInsight",
     "CustomerPainCluster",
     "PainClusterMembership",
+    "PromptEvaluation",
+    "PromptPurpose",
+    "PromptTemplate",
+    "PromptVersion",
     "PurchaseIntentSignal",
 ]
