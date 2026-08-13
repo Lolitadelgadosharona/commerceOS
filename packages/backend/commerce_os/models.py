@@ -125,6 +125,14 @@ from commerce_os.growth.channel_execution_models import (
     CreativeChannelExperiment,
     DistributionRecord,
 )
+from commerce_os.growth.experiment_models import (
+    DistributionCampaign,
+    ExperimentVariant,
+    GrowthCreativeExperiment,
+    GrowthLearningObservationLink,
+    GrowthLearningSignal,
+    GrowthPerformanceObservation,
+)
 from commerce_os.intelligence.analysis_models import (
     MarketSignalAnalysis,
     OpportunityAssessment,
@@ -293,6 +301,12 @@ __all__ = [
     "ChannelPerformanceObservation",
     "CreativeChannelExperiment",
     "DistributionRecord",
+    "DistributionCampaign",
+    "ExperimentVariant",
+    "GrowthCreativeExperiment",
+    "GrowthLearningObservationLink",
+    "GrowthLearningSignal",
+    "GrowthPerformanceObservation",
     "AuditLog",
     "Brand",
     "CommercialPolicy",
