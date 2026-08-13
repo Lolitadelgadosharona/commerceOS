@@ -1,6 +1,6 @@
 # Sprint 036 Completion Notes
 
-Status: implementation and local validation complete; GitHub CI pending publication
+Status: implementation and validation complete
 
 ## Delivered
 
@@ -35,4 +35,4 @@ Status: implementation and local validation complete; GitHub CI pending publicat
 - Docker Compose: API, PostgreSQL, Redis, worker, and web healthy/running
 - PostgreSQL migration: downgrade to `0035_ai_runtime`, upgrade to head, current revision, and schema drift check passed
 - Security smoke test: unauthenticated connector access rejected with HTTP 401
-- GitHub Actions: pending Draft PR publication
+- GitHub Actions: backend, web, and documentation checks passed on Draft PR #35
