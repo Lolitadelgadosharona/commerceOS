@@ -1,6 +1,6 @@
 # Sprint 033 Completion Notes
 
-Status: implementation complete; local validation passed; remote validation pending
+Status: implementation complete; local and remote validation passed
 
 ## Delivered
 
@@ -28,4 +28,4 @@ Status: implementation complete; local validation passed; remote validation pend
 - Next.js build and Playwright: passed.
 - Docker Compose: PostgreSQL, Redis, API, worker, and web started; API and web checks passed.
 - PostgreSQL: existing `0032_strategic_accounts` head and schema comparison passed; no Sprint 033 migration required.
-- GitHub Actions: pending Draft PR creation.
+- GitHub Actions: backend, docs, and web jobs passed on Draft PR 32.
