@@ -74,8 +74,9 @@ def upgrade() -> None:
                 idempotency_key=f"legacy:{row['id']}",
             )
         )
-    op.alter_column("market_data_records", "payload_hash", nullable=False)
-    op.alter_column("market_data_records", "idempotency_key", nullable=False)
+    with op.batch_alter_table("market_data_records") as batch:
+        batch.alter_column("payload_hash", existing_type=sa.String(length=64), nullable=False)
+        batch.alter_column("idempotency_key", existing_type=sa.String(length=200), nullable=False)
     op.create_index(
         op.f("ix_market_data_records_payload_hash"),
         "market_data_records",
