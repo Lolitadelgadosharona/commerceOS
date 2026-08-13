@@ -33,4 +33,4 @@ Status: implementation complete; local validation passed
 - Next.js production build and Playwright passed.
 - Docker Compose built and started PostgreSQL, Redis, API, worker, and web; health checks passed.
 - PostgreSQL migration downgrade/upgrade and schema comparison passed at `0035_ai_runtime`.
-- GitHub Actions evidence is pending branch publication.
+- GitHub Actions backend, documentation, and web jobs passed on Draft PR 34.
