@@ -42,16 +42,25 @@ from commerce_os.governance.schemas import (
     UserUpdate,
 )
 from commerce_os.shared.database import get_session
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
-def actor_id(x_actor_id: UUID = Header(alias="X-Actor-ID")) -> UUID:
-    """Temporary internal actor boundary; token authentication is outside Sprint 002."""
-    return x_actor_id
+def actor_id(request: Request) -> UUID:
+    """Return the identity verified by the universal authentication boundary."""
+    actor = getattr(request.state, "actor", None)
+    if actor is None and getattr(request.app.state, "auth_test_bypass", False):
+        test_actor = request.headers.get("X-Actor-ID")
+        if test_actor:
+            return UUID(test_actor)
+    if not isinstance(actor, User):
+        from commerce_os.governance.errors import AuthorityError
+
+        raise AuthorityError("Verified actor identity is required.")
+    return actor.id
 
 
 @router.post("/users", response_model=UserRead, status_code=201, tags=["users"])
