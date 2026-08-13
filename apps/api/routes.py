@@ -58,6 +58,7 @@ from apps.api.opportunity_routes import router as opportunity_router
 from apps.api.product_intelligence_routes import router as product_intelligence_router
 from apps.api.product_truth_routes import router as product_truth_router
 from apps.api.reddit_intelligence_routes import router as reddit_intelligence_router
+from apps.api.research_analyst_routes import router as research_analyst_router
 from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
@@ -85,6 +86,7 @@ api_router.include_router(execution_router, tags=["commerce_execution"])
 api_router.include_router(market_intelligence_router, tags=["market_intelligence"])
 api_router.include_router(market_connector_router, tags=["market_connectors"])
 api_router.include_router(marketplace_voice_router, tags=["marketplace_customer_voice"])
+api_router.include_router(research_analyst_router, tags=["ai_research_analyst"])
 api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
 api_router.include_router(opportunity_launch_router, tags=["opportunity_launch_orchestration"])
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
