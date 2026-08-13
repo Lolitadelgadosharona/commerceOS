@@ -14,11 +14,17 @@ class ConnectorCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     platform: str = Field(min_length=1, max_length=80)
     connector_type: ConnectorType
-    configuration_schema: dict[str, Any]
+    capability: str = Field(default="read_evidence", min_length=1, max_length=80)
+    configuration_schema: dict[str, Any] = Field(default_factory=dict)
+    authentication_state: Literal[
+        "not_configured", "not_required", "reference_configured", "verified"
+    ] = "not_configured"
+    credential_reference: str | None = Field(default=None, pattern=r"^secret://[A-Za-z0-9_./-]+$")
+    rate_limit_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ConnectorUpdate(BaseModel):
-    status: Literal["active", "inactive", "archived"]
+    status: Literal["configured", "ready", "disabled", "active", "inactive", "archived"]
 
 
 class ConnectorRead(ReadModel):
@@ -26,8 +32,12 @@ class ConnectorRead(ReadModel):
     name: str
     platform: str
     connector_type: str
+    capability: str
     status: str
     configuration_schema: dict[str, Any]
+    authentication_state: str
+    credential_reference: str | None
+    rate_limit_metadata: dict[str, Any]
 
 
 class MarketDataRecordCreate(BaseModel):
@@ -38,6 +48,7 @@ class MarketDataRecordCreate(BaseModel):
     raw_content: str = Field(min_length=1, max_length=100_000)
     metadata: dict[str, Any] = Field(default_factory=dict)
     captured_at: datetime
+    idempotency_key: str | None = Field(default=None, min_length=1, max_length=200)
 
 
 class MarketDataRecordRead(ReadModel):
@@ -48,6 +59,8 @@ class MarketDataRecordRead(ReadModel):
     raw_content: str
     metadata: dict[str, Any] = Field(validation_alias="metadata_json")
     captured_at: datetime
+    payload_hash: str
+    idempotency_key: str
 
 
 class NormalizedMarketItemCreate(BaseModel):
@@ -58,6 +71,9 @@ class NormalizedMarketItemCreate(BaseModel):
     customer_language: str = Field(min_length=1, max_length=10_000)
     signal_type: str = Field(min_length=1, max_length=80)
     confidence: float = Field(ge=0, le=1)
+    occurred_at: datetime | None = None
+    language: str | None = Field(default=None, min_length=2, max_length=20)
+    relevance_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class NormalizedMarketItemRead(ReadModel):
@@ -68,6 +84,9 @@ class NormalizedMarketItemRead(ReadModel):
     customer_language: str
     signal_type: str
     confidence: float
+    occurred_at: datetime | None
+    language: str | None
+    relevance_metadata: dict[str, Any]
 
 
 class IngestionJobCreate(BaseModel):
@@ -76,8 +95,9 @@ class IngestionJobCreate(BaseModel):
 
 
 class IngestionJobUpdate(BaseModel):
-    status: Literal["running", "completed", "failed"]
+    status: Literal["configured", "ready", "running", "completed", "failed", "disabled"]
     record_count: int | None = Field(default=None, ge=0)
+    errors: list[dict[str, Any]] | None = None
 
 
 class IngestionJobRead(ReadModel):
@@ -87,3 +107,4 @@ class IngestionJobRead(ReadModel):
     started_at: datetime | None
     completed_at: datetime | None
     record_count: int
+    errors: list[dict[str, Any]]

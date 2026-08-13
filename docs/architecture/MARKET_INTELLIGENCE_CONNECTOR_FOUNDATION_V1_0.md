@@ -1,5 +1,7 @@
 # Market Intelligence Connector Foundation v1.0
 
+> Superseded for generic security, lifecycle, immutability, and credential controls by the [External Intelligence Connector Foundation v1.0](./EXTERNAL_INTELLIGENCE_CONNECTOR_FOUNDATION_V1_0.md). This document remains the Sprint 019 historical contract.
+
 Status: Sprint 019 implementation contract
 
 ## Purpose and ownership
