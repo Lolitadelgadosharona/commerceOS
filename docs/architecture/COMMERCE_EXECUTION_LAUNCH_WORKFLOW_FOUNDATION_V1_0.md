@@ -1,5 +1,7 @@
 # Commerce Execution and Launch Workflow Foundation v1.0
 
+Sprint 033 composes this workflow from an approved MarketOpportunity investment review. The orchestration command creates only a draft launch and gap-derived work; Product Truth and launch approvals remain separate gates.
+
 Status: Sprint 016 implementation contract
 
 ## Purpose and ownership

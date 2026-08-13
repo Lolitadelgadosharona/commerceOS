@@ -33,6 +33,8 @@ This foundation provides an operator with prioritized, cross-domain visibility o
 
 Strategic-account indicators are read-only counts of account profiles, key/watch states, replenishment assessments, expansion opportunities, and next-best actions. Estimated commercial potential is advisory and must not be presented as observed Finance truth.
 
+Opportunity-to-launch projections expose investment decisions, readiness, blockers, human-owned tasks, future-AI-suitable routing metadata, and next milestones through composition endpoints. They grant no execution authority and keep estimated economics separate from Finance actuals.
+
 Eight read-only views are exposed:
 
 - Executive overview
