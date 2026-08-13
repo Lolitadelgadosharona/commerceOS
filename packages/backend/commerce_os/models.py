@@ -154,6 +154,12 @@ from commerce_os.intelligence.market_models import (
     MarketSignalEvidence,
     MarketSignalOpportunityLink,
 )
+from commerce_os.intelligence.marketplace_models import (
+    CompetitiveMarketplaceObservation,
+    MarketplaceEvidenceLink,
+    MarketplaceReviewEvidence,
+    NormalizedMarketplaceReview,
+)
 from commerce_os.intelligence.models import (
     CustomerInsight,
     CustomerSignal,
@@ -370,6 +376,10 @@ __all__ = [
     "MarketConnectorDefinition",
     "MarketDataRecord",
     "MarketIngestionJob",
+    "MarketplaceReviewEvidence",
+    "NormalizedMarketplaceReview",
+    "MarketplaceEvidenceLink",
+    "CompetitiveMarketplaceObservation",
     "NormalizedMarketItem",
     "PainEvidence",
     "RedditConnector",
