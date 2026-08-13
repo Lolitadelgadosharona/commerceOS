@@ -1,3 +1,4 @@
+from commerce_os.ai_runtime.errors import AIRuntimeError
 from commerce_os.build.errors import BuildError
 from commerce_os.decision.errors import DecisionError
 from commerce_os.finance.errors import FinanceError
@@ -11,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 
 from apps.api.errors import (
     ApiError,
+    ai_runtime_error_handler,
     api_error_handler,
     build_error_handler,
     decision_error_handler,
@@ -32,6 +34,7 @@ app = FastAPI(
 )
 app.middleware("http")(request_context_middleware)
 app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
+app.add_exception_handler(AIRuntimeError, ai_runtime_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(BuildError, build_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(DecisionError, decision_error_handler)  # type: ignore[arg-type]
 app.add_exception_handler(FinanceError, finance_error_handler)  # type: ignore[arg-type]

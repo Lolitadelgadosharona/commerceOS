@@ -1,5 +1,6 @@
 from typing import Any
 
+from commerce_os.ai_runtime.errors import AIRuntimeError
 from commerce_os.build.errors import BuildError
 from commerce_os.decision.errors import DecisionError
 from commerce_os.finance.errors import FinanceError
@@ -36,6 +37,11 @@ async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
         status_code=exc.status_code,
         content=error_body(request, exc.code, exc.message),
     )
+
+
+async def ai_runtime_error_handler(request: Request, exc: AIRuntimeError) -> JSONResponse:
+    status_code = {"forbidden": 403, "validation_error": 422}.get(exc.code, 409)
+    return JSONResponse(status_code=status_code, content=error_body(request, exc.code, str(exc)))
 
 
 async def governance_error_handler(request: Request, exc: GovernanceError) -> JSONResponse:
