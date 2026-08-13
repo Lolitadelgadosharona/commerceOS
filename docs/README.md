@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 037 marketplace customer voice intelligence foundation
+Status: Sprint 038 AI research analyst foundation
 
 ## Governing documents
 
@@ -56,6 +56,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [AI Runtime Foundation v1.0](./architecture/AI_RUNTIME_FOUNDATION_V1_0.md) | Provider/model metadata, governed request lifecycle, prompt versioning, output authority, and advisory costs |
 | [External Intelligence Connector Foundation v1.0](./architecture/EXTERNAL_INTELLIGENCE_CONNECTOR_FOUNDATION_V1_0.md) | Secure registry, ingestion lifecycle, immutable evidence, normalization, credential references, and rate limits |
 | [Marketplace Customer Voice Foundation v1.0](./architecture/MARKETPLACE_CUSTOMER_VOICE_FOUNDATION_V1_0.md) | Amazon- and Etsy-compatible immutable review evidence, normalization, explicit intelligence links, and compliance boundaries |
+| [AI Research Analyst Foundation v1.0](./architecture/AI_RESEARCH_ANALYST_FOUNDATION_V1_0.md) | Cited AI-assisted analysis, structured research, confidence, and human review boundaries |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -98,6 +99,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 035 Completion Notes](./planning/SPRINT_035_COMPLETION.md) | Provider-neutral AI registry, request, prompt, output-governance, and cost foundation |
 | [Sprint 036 Completion Notes](./planning/SPRINT_036_COMPLETION.md) | Secure connector registry, immutable evidence ingestion, normalization, and audit foundation |
 | [Sprint 037 Completion Notes](./planning/SPRINT_037_COMPLETION.md) | Marketplace review evidence, normalized customer voice, evidence links, and competitive observations |
+| [Sprint 038 Completion Notes](./planning/SPRINT_038_COMPLETION.md) | Evidence-cited research analysis, structured insights, and advisory opportunity briefs |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -143,5 +145,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 035 Completion Notes](./planning/SPRINT_035_COMPLETION.md)
 - [Sprint 036 Completion Notes](./planning/SPRINT_036_COMPLETION.md)
 - [Sprint 037 Completion Notes](./planning/SPRINT_037_COMPLETION.md)
+- [Sprint 038 Completion Notes](./planning/SPRINT_038_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

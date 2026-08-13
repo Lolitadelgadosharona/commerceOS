@@ -189,6 +189,13 @@ from commerce_os.intelligence.product_models import (
     SupplierCandidate,
 )
 from commerce_os.intelligence.replenishment_models import ReplenishmentAssessment
+from commerce_os.intelligence.research_models import (
+    CustomerPainResearch,
+    MarketInsightResearch,
+    OpportunityResearchBrief,
+    ResearchAnalysis,
+    ResearchEvidenceCitation,
+)
 from commerce_os.intelligence.supplier_models import (
     ProductSupplierMatch,
     SupplierDecisionRecord,
@@ -404,4 +411,9 @@ __all__ = [
     "PromptTemplate",
     "PromptVersion",
     "PurchaseIntentSignal",
+    "ResearchAnalysis",
+    "ResearchEvidenceCitation",
+    "CustomerPainResearch",
+    "MarketInsightResearch",
+    "OpportunityResearchBrief",
 ]
