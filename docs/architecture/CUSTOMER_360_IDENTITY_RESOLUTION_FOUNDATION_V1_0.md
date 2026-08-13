@@ -6,6 +6,8 @@ Status: implemented foundation; no external connectors or autonomous actions
 
 Customer 360 provides a tenant-scoped, explainable projection of customer identity observations, journey events, conversation activity, risk indicators, and advisory value assessments. It is a view over domain-owned records and is never a source of truth.
 
+Strategic Account Intelligence consumes the customer reference but does not write into or redefine this projection. Strategic account state, replenishment assessments, and recommendations remain separately owned records.
+
 ## Ownership
 
 | Capability | Owner | Authority |
