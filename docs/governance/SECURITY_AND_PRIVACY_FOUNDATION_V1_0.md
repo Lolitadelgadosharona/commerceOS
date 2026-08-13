@@ -61,6 +61,8 @@ The internal foundation now stores passwords only as Argon2id hashes in a creden
 
 The `/api/v1` actor boundary currently accepts an internal `X-Actor-ID` header. It is deliberately not a verified login session or bearer-token implementation. User bootstrap and permission administration endpoints are likewise foundation interfaces, not production administration controls. Until a subsequent sprint adds verified authentication, server-enforced authorization on every endpoint, rate limiting, CSRF/session protections where applicable, and deployment hardening, the API must remain private and must not be publicly deployed.
 
+Sprint 033 confirms this limitation applies to the investment-memo, readiness, investment-review, activation, and daily execution endpoints. Internal password verification and RBAC persistence exist, but request authentication and authorization are not uniformly enforced. Minimum work before controlled external deployment is verified OIDC/session or bearer authentication, centralized tenant/action authorization for every route, rate limiting, CSRF protection where applicable, and hardened deployment configuration. This is recommended as the primary Sprint 034 security scope.
+
 External customer identities record provider, provider identifier, confidence, verification status, and provenance. Connectors, automatic merging, and provider verification are not implemented; identity observations remain reversible evidence rather than proof of personhood.
 
 ## Sprint 020 Reddit connector status
