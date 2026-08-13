@@ -8,6 +8,7 @@ from commerce_os.operations.conversation_models import (
     ConversationMessage,
     ConversationThread,
 )
+from commerce_os.operations.customer_identity_models import CustomerIdentityLink
 from commerce_os.operations.models import (
     Brand,
     Conversation,
@@ -27,6 +28,7 @@ __all__ = [
     "ConversationMessage",
     "ConversationThread",
     "Customer",
+    "CustomerIdentityLink",
     "MessageMetadata",
     "SalesOpportunity",
     "Store",
