@@ -12,6 +12,7 @@ from redis import Redis
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 running = True
+WORKER_PRINCIPAL = "commerce-os-worker"
 
 
 def stop_worker(_signum: int, _frame: object) -> None:
@@ -23,7 +24,10 @@ def main() -> None:
     settings = get_settings()
     client = Redis.from_url(settings.redis_url, decode_responses=True)
     client.ping()
-    logger.info("Commerce OS worker ready; external delivery disabled")
+    logger.info(
+        "Commerce OS worker ready; external delivery disabled; principal=%s",
+        WORKER_PRINCIPAL,
+    )
     signal.signal(signal.SIGTERM, stop_worker)
     signal.signal(signal.SIGINT, stop_worker)
     while running:

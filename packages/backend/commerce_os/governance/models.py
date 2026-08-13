@@ -143,6 +143,19 @@ class PasswordCredential(IdMixin, TimestampMixin, VersionMixin, Base):
     algorithm: Mapped[str] = mapped_column(String(50), default="argon2id", nullable=False)
 
 
+class AuthSession(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "auth_sessions"
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    user_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class Role(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "roles"
     __table_args__ = (UniqueConstraint("organization_id", "name"),)

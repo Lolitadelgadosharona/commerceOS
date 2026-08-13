@@ -3,8 +3,9 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from commerce_os.governance.approvals import ApprovalWorkflowService
+from commerce_os.governance.audit import AuditService
 from commerce_os.governance.executive_models import DecisionQueueItem
-from commerce_os.governance.models import ApprovalRequest, ApprovalStatus
+from commerce_os.governance.models import ApprovalRequest, ApprovalStatus, User
 from commerce_os.intelligence.opportunity_models import MarketOpportunity
 from commerce_os.operations.execution_models import ExecutionTask, ProductLaunch
 from commerce_os.operations.execution_schemas import (
@@ -16,7 +17,7 @@ from commerce_os.operations.execution_schemas import (
 )
 from commerce_os.operations.execution_services import LaunchExecutionService
 from commerce_os.shared.database import Base, get_session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -387,7 +388,9 @@ def request_review(
 
 
 @router.post("/opportunities/{item_id}/activate-approved-project", status_code=201)
-def activate(item_id: UUID, payload: ActivateRequest, session: SessionDependency) -> dict[str, Any]:
+def activate(
+    item_id: UUID, payload: ActivateRequest, request: Request, session: SessionDependency
+) -> dict[str, Any]:
     item = scoped_opportunity(session, item_id, payload.organization_id)
     approval = session.get(ApprovalRequest, payload.approval_request_id)
     if (
@@ -482,6 +485,17 @@ def activate(item_id: UUID, payload: ActivateRequest, session: SessionDependency
             generated_from=f"opportunity-readiness:{item.id}",
         )
     )
+    actor = getattr(request.state, "actor", None)
+    AuditService(session).record(
+        organization_id=payload.organization_id,
+        actor_type=str(actor.principal_type) if isinstance(actor, User) else "system",
+        actor_id=actor.id if isinstance(actor, User) else None,
+        action="launch.activation",
+        entity_type="product_launch",
+        entity_id=launch.id,
+        metadata={"approval_request_id": str(approval.id), "result": "success"},
+    )
+    session.commit()
     return {
         "launch_id": launch.id,
         "task_ids": task_ids,

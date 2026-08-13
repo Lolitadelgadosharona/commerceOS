@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 033 opportunity-to-launch integration
+Status: Sprint 034 production authentication and authorization foundation
 
 ## Governing documents
 
@@ -17,6 +17,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Data Ownership Contract](./governance/DATA_OWNERSHIP_CONTRACT_V1_0.md) | Entity-level source-of-truth and authority assignments |
 | [Role Authority Model v1.0](./governance/ROLE_AUTHORITY_MODEL_V1_0.md) | Abstract human roles and approval composition |
 | [Security and Privacy Foundation](./governance/SECURITY_AND_PRIVACY_FOUNDATION_V1_0.md) | PII, identity, access, audit, secrets, and retention controls |
+| [Production Authorization Foundation v1.0](./security/PRODUCTION_AUTHORIZATION_FOUNDATION_V1_0.md) | Verified sessions, universal API authorization, tenant boundary, worker identity, and security audit |
 | [Finance Authority Model](./governance/FINANCE_AUTHORITY_MODEL_V1_0.md) | AI-executable versus owner-approved financial actions |
 | [Tenant Model v1.0](./architecture/TENANT_MODEL_V1_0.md) | Single-operator V1 scope with future-compatible hierarchy |
 | [Deployment Topology v1.0](./architecture/DEPLOYMENT_TOPOLOGY_V1_0.md) | Vendor-neutral logical runtime and integration topology |
@@ -90,6 +91,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 031 Completion Notes](./planning/SPRINT_031_COMPLETION.md) | Customer identity, journey, Customer 360 projection, and advisory value implementation evidence |
 | [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md) | Strategic account, replenishment, expansion, next-best action, and dashboard implementation evidence |
 | [Sprint 033 Completion Notes](./planning/SPRINT_033_COMPLETION.md) | Opportunity-to-launch orchestration and architecture-integration evidence |
+| [Sprint 034 Completion Notes](./planning/SPRINT_034_COMPLETION.md) | Production authentication, universal authorization, session revocation, and audit evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -131,5 +133,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 031 Completion Notes](./planning/SPRINT_031_COMPLETION.md)
 - [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md)
 - [Sprint 033 Completion Notes](./planning/SPRINT_033_COMPLETION.md)
+- [Sprint 034 Completion Notes](./planning/SPRINT_034_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

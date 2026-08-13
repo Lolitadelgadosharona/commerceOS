@@ -31,6 +31,8 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
         yield db_session
 
     app.dependency_overrides[get_session] = override_session
+    app.state.auth_test_bypass = True
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+    app.state.auth_test_bypass = False

@@ -22,8 +22,10 @@ from commerce_os.operations.schemas import (
     SalesOpportunityRead,
     SalesOpportunityUpdate,
 )
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from apps.api.auth_routes import router as auth_router
+from apps.api.authorization import enforce_authorization
 from apps.api.channel_execution_routes import router as channel_execution_router
 from apps.api.channel_strategy_routes import router as channel_strategy_router
 from apps.api.commercial_risk_routes import router as commercial_risk_router
@@ -58,7 +60,8 @@ from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
 
-api_router = APIRouter(prefix="/api/v1")
+api_router = APIRouter(prefix="/api/v1", dependencies=[Depends(enforce_authorization)])
+api_router.include_router(auth_router, tags=["authentication"])
 api_router.include_router(governance_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(opportunity_router)
