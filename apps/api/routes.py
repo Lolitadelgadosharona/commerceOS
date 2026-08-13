@@ -51,6 +51,7 @@ from apps.api.launch_preparation_routes import router as launch_preparation_rout
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.market_connector_routes import router as market_connector_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
+from apps.api.marketplace_voice_routes import router as marketplace_voice_router
 from apps.api.opportunity_analysis_routes import router as opportunity_analysis_router
 from apps.api.opportunity_launch_routes import router as opportunity_launch_router
 from apps.api.opportunity_routes import router as opportunity_router
@@ -83,6 +84,7 @@ api_router.include_router(strategic_account_router, tags=["strategic_accounts"])
 api_router.include_router(execution_router, tags=["commerce_execution"])
 api_router.include_router(market_intelligence_router, tags=["market_intelligence"])
 api_router.include_router(market_connector_router, tags=["market_connectors"])
+api_router.include_router(marketplace_voice_router, tags=["marketplace_customer_voice"])
 api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
 api_router.include_router(opportunity_launch_router, tags=["opportunity_launch_orchestration"])
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
