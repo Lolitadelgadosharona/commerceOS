@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: architecture/governance baseline with Sprint 031 Customer 360 foundation
+Status: architecture/governance baseline with Sprint 032 strategic account intelligence foundation
 
 ## Governing documents
 
@@ -50,6 +50,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Creative Execution Adapter Foundation v1.0](./architecture/CREATIVE_EXECUTION_ADAPTER_FOUNDATION_V1_0.md) | Abstract adapter contract, controlled job state, artifact links, execution records, and cost observations |
 | [Channel Execution and Creative Distribution Foundation v1.0](./architecture/CHANNEL_EXECUTION_FOUNDATION_V1_0.md) | Growth-owned channel plans, experiment designs, governed distribution state, and performance observations |
 | [Customer 360 Identity Resolution Foundation v1.0](./architecture/CUSTOMER_360_IDENTITY_RESOLUTION_FOUNDATION_V1_0.md) | Operations identity observations, Intelligence journey projection, and advisory customer value assessment |
+| [Strategic Account Intelligence Foundation v1.0](./architecture/STRATEGIC_ACCOUNT_INTELLIGENCE_FOUNDATION_V1_0.md) | Account state, supplied stakeholders, replenishment, expansion, next-best actions, and deterministic strategic scoring |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -86,6 +87,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md) | Creative execution adapter implementation and validation evidence |
 | [Sprint 030 Completion Notes](./planning/SPRINT_030_COMPLETION.md) | Channel execution and distribution workflow implementation evidence |
 | [Sprint 031 Completion Notes](./planning/SPRINT_031_COMPLETION.md) | Customer identity, journey, Customer 360 projection, and advisory value implementation evidence |
+| [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md) | Strategic account, replenishment, expansion, next-best action, and dashboard implementation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -125,5 +127,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 029 Completion Notes](./planning/SPRINT_029_COMPLETION.md)
 - [Sprint 030 Completion Notes](./planning/SPRINT_030_COMPLETION.md)
 - [Sprint 031 Completion Notes](./planning/SPRINT_031_COMPLETION.md)
+- [Sprint 032 Completion Notes](./planning/SPRINT_032_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

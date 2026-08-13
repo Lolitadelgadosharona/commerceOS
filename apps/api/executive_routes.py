@@ -27,7 +27,7 @@ from commerce_os.governance.executive_services import DecisionQueueService
 from commerce_os.shared.database import Base, get_session
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -41,6 +41,7 @@ class DashboardView(BaseModel):
     metrics: list[ExecutiveMetricRead]
     signals: list[OperatingSignalRead]
     decisions: list[DecisionQueueRead]
+    strategic_account_indicators: dict[str, int] = {}
 
 
 def _list(session: Session, model: type[ModelT], organization_id: UUID) -> list[ModelT]:
@@ -169,7 +170,41 @@ def dashboard(view_name: str, organization_id: UUID, session: SessionDependency)
         metrics=metrics,
         signals=signals,
         decisions=decisions,
+        strategic_account_indicators=_strategic_indicators(session, organization_id),
     )
+
+
+def _strategic_indicators(session: Session, organization_id: UUID) -> dict[str, int]:
+    metadata = Base.metadata.tables
+
+    def count(table_name: str, *criteria: Any) -> int:
+        table = metadata.get(table_name)
+        if table is None:
+            return 0
+        return (
+            session.scalar(
+                select(func.count())
+                .select_from(table)
+                .where(table.c.organization_id == organization_id, *criteria)
+            )
+            or 0
+        )
+
+    accounts = metadata.get("strategic_account_profiles")
+    return {
+        "strategic_accounts": count("strategic_account_profiles"),
+        "key_accounts": count(
+            "strategic_account_profiles",
+            accounts.c.strategic_tier == "key" if accounts is not None else True,
+        ),
+        "accounts_needing_attention": count(
+            "strategic_account_profiles",
+            accounts.c.account_status == "watch" if accounts is not None else True,
+        ),
+        "replenishment_opportunities": count("replenishment_assessments"),
+        "expansion_opportunities": count("customer_expansion_opportunities"),
+        "next_best_actions": count("customer_next_best_actions"),
+    }
 
 
 def _domains_for(view_name: str) -> set[str]:

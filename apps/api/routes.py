@@ -54,6 +54,7 @@ from apps.api.product_intelligence_routes import router as product_intelligence_
 from apps.api.product_truth_routes import router as product_truth_router
 from apps.api.reddit_intelligence_routes import router as reddit_intelligence_router
 from apps.api.sales_support_routes import router as sales_support_router
+from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
 
 api_router = APIRouter(prefix="/api/v1")
@@ -72,6 +73,7 @@ api_router.include_router(sales_support_router, tags=["sales_support_intelligenc
 api_router.include_router(creative_router_router, tags=["creative_router"])
 api_router.include_router(finance_router, tags=["finance_intelligence"])
 api_router.include_router(executive_router, tags=["executive_dashboard"])
+api_router.include_router(strategic_account_router, tags=["strategic_accounts"])
 api_router.include_router(execution_router, tags=["commerce_execution"])
 api_router.include_router(market_intelligence_router, tags=["market_intelligence"])
 api_router.include_router(market_connector_router, tags=["market_connectors"])

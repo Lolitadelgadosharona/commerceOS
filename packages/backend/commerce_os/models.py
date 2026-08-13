@@ -73,6 +73,11 @@ from commerce_os.decision.sales_support_models import (
     SalesRecommendation,
     SupportCaseIntelligence,
 )
+from commerce_os.decision.strategic_account_models import (
+    CustomerExpansionOpportunity,
+    CustomerNextBestAction,
+    StrategicAccountScore,
+)
 from commerce_os.finance.models import (
     ContributionProfitAssessment,
     CostObservation,
@@ -166,6 +171,7 @@ from commerce_os.intelligence.product_models import (
     ProductRisk,
     SupplierCandidate,
 )
+from commerce_os.intelligence.replenishment_models import ReplenishmentAssessment
 from commerce_os.intelligence.supplier_models import (
     ProductSupplierMatch,
     SupplierDecisionRecord,
@@ -202,6 +208,10 @@ from commerce_os.operations.models import (
     MessageMetadata,
     SalesOpportunity,
     Store,
+)
+from commerce_os.operations.strategic_account_models import (
+    AccountStakeholder,
+    StrategicAccountProfile,
 )
 from commerce_os.shared.outbox import OutboxEvent
 
@@ -262,6 +272,12 @@ __all__ = [
     "CustomerJourneyEvent",
     "Customer360Profile",
     "CustomerValueAssessment",
+    "StrategicAccountProfile",
+    "AccountStakeholder",
+    "ReplenishmentAssessment",
+    "CustomerExpansionOpportunity",
+    "CustomerNextBestAction",
+    "StrategicAccountScore",
     "AIActionPolicy",
     "CreativeBrief",
     "CreativeChannelFit",

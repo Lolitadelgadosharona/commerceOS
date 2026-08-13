@@ -31,6 +31,8 @@ This foundation provides an operator with prioritized, cross-domain visibility o
 
 ## Dashboard views
 
+Strategic-account indicators are read-only counts of account profiles, key/watch states, replenishment assessments, expansion opportunities, and next-best actions. Estimated commercial potential is advisory and must not be presented as observed Finance truth.
+
 Eight read-only views are exposed:
 
 - Executive overview
