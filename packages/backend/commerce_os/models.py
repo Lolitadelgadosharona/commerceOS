@@ -48,6 +48,7 @@ from commerce_os.decision.creative_router_models import (
     CreativePatternReference,
     CreativeRoutingDecision,
 )
+from commerce_os.decision.customer_value_models import CustomerValueAssessment
 from commerce_os.decision.discovery_listing_models import (
     AIDiscoveryReadinessAssessment,
     GeoKnowledgeAsset,
@@ -122,6 +123,7 @@ from commerce_os.intelligence.connector_models import (
     PainEvidence,
     RedditConnector,
 )
+from commerce_os.intelligence.customer_360_models import Customer360Profile, CustomerJourneyEvent
 from commerce_os.intelligence.economics_models import (
     ProductEconomicProfile,
     ProductProfitAssessment,
@@ -185,6 +187,7 @@ from commerce_os.operations.conversation_models import (
     ConversationMessage,
     ConversationThread,
 )
+from commerce_os.operations.customer_identity_models import CustomerIdentityLink
 from commerce_os.operations.execution_models import (
     ActionPlan,
     ExecutionBlocker,
@@ -255,6 +258,10 @@ __all__ = [
     "ConversationThread",
     "Customer",
     "CustomerIdentity",
+    "CustomerIdentityLink",
+    "CustomerJourneyEvent",
+    "Customer360Profile",
+    "CustomerValueAssessment",
     "AIActionPolicy",
     "CreativeBrief",
     "CreativeChannelFit",
