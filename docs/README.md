@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 039 creative AI production foundation
+Status: Sprint 040 growth experiment and performance foundation
 
 ## Governing documents
 
@@ -58,6 +58,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Marketplace Customer Voice Foundation v1.0](./architecture/MARKETPLACE_CUSTOMER_VOICE_FOUNDATION_V1_0.md) | Amazon- and Etsy-compatible immutable review evidence, normalization, explicit intelligence links, and compliance boundaries |
 | [AI Research Analyst Foundation v1.0](./architecture/AI_RESEARCH_ANALYST_FOUNDATION_V1_0.md) | Cited AI-assisted analysis, structured research, confidence, and human review boundaries |
 | [Creative AI Production Foundation v1.0](./architecture/CREATIVE_AI_PRODUCTION_FOUNDATION_V1_0.md) | Controlled creative production, AI provenance, artifact lifecycle, quality gates, and approval boundaries |
+| [Growth Experiment and Performance Foundation v1.0](./architecture/GROWTH_EXPERIMENT_PERFORMANCE_FOUNDATION_V1_0.md) | Governed Growth experiments, distribution planning, supplied performance observations, and evidence-linked learning |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -102,6 +103,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 037 Completion Notes](./planning/SPRINT_037_COMPLETION.md) | Marketplace review evidence, normalized customer voice, evidence links, and competitive observations |
 | [Sprint 038 Completion Notes](./planning/SPRINT_038_COMPLETION.md) | Evidence-cited research analysis, structured insights, and advisory opportunity briefs |
 | [Sprint 039 Completion Notes](./planning/SPRINT_039_COMPLETION.md) | Creative production requests, work items, AI provenance, artifacts, and quality review |
+| [Sprint 040 Completion Notes](./planning/SPRINT_040_COMPLETION.md) | Growth experiments, distribution campaigns, performance observations, and learning signals |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -149,5 +151,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 037 Completion Notes](./planning/SPRINT_037_COMPLETION.md)
 - [Sprint 038 Completion Notes](./planning/SPRINT_038_COMPLETION.md)
 - [Sprint 039 Completion Notes](./planning/SPRINT_039_COMPLETION.md)
+- [Sprint 040 Completion Notes](./planning/SPRINT_040_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

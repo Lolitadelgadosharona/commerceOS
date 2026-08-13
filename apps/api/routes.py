@@ -47,6 +47,7 @@ from apps.api.execution_routes import router as execution_router
 from apps.api.executive_routes import router as executive_router
 from apps.api.finance_routes import router as finance_router
 from apps.api.governance_routes import router as governance_router
+from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.launch_preparation_routes import router as launch_preparation_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
@@ -102,6 +103,7 @@ api_router.include_router(creative_asset_router, tags=["creative_assets"])
 api_router.include_router(creative_execution_router, tags=["creative_execution"])
 api_router.include_router(creative_generation_router, tags=["creative_generation"])
 api_router.include_router(creative_production_router, tags=["creative_ai_production"])
+api_router.include_router(growth_experiment_router, tags=["growth_experiments"])
 
 
 @api_router.get("/health", tags=["system"])
