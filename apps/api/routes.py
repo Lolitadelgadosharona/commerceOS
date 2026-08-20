@@ -50,6 +50,7 @@ from apps.api.governance_routes import router as governance_router
 from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.launch_preparation_routes import router as launch_preparation_router
+from apps.api.learning_routes import router as learning_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.market_connector_routes import router as market_connector_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
@@ -106,6 +107,7 @@ api_router.include_router(creative_generation_router, tags=["creative_generation
 api_router.include_router(creative_production_router, tags=["creative_ai_production"])
 api_router.include_router(growth_experiment_router, tags=["growth_experiments"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
+api_router.include_router(learning_router, tags=["closed_loop_learning"])
 
 
 @api_router.get("/health", tags=["system"])

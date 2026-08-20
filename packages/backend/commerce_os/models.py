@@ -227,6 +227,14 @@ from commerce_os.intelligence.voice_models import (
     PainClusterMembership,
     PurchaseIntentSignal,
 )
+from commerce_os.learning.models import (
+    ImprovementRecommendation,
+    LearningConclusion,
+    LearningObservation,
+    RecommendationPriorityAssessment,
+    RootCauseEvidenceLink,
+    RootCauseHypothesis,
+)
 from commerce_os.operations.conversation_models import (
     ConversationEmotionSignal,
     ConversationHandoff,
@@ -312,6 +320,12 @@ __all__ = [
     "GrowthLearningObservationLink",
     "GrowthLearningSignal",
     "GrowthPerformanceObservation",
+    "ImprovementRecommendation",
+    "LearningConclusion",
+    "LearningObservation",
+    "RecommendationPriorityAssessment",
+    "RootCauseEvidenceLink",
+    "RootCauseHypothesis",
     "AuditLog",
     "Brand",
     "CommercialPolicy",
