@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, ForeignKey, String, Uuid
+from sqlalchemy import JSON, CheckConstraint, Float, ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from commerce_os.shared.database import Base
@@ -16,6 +16,8 @@ class CustomerValueAssessment(IdMixin, TimestampMixin, VersionMixin, Base):
         CheckConstraint("strategic_potential BETWEEN 0 AND 100", name="strategic_range"),
         CheckConstraint("risk_indicator BETWEEN 0 AND 100", name="risk_range"),
         CheckConstraint("score BETWEEN 0 AND 100", name="score_range"),
+        CheckConstraint("contribution_potential BETWEEN 0 AND 100", name="contribution_range"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),
     )
 
     organization_id: Mapped[UUID] = mapped_column(
@@ -31,3 +33,6 @@ class CustomerValueAssessment(IdMixin, TimestampMixin, VersionMixin, Base):
     risk_indicator: Mapped[float] = mapped_column(nullable=False)
     score: Mapped[float] = mapped_column(nullable=False)
     formula_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    contribution_potential: Mapped[float] = mapped_column(Float, nullable=False)
+    risk_indicators: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)

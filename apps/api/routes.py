@@ -61,6 +61,7 @@ from apps.api.product_intelligence_routes import router as product_intelligence_
 from apps.api.product_truth_routes import router as product_truth_router
 from apps.api.reddit_intelligence_routes import router as reddit_intelligence_router
 from apps.api.research_analyst_routes import router as research_analyst_router
+from apps.api.revenue_conversation_routes import router as revenue_conversation_router
 from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
@@ -104,6 +105,7 @@ api_router.include_router(creative_execution_router, tags=["creative_execution"]
 api_router.include_router(creative_generation_router, tags=["creative_generation"])
 api_router.include_router(creative_production_router, tags=["creative_ai_production"])
 api_router.include_router(growth_experiment_router, tags=["growth_experiments"])
+api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
 
 
 @api_router.get("/health", tags=["system"])

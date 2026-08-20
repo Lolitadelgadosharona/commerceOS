@@ -15,9 +15,11 @@ from commerce_os.operations.customer_identity_models import CustomerIdentityLink
 from commerce_os.operations.customer_identity_schemas import IdentityLinkCreate, IdentityLinkRead
 from commerce_os.operations.customer_identity_services import CustomerIdentityLinkService
 from commerce_os.shared.database import get_session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from apps.api.market_connector_routes import initiating_actor
 
 router = APIRouter()
 SessionDependency = Annotated[Session, Depends(get_session)]
@@ -43,8 +45,11 @@ def list_identities(
 
 
 @router.post("/customer-journey-events", response_model=JourneyEventRead, status_code=201)
-def create_event(payload: JourneyEventCreate, session: SessionDependency) -> CustomerJourneyEvent:
-    return Customer360Service(session).create_event(payload)
+def create_event(
+    payload: JourneyEventCreate, request: Request, session: SessionDependency
+) -> CustomerJourneyEvent:
+    actor = initiating_actor(request)
+    return Customer360Service(session).create_event(payload, actor)
 
 
 @router.get("/customer-journey-events", response_model=list[JourneyEventRead])
@@ -78,9 +83,9 @@ def list_customer_360(
 
 @router.post("/customer-value-assessments", response_model=CustomerValueRead, status_code=201)
 def create_value(
-    payload: CustomerValueCreate, session: SessionDependency
+    payload: CustomerValueCreate, request: Request, session: SessionDependency
 ) -> CustomerValueAssessment:
-    return CustomerValueService(session).create(payload)
+    return CustomerValueService(session).create(payload, initiating_actor(request))
 
 
 @router.get("/customer-value-assessments", response_model=list[CustomerValueRead])

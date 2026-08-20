@@ -18,11 +18,18 @@ class JourneyEventCreate(BaseModel):
         "purchase_reference",
         "support_request",
         "refund_reference",
+        "ad_interaction",
+        "page_view",
+        "product_interaction",
+        "question_received",
+        "purchase_intent",
+        "quote_requested",
     ]
     source: str = Field(min_length=1, max_length=200)
     reference_id: str = Field(min_length=1, max_length=500)
     metadata: dict[str, Any] = Field(default_factory=dict, max_length=200)
     occurred_at: datetime
+    confidence: float = Field(default=1.0, ge=0, le=1)
 
 
 class JourneyEventRead(ReadModel):
@@ -34,6 +41,7 @@ class JourneyEventRead(ReadModel):
     reference_id: str
     metadata: dict[str, Any] = Field(validation_alias="event_metadata")
     occurred_at: datetime
+    confidence: float
 
 
 class Customer360Read(ReadModel):
