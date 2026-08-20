@@ -48,6 +48,8 @@ The execution service accepts an explicit service actor and is compatible with t
 
 The first domain composition path maps successful `ANALYSIS` output into a draft Sprint 038 Research Analysis record. The application layer performs this composition. It cannot create opportunities, approvals, launches, Product Truth changes, Growth execution, customer contact, or Finance mutations.
 
+Sprint 044 operationalizes this composition through Intelligence-owned Research Runs. The worker supplies tenant-scoped evidence references and governed template schema to the canonical AI request, then persists an advisory analysis and citations. AI Runtime still owns only inference, provenance, usage, and operational cost evidence.
+
 ## OpenAI-compatible implementation note
 
 The adapter follows the official OpenAI Responses API conventions for instructions/input, bearer credentials, usage metadata, and JSON Schema structured output. Provider-specific availability, pricing, and limits remain configuration rather than hard-coded assumptions.

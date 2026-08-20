@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 043 governed AI provider execution runtime
+Status: Sprint 044 AI Research Analyst operationalization foundation
 
 ## Governing documents
 
@@ -62,6 +62,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Revenue Conversation Intelligence Foundation v1.0](./architecture/REVENUE_CONVERSATION_INTELLIGENCE_FOUNDATION_V1_0.md) | Append-only journeys, evidence-backed intent, advisory sales/value intelligence, support learning, and read-only projections |
 | [Closed-Loop Revenue Learning Foundation v1.0](./architecture/CLOSED_LOOP_REVENUE_LEARNING_FOUNDATION_V1_0.md) | Immutable cross-domain observations, hypotheses, conclusions, advisory improvements, priority, and feedback traceability |
 | [Governed AI Provider Execution Runtime v1.0](./architecture/GOVERNED_AI_PROVIDER_EXECUTION_RUNTIME_V1_0.md) | Provider-neutral governed inference, authority/cost/rate gates, provenance, usage, and advisory output composition |
+| [AI Research Analyst Operationalization Foundation v1.0](./architecture/AI_RESEARCH_ANALYST_OPERATIONALIZATION_FOUNDATION_V1_0.md) | Evidence-grounded Research Runs, governed AI execution, structured analysis, citations, and human review |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -110,6 +111,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 041 Completion Notes](./planning/SPRINT_041_COMPLETION.md) | Customer journeys, intent stages, sales signals, value intelligence, support learning, and projections |
 | [Sprint 042 Completion Notes](./planning/SPRINT_042_COMPLETION.md) | Closed-loop observations, hypotheses, conclusions, recommendations, priority, queue review, and projections |
 | [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md) | Governed provider execution, controls, provenance, structured output, and Research composition |
+| [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md) | Operational Research Runs, templates, evidence grounding, worker execution, results, and review |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -161,5 +163,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 041 Completion Notes](./planning/SPRINT_041_COMPLETION.md)
 - [Sprint 042 Completion Notes](./planning/SPRINT_042_COMPLETION.md)
 - [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md)
+- [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

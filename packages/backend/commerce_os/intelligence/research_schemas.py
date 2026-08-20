@@ -16,6 +16,8 @@ EvidenceType = Literal[
     "market_signal",
     "competitive_observation",
     "opportunity_evidence",
+    "customer_language",
+    "research_citation",
 ]
 
 
@@ -53,6 +55,9 @@ class ResearchCitationCreate(BaseModel):
     source_reference: str = Field(min_length=1, max_length=500)
     citation_note: str = Field(min_length=1, max_length=5000)
     relevance_score: float = Field(ge=0, le=1)
+    citation_location: str | None = Field(default=None, max_length=500)
+    methodology_version: str | None = Field(default=None, max_length=80)
+    missing_evidence: bool = False
 
 
 class ResearchCitationRead(ReadModel):
@@ -63,6 +68,77 @@ class ResearchCitationRead(ReadModel):
     source_reference: str
     citation_note: str
     relevance_score: float
+    citation_location: str | None
+    methodology_version: str | None
+    missing_evidence: bool
+
+
+ResearchType = Literal[
+    "product_opportunity_discovery",
+    "customer_pain_analysis",
+    "market_trend_analysis",
+    "competitor_research",
+    "geo_content_research",
+]
+RunEvidenceType = Literal[
+    "market_signal",
+    "marketplace_review",
+    "pain_cluster",
+    "customer_language",
+    "opportunity_evidence",
+    "research_citation",
+]
+
+
+class ResearchRunEvidenceInput(BaseModel):
+    evidence_type: RunEvidenceType
+    evidence_id: UUID
+    source_reference: str = Field(min_length=1, max_length=500)
+    confidence: float = Field(ge=0, le=1)
+
+
+class ResearchRunCreate(BaseModel):
+    organization_id: UUID
+    project_id: UUID | None = None
+    research_type: ResearchType
+    objective: str = Field(min_length=1, max_length=20_000)
+    methodology_version: str = Field(default="governed-research-v1", max_length=80)
+    capability_id: UUID
+    prompt_version_id: UUID | None = None
+    evidence: list[ResearchRunEvidenceInput] = Field(default_factory=list)
+
+
+class ResearchRunRead(ReadModel):
+    organization_id: UUID
+    project_id: UUID | None
+    research_type: str
+    objective: str
+    status: str
+    methodology_version: str
+    created_by: UUID
+    capability_id: UUID
+    prompt_version_id: UUID | None
+    ai_request_id: UUID | None
+    analysis_id: UUID | None
+    decision_queue_item_id: UUID | None
+    started_at: Any | None
+    completed_at: Any | None
+    failure_reason: str | None
+
+
+class ResearchRunResult(BaseModel):
+    run: ResearchRunRead
+    analysis: ResearchAnalysisRead | None
+    execution: dict[str, Any] | None
+    usage_cost: dict[str, Any] | None
+
+
+class ResearchTemplateRead(BaseModel):
+    research_type: ResearchType
+    goal: str
+    evidence_requirements: list[RunEvidenceType]
+    output_classification: Literal["analysis", "candidate", "classification", "draft"]
+    expected_output_schema: dict[str, Any]
 
 
 class CustomerPainResearchCreate(BaseModel):

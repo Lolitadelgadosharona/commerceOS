@@ -55,5 +55,6 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - `Experiment` is owned by Governance as a registry/control record; executing domains own treatment execution, and Learning owns outcome observations.
 - Closed-loop Learning references authoritative evidence by tenant-scoped ID. Hypotheses retain supporting and contradicting provenance; conclusions require deterministic evidence gates and human review; recommendations and priority assessments remain advisory. Decision Queue composition creates review prompts only and never creates approvals or changes source truth.
 - AI Runtime is infrastructure, not a business domain owner. It may invoke configured providers and record provenance, operational usage/cost evidence, and advisory outputs only. Provider success grants no approval or business execution authority; domain output composition occurs through application-layer contracts.
+- Intelligence owns operational Research Runs, reference-only evidence grounding, research findings, citations, methodology, and confidence. AI Runtime remains the execution/provenance boundary; Decision Queue review is not approval, and research output cannot create or mutate business truth.
 
 Entity details are in the [Data Ownership Contract](./DATA_OWNERSHIP_CONTRACT_V1_0.md).

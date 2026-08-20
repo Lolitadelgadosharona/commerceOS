@@ -208,6 +208,8 @@ from commerce_os.intelligence.research_models import (
     OpportunityResearchBrief,
     ResearchAnalysis,
     ResearchEvidenceCitation,
+    ResearchRun,
+    ResearchRunEvidence,
 )
 from commerce_os.intelligence.revenue_conversation_models import (
     CustomerIntentJourney,
@@ -457,6 +459,8 @@ __all__ = [
     "PurchaseIntentSignal",
     "ResearchAnalysis",
     "ResearchEvidenceCitation",
+    "ResearchRun",
+    "ResearchRunEvidence",
     "CustomerPainResearch",
     "MarketInsightResearch",
     "OpportunityResearchBrief",
