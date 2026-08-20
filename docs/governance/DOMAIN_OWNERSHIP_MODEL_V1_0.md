@@ -58,5 +58,6 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - Intelligence owns operational Research Runs, reference-only evidence grounding, research findings, citations, methodology, and confidence. AI Runtime remains the execution/provenance boundary; Decision Queue review is not approval, and research output cannot create or mutate business truth.
 - Intelligence owns Opportunity Discovery Runs and Opportunity Candidates as evidence-grounded advisory records. Candidate review is a Governance queue prompt, not approval; candidate acceptance cannot automatically create a MarketOpportunity or any execution record.
 - Decision owns Creative Intelligence Runs, strategy recommendations, evidence-linked angles, and brief recommendations. Build retains production requests and artifacts; recommendation completion cannot approve claims, start production, publish, distribute, spend, or modify Product Truth.
+- Decision owns Listing Intelligence Runs and listing, GEO, and FAQ recommendations. Build retains Product Truth and canonical/published listing content; recommendation completion cannot create Build records, approve claims, publish, distribute, spend, or mutate source truth.
 
 Entity details are in the [Data Ownership Contract](./DATA_OWNERSHIP_CONTRACT_V1_0.md).
