@@ -12,6 +12,13 @@ from commerce_os.ai_runtime.adapters import ProviderAdapter
 from commerce_os.ai_runtime.execution import AIExecutionService
 from commerce_os.ai_runtime.models import AIRequest
 from commerce_os.ai_runtime.schemas import AIExecutionSubmit
+from commerce_os.intelligence.discovery_models import OpportunityDiscoveryRun
+from commerce_os.intelligence.discovery_services import (
+    DISCOVERY_OUTPUT_SCHEMA,
+    DISCOVERY_TEMPLATES,
+    OpportunityDiscoveryService,
+    scoped_discovery,
+)
 from commerce_os.intelligence.research_models import ResearchRun
 from commerce_os.intelligence.research_schemas import ResearchAnalysisCreate, ResearchCitationCreate
 from commerce_os.intelligence.research_services import (
@@ -135,6 +142,71 @@ def execute_research_run(
             service_actor_id,
         )
     return research.complete_run(run, analysis.id, service_actor_id)
+
+
+def execute_opportunity_discovery_run(
+    session: Session,
+    *,
+    run_id: UUID,
+    organization_id: UUID,
+    service_actor_id: UUID,
+    adapters: dict[str, ProviderAdapter] | None = None,
+) -> OpportunityDiscoveryRun:
+    discovery = OpportunityDiscoveryService(session)
+    run = scoped_discovery(session, OpportunityDiscoveryRun, run_id, organization_id)
+    if run.status != "queued":
+        raise ValueError("Only queued discovery runs may be executed by the worker.")
+    evidence = discovery.evidence(run.id, organization_id)
+    execution = AIExecutionService(session, adapters)
+    request = execution.submit(
+        AIExecutionSubmit(
+            organization_id=organization_id,
+            purpose=f"Governed opportunity discovery: {run.discovery_type}",
+            context_type="opportunity_discovery_run",
+            context_reference=str(run.id),
+            capability_id=run.capability_id,
+            prompt_version_id=run.prompt_version_id,
+            task_type=run.discovery_type,
+            system_instructions=(
+                "Identify evidence-backed opportunity candidates only. Never approve, create a "
+                "MarketOpportunity, create products or launches, or execute business actions. "
+                "Return missing evidence explicitly."
+            ),
+            input_content=json.dumps(
+                {
+                    "objective": run.objective,
+                    "evidence_references": [
+                        {
+                            "type": item.evidence_type,
+                            "id": str(item.evidence_id),
+                            "source_reference": item.source_reference,
+                        }
+                        for item in evidence
+                    ],
+                },
+                sort_keys=True,
+            ),
+            output_classification="candidate",
+            expected_output_schema=DISCOVERY_OUTPUT_SCHEMA,
+            runtime_configuration={"max_output_tokens": 2000},
+            provenance_context={
+                "source_domain": "intelligence",
+                "discovery_run_id": str(run.id),
+                "methodology_version": run.methodology_version,
+                "template": DISCOVERY_TEMPLATES[run.discovery_type][0],
+            },
+        ),
+        service_actor_id,
+    )
+    run = discovery.start(run, request.id, service_actor_id)
+    request = execution.execute(request, worker_actor_id=service_actor_id)
+    if str(request.status) != "succeeded" or request.response_content is None:
+        return discovery.fail(
+            run, request.failure_reason or "Governed AI execution failed.", service_actor_id
+        )
+    discovery.complete(run, request.response_content, service_actor_id)
+    session.refresh(run)
+    return run
 
 
 def stop_worker(_signum: int, _frame: object) -> None:
