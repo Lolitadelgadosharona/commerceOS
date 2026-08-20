@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 045 AI Opportunity Discovery foundation
+Status: Sprint 046 AI Creative Production Intelligence foundation
 
 ## Governing documents
 
@@ -64,6 +64,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Governed AI Provider Execution Runtime v1.0](./architecture/GOVERNED_AI_PROVIDER_EXECUTION_RUNTIME_V1_0.md) | Provider-neutral governed inference, authority/cost/rate gates, provenance, usage, and advisory output composition |
 | [AI Research Analyst Operationalization Foundation v1.0](./architecture/AI_RESEARCH_ANALYST_OPERATIONALIZATION_FOUNDATION_V1_0.md) | Evidence-grounded Research Runs, governed AI execution, structured analysis, citations, and human review |
 | [AI Opportunity Discovery Foundation v1.0](./architecture/AI_OPPORTUNITY_DISCOVERY_FOUNDATION_V1_0.md) | Governed evidence-to-candidate discovery, structured output, advisory confidence, and human review |
+| [AI Creative Intelligence Foundation v1.0](./architecture/AI_CREATIVE_INTELLIGENCE_FOUNDATION_V1_0.md) | Evidence-grounded creative strategy, angle, and brief recommendations without production authority |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -166,5 +167,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md)
 - [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md)
 - [Sprint 045 Completion Notes](./planning/SPRINT_045_COMPLETION.md)
+- [Sprint 046 Completion Notes](./planning/SPRINT_046_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

@@ -57,5 +57,6 @@ The write owner resolves data-state conflicts; Governance resolves authority/com
 - AI Runtime is infrastructure, not a business domain owner. It may invoke configured providers and record provenance, operational usage/cost evidence, and advisory outputs only. Provider success grants no approval or business execution authority; domain output composition occurs through application-layer contracts.
 - Intelligence owns operational Research Runs, reference-only evidence grounding, research findings, citations, methodology, and confidence. AI Runtime remains the execution/provenance boundary; Decision Queue review is not approval, and research output cannot create or mutate business truth.
 - Intelligence owns Opportunity Discovery Runs and Opportunity Candidates as evidence-grounded advisory records. Candidate review is a Governance queue prompt, not approval; candidate acceptance cannot automatically create a MarketOpportunity or any execution record.
+- Decision owns Creative Intelligence Runs, strategy recommendations, evidence-linked angles, and brief recommendations. Build retains production requests and artifacts; recommendation completion cannot approve claims, start production, publish, distribute, spend, or modify Product Truth.
 
 Entity details are in the [Data Ownership Contract](./DATA_OWNERSHIP_CONTRACT_V1_0.md).

@@ -12,6 +12,15 @@ from commerce_os.ai_runtime.adapters import ProviderAdapter
 from commerce_os.ai_runtime.execution import AIExecutionService
 from commerce_os.ai_runtime.models import AIRequest
 from commerce_os.ai_runtime.schemas import AIExecutionSubmit
+from commerce_os.decision.creative_intelligence_models import CreativeIntelligenceRun
+from commerce_os.decision.creative_intelligence_services import (
+    CREATIVE_INTELLIGENCE_OUTPUT_SCHEMA,
+    CreativeIntelligenceService,
+    scoped_creative_intelligence,
+)
+from commerce_os.decision.creative_intelligence_services import (
+    TEMPLATES as CREATIVE_INTELLIGENCE_TEMPLATES,
+)
 from commerce_os.intelligence.discovery_models import OpportunityDiscoveryRun
 from commerce_os.intelligence.discovery_services import (
     DISCOVERY_OUTPUT_SCHEMA,
@@ -205,6 +214,70 @@ def execute_opportunity_discovery_run(
             run, request.failure_reason or "Governed AI execution failed.", service_actor_id
         )
     discovery.complete(run, request.response_content, service_actor_id)
+    session.refresh(run)
+    return run
+
+
+def execute_creative_intelligence_run(
+    session: Session,
+    *,
+    run_id: UUID,
+    organization_id: UUID,
+    service_actor_id: UUID,
+    adapters: dict[str, ProviderAdapter] | None = None,
+) -> CreativeIntelligenceRun:
+    creative = CreativeIntelligenceService(session)
+    run = scoped_creative_intelligence(session, CreativeIntelligenceRun, run_id, organization_id)
+    if run.status != "queued":
+        raise ValueError("Only queued creative intelligence runs may execute.")
+    evidence = creative.evidence(run.id, organization_id)
+    execution = AIExecutionService(session, adapters)
+    request = execution.submit(
+        AIExecutionSubmit(
+            organization_id=organization_id,
+            purpose=f"Governed creative intelligence: {run.template_type}",
+            context_type="creative_intelligence_run",
+            context_reference=str(run.id),
+            capability_id=run.capability_id,
+            prompt_version_id=run.prompt_version_id,
+            task_type=run.template_type,
+            system_instructions=(
+                "Create an evidence-grounded creative recommendation only. Remain advisory, "
+                "preserve every source-domain record, and use only supplied evidence references."
+            ),
+            input_content=json.dumps(
+                {
+                    "objective": run.objective,
+                    "template": CREATIVE_INTELLIGENCE_TEMPLATES[run.template_type],
+                    "evidence_references": [
+                        {
+                            "type": item.evidence_type,
+                            "id": str(item.evidence_id),
+                            "source_reference": item.source_reference,
+                        }
+                        for item in evidence
+                    ],
+                },
+                sort_keys=True,
+            ),
+            output_classification="recommendation",
+            expected_output_schema=CREATIVE_INTELLIGENCE_OUTPUT_SCHEMA,
+            runtime_configuration={"max_output_tokens": 2000},
+            provenance_context={
+                "source_domain": "decision",
+                "creative_run_id": str(run.id),
+                "methodology_version": run.methodology_version,
+            },
+        ),
+        service_actor_id,
+    )
+    run = creative.start(run, request.id, service_actor_id)
+    request = execution.execute(request, worker_actor_id=service_actor_id)
+    if str(request.status) != "succeeded" or request.response_content is None:
+        return creative.fail(
+            run, request.failure_reason or "Governed AI execution failed.", service_actor_id
+        )
+    creative.complete(run, request.response_content, service_actor_id)
     session.refresh(run)
     return run
 
