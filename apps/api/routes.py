@@ -34,6 +34,7 @@ from apps.api.conversation_routes import router as conversation_router
 from apps.api.creative_asset_routes import router as creative_asset_router
 from apps.api.creative_execution_routes import router as creative_execution_router
 from apps.api.creative_generation_routes import router as creative_generation_router
+from apps.api.creative_intelligence_routes import router as creative_intelligence_router
 from apps.api.creative_production_routes import router as creative_production_router
 from apps.api.creative_router_routes import router as creative_router_router
 from apps.api.creative_strategy_routes import router as creative_strategy_router
@@ -106,6 +107,7 @@ api_router.include_router(discovery_listing_router, tags=["ai_discovery_listing"
 api_router.include_router(creative_asset_router, tags=["creative_assets"])
 api_router.include_router(creative_execution_router, tags=["creative_execution"])
 api_router.include_router(creative_generation_router, tags=["creative_generation"])
+api_router.include_router(creative_intelligence_router, tags=["ai_creative_intelligence"])
 api_router.include_router(creative_production_router, tags=["creative_ai_production"])
 api_router.include_router(growth_experiment_router, tags=["growth_experiments"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])

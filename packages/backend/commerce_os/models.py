@@ -49,6 +49,13 @@ from commerce_os.decision.channel_models import (
     ConversionPath,
     ConversionPathStep,
 )
+from commerce_os.decision.creative_intelligence_models import (
+    CreativeAngle,
+    CreativeBriefRecommendation,
+    CreativeIntelligenceEvidence,
+    CreativeIntelligenceRun,
+    CreativeStrategyRecommendation,
+)
 from commerce_os.decision.creative_models import (
     CreativeBrief,
     CreativeChannelFit,
@@ -364,6 +371,11 @@ __all__ = [
     "CreativeExperiment",
     "CreativeHypothesis",
     "CreativeStrategy",
+    "CreativeAngle",
+    "CreativeBriefRecommendation",
+    "CreativeIntelligenceEvidence",
+    "CreativeIntelligenceRun",
+    "CreativeStrategyRecommendation",
     "CFOInsight",
     "ExecutiveMetricSnapshot",
     "OperatingCommitteeReview",
