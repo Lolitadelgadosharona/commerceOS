@@ -1,6 +1,8 @@
+import json
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
+from commerce_os.ai_runtime.execution import AIExecutionService
 from commerce_os.ai_runtime.models import (
     AICostObservation,
     AIModelCapability,
@@ -12,6 +14,8 @@ from commerce_os.ai_runtime.models import (
     PromptVersion,
 )
 from commerce_os.ai_runtime.schemas import (
+    AIExecutionResult,
+    AIExecutionSubmit,
     AIRequestCreate,
     AIRequestRead,
     AIRequestTransition,
@@ -29,13 +33,18 @@ from commerce_os.ai_runtime.schemas import (
     PromptVersionRead,
     ProviderCreate,
     ProviderRead,
+    ResearchAnalysisComposition,
 )
 from commerce_os.ai_runtime.services import AIRuntimeService
+from commerce_os.intelligence.research_models import ResearchAnalysis
+from commerce_os.intelligence.research_schemas import ResearchAnalysisCreate, ResearchAnalysisRead
+from commerce_os.intelligence.research_services import ResearchAnalystService
 from commerce_os.shared.database import Base, get_session
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from apps.api.errors import ApiError
 from apps.api.governance_routes import actor_id
 
 router = APIRouter()
@@ -164,3 +173,92 @@ def list_cost_observations(
     organization_id: UUID, session: SessionDependency
 ) -> list[AICostObservation]:
     return _list(session, AICostObservation, organization_id)
+
+
+@router.post("/ai/executions", response_model=AIRequestRead, status_code=202)
+def submit_ai_execution(
+    payload: AIExecutionSubmit, request: Request, session: SessionDependency
+) -> AIRequest:
+    return AIExecutionService(session).submit(payload, actor_id(request))
+
+
+@router.post("/ai/executions/{request_id}/run", response_model=AIExecutionResult)
+def run_ai_execution(
+    request_id: UUID,
+    organization_id: UUID,
+    request: Request,
+    session: SessionDependency,
+) -> AIExecutionResult:
+    service = AIExecutionService(session)
+    entity = service.execute(service.scoped_request(request_id, organization_id), actor_id(request))
+    return service.result(entity)
+
+
+@router.get("/ai/executions/{request_id}", response_model=AIExecutionResult)
+def inspect_ai_execution(
+    request_id: UUID, organization_id: UUID, session: SessionDependency
+) -> AIExecutionResult:
+    service = AIExecutionService(session)
+    return service.result(service.scoped_request(request_id, organization_id))
+
+
+@router.get("/ai/executions/{request_id}/result", response_model=AIExecutionResult)
+def inspect_ai_result(
+    request_id: UUID, organization_id: UUID, session: SessionDependency
+) -> AIExecutionResult:
+    return inspect_ai_execution(request_id, organization_id, session)
+
+
+@router.get("/ai/executions/{request_id}/usage", response_model=AIExecutionResult)
+def inspect_ai_usage(
+    request_id: UUID, organization_id: UUID, session: SessionDependency
+) -> AIExecutionResult:
+    return inspect_ai_execution(request_id, organization_id, session)
+
+
+@router.post("/ai/executions/{request_id}/cancel", response_model=AIExecutionResult)
+def cancel_ai_execution(
+    request_id: UUID,
+    organization_id: UUID,
+    request: Request,
+    session: SessionDependency,
+) -> AIExecutionResult:
+    service = AIExecutionService(session)
+    entity = service.cancel(service.scoped_request(request_id, organization_id), actor_id(request))
+    return service.result(entity)
+
+
+@router.post(
+    "/ai/executions/{request_id}/research-analysis",
+    response_model=ResearchAnalysisRead,
+    status_code=201,
+)
+def compose_research_analysis(
+    request_id: UUID,
+    payload: ResearchAnalysisComposition,
+    request: Request,
+    session: SessionDependency,
+) -> ResearchAnalysis:
+    execution = AIExecutionService(session).scoped_request(request_id, payload.organization_id)
+    if str(execution.status) != "succeeded" or str(execution.output_classification) != "analysis":
+        raise ApiError(
+            409,
+            "advisory_analysis_required",
+            "Only successful ANALYSIS output may compose a research record.",
+        )
+    content = execution.response_content or {}
+    summary = content.get("summary")
+    if not isinstance(summary, str) or not summary.strip():
+        summary = json.dumps(content, sort_keys=True)
+    return ResearchAnalystService(session).create_analysis(
+        ResearchAnalysisCreate(
+            organization_id=payload.organization_id,
+            ai_request_id=execution.id,
+            analysis_type=payload.analysis_type,
+            output_classification="analysis",
+            output_summary=summary,
+            confidence=payload.confidence,
+            methodology_version=payload.methodology_version,
+        ),
+        actor_id(request),
+    )
