@@ -13,6 +13,9 @@ class CustomerValueCreate(BaseModel):
     repeat_probability: float = Field(ge=0, le=1)
     strategic_potential: float = Field(ge=0, le=100)
     risk_indicator: float = Field(ge=0, le=100)
+    contribution_potential: float | None = Field(default=None, ge=0, le=100)
+    risk_indicators: list[str] = Field(default_factory=list, max_length=100)
+    confidence: float = Field(default=1.0, ge=0, le=1)
 
 
 class CustomerValueRead(ReadModel):
@@ -25,3 +28,6 @@ class CustomerValueRead(ReadModel):
     risk_indicator: float
     score: float
     formula_version: str
+    contribution_potential: float
+    risk_indicators: list[str]
+    confidence: float

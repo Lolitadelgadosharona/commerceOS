@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from commerce_os.intelligence.customer_360_models import Customer360Profile, CustomerJourneyEvent
 from commerce_os.intelligence.customer_360_schemas import JourneyEventCreate
 from commerce_os.intelligence.errors import IntelligenceScopeError
+from commerce_os.shared.audit import record_audit_event
 from commerce_os.shared.database import Base
 from commerce_os.shared.scope import reference_belongs_to_organization
 
@@ -15,7 +16,9 @@ class Customer360Service:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def create_event(self, payload: JourneyEventCreate) -> CustomerJourneyEvent:
+    def create_event(
+        self, payload: JourneyEventCreate, actor_id: UUID | None = None
+    ) -> CustomerJourneyEvent:
         self._customer(payload.customer_id, payload.organization_id)
         if payload.identity_link_id is not None:
             table = Base.metadata.tables["customer_identity_links"]
@@ -31,6 +34,17 @@ class Customer360Service:
         values = payload.model_dump(exclude={"metadata"})
         entity = CustomerJourneyEvent(**values, event_metadata=payload.metadata)
         self.session.add(entity)
+        self.session.flush()
+        record_audit_event(
+            self.session,
+            organization_id=payload.organization_id,
+            actor_type="human" if actor_id else "system",
+            actor_id=actor_id,
+            action="intelligence.customer_journey_event.appended",
+            entity_type="customer_journey_events",
+            entity_id=entity.id,
+            metadata={"result": "success", "append_only": True},
+        )
         self.session.commit()
         self.session.refresh(entity)
         return entity

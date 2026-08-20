@@ -209,6 +209,11 @@ from commerce_os.intelligence.research_models import (
     ResearchAnalysis,
     ResearchEvidenceCitation,
 )
+from commerce_os.intelligence.revenue_conversation_models import (
+    CustomerIntentJourney,
+    SalesIntentSignal,
+    SupportLearningSignal,
+)
 from commerce_os.intelligence.supplier_models import (
     ProductSupplierMatch,
     SupplierDecisionRecord,
@@ -321,8 +326,11 @@ __all__ = [
     "CustomerIdentity",
     "CustomerIdentityLink",
     "CustomerJourneyEvent",
+    "CustomerIntentJourney",
     "Customer360Profile",
     "CustomerValueAssessment",
+    "SalesIntentSignal",
+    "SupportLearningSignal",
     "StrategicAccountProfile",
     "AccountStakeholder",
     "ReplenishmentAssessment",
