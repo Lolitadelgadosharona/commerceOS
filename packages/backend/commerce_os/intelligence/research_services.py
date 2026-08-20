@@ -12,6 +12,8 @@ from commerce_os.intelligence.research_models import (
     OpportunityResearchBrief,
     ResearchAnalysis,
     ResearchEvidenceCitation,
+    ResearchRun,
+    ResearchRunEvidence,
 )
 from commerce_os.intelligence.research_schemas import (
     CustomerPainResearchCreate,
@@ -19,9 +21,12 @@ from commerce_os.intelligence.research_schemas import (
     OpportunityResearchBriefCreate,
     ResearchAnalysisCreate,
     ResearchCitationCreate,
+    ResearchRunCreate,
+    ResearchTemplateRead,
 )
 from commerce_os.shared.audit import record_audit_event
 from commerce_os.shared.database import Base
+from commerce_os.shared.models import utc_now
 
 EntityT = TypeVar("EntityT", bound=Base)
 ANALYSIS_TRANSITIONS = {
@@ -40,6 +45,72 @@ EVIDENCE_TABLES = {
     "market_signal": "market_signals",
     "competitive_observation": "competitive_marketplace_observations",
     "opportunity_evidence": "opportunity_evidence",
+    "customer_language": "customer_language_insights",
+    "research_citation": "research_evidence_citations",
+}
+RUN_EVIDENCE_TABLES = {
+    "market_signal": "market_signals",
+    "marketplace_review": "marketplace_review_evidence",
+    "pain_cluster": "customer_pain_clusters",
+    "customer_language": "customer_language_insights",
+    "opportunity_evidence": "opportunity_evidence",
+    "research_citation": "research_evidence_citations",
+}
+RESEARCH_OUTPUT_SCHEMA = {
+    "type": "object",
+    "required": [
+        "summary",
+        "key_findings",
+        "evidence_used",
+        "customer_language",
+        "confidence",
+        "risks",
+        "unanswered_questions",
+    ],
+    "properties": {
+        "summary": {"type": "string"},
+        "key_findings": {"type": "array"},
+        "evidence_used": {"type": "array"},
+        "customer_language": {"type": "array"},
+        "confidence": {"type": "number"},
+        "risks": {"type": "array"},
+        "unanswered_questions": {"type": "array"},
+    },
+}
+RESEARCH_TEMPLATES = {
+    "product_opportunity_discovery": (
+        "Find evidence-backed customer problems and opportunity candidates.",
+        ["market_signal", "marketplace_review", "pain_cluster"],
+        "candidate",
+    ),
+    "customer_pain_analysis": (
+        "Analyze supplied customer pain and language evidence.",
+        ["marketplace_review", "pain_cluster", "customer_language"],
+        "analysis",
+    ),
+    "market_trend_analysis": (
+        "Analyze existing market signals without creating opportunities.",
+        ["market_signal"],
+        "analysis",
+    ),
+    "competitor_research": (
+        "Analyze supplied competitive marketplace evidence.",
+        ["marketplace_review", "research_citation"],
+        "analysis",
+    ),
+    "geo_content_research": (
+        "Identify evidence-backed customer questions and answer gaps.",
+        ["customer_language", "opportunity_evidence"],
+        "draft",
+    ),
+}
+RUN_TRANSITIONS = {
+    "draft": {"queued", "cancelled"},
+    "queued": {"running", "cancelled"},
+    "running": {"completed", "failed"},
+    "completed": set(),
+    "failed": set(),
+    "cancelled": set(),
 }
 
 
@@ -69,6 +140,125 @@ class ResearchAnalystService:
             actor_id,
             "research.analysis.created",
         )
+
+    def create_run(self, payload: ResearchRunCreate, actor_id: UUID) -> ResearchRun:
+        if payload.project_id is not None:
+            self._reference("projects", payload.project_id, payload.organization_id)
+        self._reference("ai_model_capabilities", payload.capability_id, payload.organization_id)
+        if payload.prompt_version_id is not None:
+            self._reference("prompt_versions", payload.prompt_version_id, payload.organization_id)
+        run = ResearchRun(
+            **payload.model_dump(exclude={"evidence"}),
+            status="draft",
+            created_by=actor_id,
+            ai_request_id=None,
+            analysis_id=None,
+            decision_queue_item_id=None,
+            started_at=None,
+            completed_at=None,
+            failure_reason=None,
+        )
+        self.session.add(run)
+        self.session.flush()
+        for item in payload.evidence:
+            self._reference(
+                RUN_EVIDENCE_TABLES[item.evidence_type],
+                item.evidence_id,
+                payload.organization_id,
+            )
+            self.session.add(
+                ResearchRunEvidence(
+                    organization_id=payload.organization_id,
+                    research_run_id=run.id,
+                    **item.model_dump(),
+                )
+            )
+        return self._commit_audited(run, actor_id, "research.run.created")
+
+    def queue_run(self, run: ResearchRun, actor_id: UUID) -> ResearchRun:
+        if run.status != "draft":
+            raise IntelligenceValidationError("Only draft research runs may be queued.")
+        evidence_types = {
+            evidence.evidence_type
+            for evidence in self.session.scalars(
+                select(ResearchRunEvidence).where(ResearchRunEvidence.research_run_id == run.id)
+            )
+        }
+        if not evidence_types:
+            raise IntelligenceValidationError(
+                "Research requires evidence references; missing_evidence must not be fabricated."
+            )
+        allowed_types = set(RESEARCH_TEMPLATES[run.research_type][1])
+        if not evidence_types.intersection(allowed_types):
+            raise IntelligenceValidationError(
+                "Research evidence does not satisfy the selected template requirements."
+            )
+        run.status = "queued"
+        return self._save_audited(run, actor_id, "research.run.queued")
+
+    def cancel_run(self, run: ResearchRun, actor_id: UUID) -> ResearchRun:
+        if "cancelled" not in RUN_TRANSITIONS[run.status]:
+            raise IntelligenceValidationError(
+                "Only draft or queued research runs may be cancelled."
+            )
+        run.status = "cancelled"
+        run.completed_at = utc_now()
+        return self._save_audited(run, actor_id, "research.run.cancelled")
+
+    def start_run(self, run: ResearchRun, ai_request_id: UUID, actor_id: UUID) -> ResearchRun:
+        if run.status != "queued":
+            raise IntelligenceValidationError("Only queued research runs may start.")
+        request = scoped_research(self.session, AIRequest, ai_request_id, run.organization_id)
+        run.ai_request_id = request.id
+        run.status = "running"
+        run.started_at = utc_now()
+        return self._save_audited(run, actor_id, "research.run.started", actor_type="service")
+
+    def complete_run(self, run: ResearchRun, analysis_id: UUID, actor_id: UUID) -> ResearchRun:
+        if run.status != "running":
+            raise IntelligenceValidationError("Only running research may complete.")
+        analysis = scoped_research(self.session, ResearchAnalysis, analysis_id, run.organization_id)
+        run.analysis_id = analysis.id
+        run.status = "completed"
+        run.completed_at = utc_now()
+        return self._save_audited(run, actor_id, "research.run.completed", actor_type="service")
+
+    def fail_run(self, run: ResearchRun, reason: str, actor_id: UUID) -> ResearchRun:
+        if run.status != "running":
+            raise IntelligenceValidationError("Only running research may fail.")
+        run.status = "failed"
+        run.failure_reason = reason
+        run.completed_at = utc_now()
+        return self._save_audited(run, actor_id, "research.run.failed", actor_type="service")
+
+    def attach_decision_queue(
+        self, run: ResearchRun, queue_id: UUID, actor_id: UUID
+    ) -> ResearchRun:
+        if run.status != "completed":
+            raise IntelligenceValidationError("Only completed research may request human review.")
+        run.decision_queue_item_id = queue_id
+        return self._save_audited(run, actor_id, "research.run.review_queued")
+
+    def run_evidence(self, run_id: UUID, organization_id: UUID) -> list[ResearchRunEvidence]:
+        scoped_research(self.session, ResearchRun, run_id, organization_id)
+        return list(
+            self.session.scalars(
+                select(ResearchRunEvidence).where(ResearchRunEvidence.research_run_id == run_id)
+            )
+        )
+
+    @staticmethod
+    def templates() -> list[ResearchTemplateRead]:
+        return [
+            ResearchTemplateRead(
+                research_type=research_type,
+                goal=values[0],
+                evidence_requirements=values[1],
+                output_classification=values[2],
+                expected_output_schema=RESEARCH_OUTPUT_SCHEMA,
+            )
+            for research_type, values in RESEARCH_TEMPLATES.items()
+        ]
 
     def transition_analysis(
         self,
@@ -175,13 +365,38 @@ class ResearchAnalystService:
             or 0
         )
 
-    def _save_audited(self, entity: EntityT, actor_id: UUID, action: str) -> EntityT:
+    def _run_evidence_count(self, run_id: UUID) -> int:
+        return int(
+            self.session.scalar(
+                select(func.count())
+                .select_from(ResearchRunEvidence)
+                .where(ResearchRunEvidence.research_run_id == run_id)
+            )
+            or 0
+        )
+
+    def _reference(self, table_name: str, entity_id: UUID, organization_id: UUID) -> None:
+        table = Base.metadata.tables[table_name]
+        exists = self.session.scalar(
+            select(table.c.id).where(
+                table.c.id == entity_id, table.c.organization_id == organization_id
+            )
+        )
+        if exists is None:
+            raise IntelligenceScopeError("Evidence reference was not found in this organization.")
+
+    def _commit_audited(self, entity: EntityT, actor_id: UUID, action: str) -> EntityT:
+        return self._save_audited(entity, actor_id, action)
+
+    def _save_audited(
+        self, entity: EntityT, actor_id: UUID, action: str, actor_type: str = "human"
+    ) -> EntityT:
         self.session.add(entity)
         self.session.flush()
         record_audit_event(
             self.session,
             organization_id=entity.organization_id,  # type: ignore[attr-defined]
-            actor_type="human",
+            actor_type=actor_type,
             actor_id=actor_id,
             action=action,
             entity_type=entity.__tablename__,

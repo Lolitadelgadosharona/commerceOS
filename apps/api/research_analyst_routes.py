@@ -1,12 +1,16 @@
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
+from commerce_os.ai_runtime.models import AICostObservation, AIRequest
+from commerce_os.governance.executive_schemas import DecisionQueueCreate
+from commerce_os.governance.executive_services import DecisionQueueService
 from commerce_os.intelligence.research_models import (
     CustomerPainResearch,
     MarketInsightResearch,
     OpportunityResearchBrief,
     ResearchAnalysis,
     ResearchEvidenceCitation,
+    ResearchRun,
 )
 from commerce_os.intelligence.research_schemas import (
     CustomerPainResearchCreate,
@@ -20,6 +24,10 @@ from commerce_os.intelligence.research_schemas import (
     ResearchAnalysisTransition,
     ResearchCitationCreate,
     ResearchCitationRead,
+    ResearchRunCreate,
+    ResearchRunRead,
+    ResearchRunResult,
+    ResearchTemplateRead,
 )
 from commerce_os.intelligence.research_services import ResearchAnalystService, scoped_research
 from commerce_os.shared.database import Base, get_session
@@ -135,3 +143,137 @@ def list_briefs(
     organization_id: UUID, session: SessionDependency
 ) -> list[OpportunityResearchBrief]:
     return _list(session, OpportunityResearchBrief, organization_id)
+
+
+@router.get("/research-templates", response_model=list[ResearchTemplateRead])
+def list_research_templates() -> list[ResearchTemplateRead]:
+    return ResearchAnalystService.templates()
+
+
+@router.post("/research-runs", response_model=ResearchRunRead, status_code=201)
+def create_research_run(
+    payload: ResearchRunCreate, request: Request, session: SessionDependency
+) -> ResearchRun:
+    return ResearchAnalystService(session).create_run(payload, actor_id(request))
+
+
+@router.get("/research-runs", response_model=list[ResearchRunRead])
+def list_research_runs(organization_id: UUID, session: SessionDependency) -> list[ResearchRun]:
+    return _list(session, ResearchRun, organization_id)
+
+
+@router.get("/research-runs/{run_id}", response_model=ResearchRunRead)
+def get_research_run(
+    run_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ResearchRun:
+    return scoped_research(session, ResearchRun, run_id, organization_id)
+
+
+@router.post("/research-runs/{run_id}/queue", response_model=ResearchRunRead)
+def queue_research_run(
+    run_id: UUID,
+    organization_id: UUID,
+    request: Request,
+    session: SessionDependency,
+) -> ResearchRun:
+    service = ResearchAnalystService(session)
+    return service.queue_run(
+        scoped_research(session, ResearchRun, run_id, organization_id), actor_id(request)
+    )
+
+
+@router.post("/research-runs/{run_id}/cancel", response_model=ResearchRunRead)
+def cancel_research_run(
+    run_id: UUID,
+    organization_id: UUID,
+    request: Request,
+    session: SessionDependency,
+) -> ResearchRun:
+    service = ResearchAnalystService(session)
+    return service.cancel_run(
+        scoped_research(session, ResearchRun, run_id, organization_id), actor_id(request)
+    )
+
+
+@router.get("/research-runs/{run_id}/results", response_model=ResearchRunResult)
+def research_run_results(
+    run_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ResearchRunResult:
+    run = scoped_research(session, ResearchRun, run_id, organization_id)
+    analysis = session.get(ResearchAnalysis, run.analysis_id) if run.analysis_id else None
+    execution = session.get(AIRequest, run.ai_request_id) if run.ai_request_id else None
+    cost = (
+        session.scalar(
+            select(AICostObservation).where(
+                AICostObservation.related_request_id == run.ai_request_id
+            )
+        )
+        if run.ai_request_id
+        else None
+    )
+    return ResearchRunResult(
+        run=ResearchRunRead.model_validate(run),
+        analysis=ResearchAnalysisRead.model_validate(analysis) if analysis else None,
+        execution=(
+            {
+                "status": str(execution.status),
+                "provider": execution.selected_provider_identity,
+                "model": execution.selected_model_identity,
+                "prompt_version_id": str(execution.prompt_version_id)
+                if execution.prompt_version_id
+                else None,
+                "output_classification": str(execution.output_classification),
+                "latency_ms": execution.latency_ms,
+            }
+            if execution
+            else None
+        ),
+        usage_cost=(
+            {
+                "estimated_cost": str(cost.estimated_cost),
+                "provider_reported_cost": str(cost.provider_reported_cost)
+                if cost.provider_reported_cost is not None
+                else None,
+                "cost_basis": cost.cost_basis,
+                "input_tokens": cost.input_tokens,
+                "output_tokens": cost.output_tokens,
+                "total_tokens": cost.total_tokens,
+            }
+            if cost
+            else None
+        ),
+    )
+
+
+@router.post("/research-runs/{run_id}/decision-queue", response_model=ResearchRunRead)
+def queue_research_review(
+    run_id: UUID,
+    organization_id: UUID,
+    request: Request,
+    session: SessionDependency,
+) -> ResearchRun:
+    service = ResearchAnalystService(session)
+    run = scoped_research(session, ResearchRun, run_id, organization_id)
+    if run.status != "completed":
+        raise ApiError(
+            409,
+            "research_not_completed",
+            "Only completed research may enter the decision queue.",
+        )
+    if run.decision_queue_item_id is not None:
+        raise ApiError(
+            409,
+            "research_review_already_queued",
+            "Research already has a decision queue review.",
+        )
+    queue = DecisionQueueService(session).create(
+        DecisionQueueCreate(
+            organization_id=organization_id,
+            title=f"Review research: {run.research_type}",
+            domain="intelligence",
+            reason=run.objective,
+            priority="high",
+            required_action="review",
+        )
+    )
+    return service.attach_decision_queue(run, queue.id, actor_id(request))

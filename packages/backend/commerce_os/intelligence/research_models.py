@@ -1,9 +1,11 @@
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from sqlalchemy import (
     JSON,
     CheckConstraint,
+    DateTime,
     Float,
     ForeignKey,
     String,
@@ -56,6 +58,62 @@ class ResearchEvidenceCitation(IdMixin, TimestampMixin, VersionMixin, Base):
     source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
     citation_note: Mapped[str] = mapped_column(Text, nullable=False)
     relevance_score: Mapped[float] = mapped_column(Float, nullable=False)
+    citation_location: Mapped[str | None] = mapped_column(String(500))
+    methodology_version: Mapped[str | None] = mapped_column(String(80))
+    missing_evidence: Mapped[bool] = mapped_column(nullable=False, default=False)
+
+
+class ResearchRun(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "research_runs"
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    project_id: Mapped[UUID | None] = mapped_column(Uuid, ForeignKey("projects.id"), index=True)
+    research_type: Mapped[str] = mapped_column(String(60), nullable=False)
+    objective: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    methodology_version: Mapped[str] = mapped_column(String(80), nullable=False)
+    created_by: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("users.id"), nullable=False, index=True
+    )
+    capability_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("ai_model_capabilities.id"), nullable=False, index=True
+    )
+    prompt_version_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("prompt_versions.id"), index=True
+    )
+    ai_request_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("ai_requests.id"), index=True
+    )
+    analysis_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("research_analyses.id"), index=True
+    )
+    decision_queue_item_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("decision_queue_items.id"), index=True
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    failure_reason: Mapped[str | None] = mapped_column(Text)
+
+
+class ResearchRunEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "research_run_evidence"
+    __table_args__ = (
+        UniqueConstraint("research_run_id", "evidence_type", "evidence_id"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="research_run_evidence_confidence"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    research_run_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("research_runs.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    evidence_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    evidence_id: Mapped[UUID] = mapped_column(Uuid, nullable=False, index=True)
+    source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 class CustomerPainResearch(IdMixin, TimestampMixin, VersionMixin, Base):
