@@ -21,6 +21,15 @@ from commerce_os.decision.creative_intelligence_services import (
 from commerce_os.decision.creative_intelligence_services import (
     TEMPLATES as CREATIVE_INTELLIGENCE_TEMPLATES,
 )
+from commerce_os.decision.listing_geo_intelligence_models import ListingIntelligenceRun
+from commerce_os.decision.listing_geo_intelligence_services import (
+    LISTING_GEO_OUTPUT_SCHEMA,
+    ListingIntelligenceService,
+    scoped_listing_intelligence,
+)
+from commerce_os.decision.listing_geo_intelligence_services import (
+    TEMPLATES as LISTING_GEO_TEMPLATES,
+)
 from commerce_os.intelligence.discovery_models import OpportunityDiscoveryRun
 from commerce_os.intelligence.discovery_services import (
     DISCOVERY_OUTPUT_SCHEMA,
@@ -278,6 +287,71 @@ def execute_creative_intelligence_run(
             run, request.failure_reason or "Governed AI execution failed.", service_actor_id
         )
     creative.complete(run, request.response_content, service_actor_id)
+    session.refresh(run)
+    return run
+
+
+def execute_listing_intelligence_run(
+    session: Session,
+    *,
+    run_id: UUID,
+    organization_id: UUID,
+    service_actor_id: UUID,
+    adapters: dict[str, ProviderAdapter] | None = None,
+) -> ListingIntelligenceRun:
+    listing = ListingIntelligenceService(session)
+    run = scoped_listing_intelligence(session, ListingIntelligenceRun, run_id, organization_id)
+    if run.status != "queued":
+        raise ValueError("Only queued listing intelligence runs may execute.")
+    evidence = listing.evidence(run.id, organization_id)
+    execution = AIExecutionService(session, adapters)
+    request = execution.submit(
+        AIExecutionSubmit(
+            organization_id=organization_id,
+            purpose=f"Governed listing intelligence: {run.template_type}",
+            context_type="listing_intelligence_run",
+            context_reference=str(run.id),
+            capability_id=run.capability_id,
+            prompt_version_id=run.prompt_version_id,
+            task_type=run.template_type,
+            system_instructions=(
+                "Create evidence-grounded listing and GEO recommendations only. Remain "
+                "advisory, preserve every source-domain record, and use only supplied evidence "
+                "references."
+            ),
+            input_content=json.dumps(
+                {
+                    "objective": run.objective,
+                    "template": LISTING_GEO_TEMPLATES[run.template_type],
+                    "evidence_references": [
+                        {
+                            "type": x.evidence_type,
+                            "id": str(x.evidence_id),
+                            "source_reference": x.source_reference,
+                        }
+                        for x in evidence
+                    ],
+                },
+                sort_keys=True,
+            ),
+            output_classification="recommendation",
+            expected_output_schema=LISTING_GEO_OUTPUT_SCHEMA,
+            runtime_configuration={"max_output_tokens": 3000},
+            provenance_context={
+                "source_domain": "decision",
+                "listing_run_id": str(run.id),
+                "methodology_version": run.methodology_version,
+            },
+        ),
+        service_actor_id,
+    )
+    run = listing.start(run, request.id, service_actor_id)
+    request = execution.execute(request, worker_actor_id=service_actor_id)
+    if str(request.status) != "succeeded" or request.response_content is None:
+        return listing.fail(
+            run, request.failure_reason or "Governed AI execution failed.", service_actor_id
+        )
+    listing.complete(run, request.response_content, service_actor_id)
     session.refresh(run)
     return run
 

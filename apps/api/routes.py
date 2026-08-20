@@ -52,6 +52,7 @@ from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.launch_preparation_routes import router as launch_preparation_router
 from apps.api.learning_routes import router as learning_router
+from apps.api.listing_geo_intelligence_routes import router as listing_geo_intelligence_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
 from apps.api.market_connector_routes import router as market_connector_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
@@ -79,6 +80,7 @@ api_router.include_router(product_intelligence_router)
 api_router.include_router(product_truth_router)
 api_router.include_router(supplier_intelligence_router)
 api_router.include_router(listing_intelligence_router)
+api_router.include_router(listing_geo_intelligence_router, tags=["ai_listing_geo_intelligence"])
 api_router.include_router(creative_strategy_router)
 api_router.include_router(channel_strategy_router, tags=["channel_strategy"])
 api_router.include_router(channel_execution_router, tags=["channel_execution"])

@@ -88,6 +88,13 @@ from commerce_os.decision.launch_models import (
     ProductObjectionMap,
     ProductPositioning,
 )
+from commerce_os.decision.listing_geo_intelligence_models import (
+    FAQRecommendation,
+    GEOContentRecommendation,
+    ListingIntelligenceEvidence,
+    ListingIntelligenceRun,
+    ListingStrategyRecommendation,
+)
 from commerce_os.decision.models import VentureOpportunity
 from commerce_os.decision.sales_support_models import (
     CustomerRiskSignal,
@@ -376,6 +383,11 @@ __all__ = [
     "CreativeIntelligenceEvidence",
     "CreativeIntelligenceRun",
     "CreativeStrategyRecommendation",
+    "FAQRecommendation",
+    "GEOContentRecommendation",
+    "ListingIntelligenceEvidence",
+    "ListingIntelligenceRun",
+    "ListingStrategyRecommendation",
     "CFOInsight",
     "ExecutiveMetricSnapshot",
     "OperatingCommitteeReview",
