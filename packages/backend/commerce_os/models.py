@@ -153,6 +153,11 @@ from commerce_os.intelligence.connector_models import (
     RedditConnector,
 )
 from commerce_os.intelligence.customer_360_models import Customer360Profile, CustomerJourneyEvent
+from commerce_os.intelligence.discovery_models import (
+    OpportunityCandidate,
+    OpportunityDiscoveryEvidence,
+    OpportunityDiscoveryRun,
+)
 from commerce_os.intelligence.economics_models import (
     ProductEconomicProfile,
     ProductProfitAssessment,
@@ -444,6 +449,9 @@ __all__ = [
     "MarketSignalAnalysis",
     "OpportunityAssessment",
     "OpportunityReport",
+    "OpportunityCandidate",
+    "OpportunityDiscoveryEvidence",
+    "OpportunityDiscoveryRun",
     "ActionPlan",
     "ExecutionBlocker",
     "ExecutionTask",

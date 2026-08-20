@@ -50,6 +50,8 @@ The first domain composition path maps successful `ANALYSIS` output into a draft
 
 Sprint 044 operationalizes this composition through Intelligence-owned Research Runs. The worker supplies tenant-scoped evidence references and governed template schema to the canonical AI request, then persists an advisory analysis and citations. AI Runtime still owns only inference, provenance, usage, and operational cost evidence.
 
+Sprint 045 adds a second governed composition path for Intelligence-owned Opportunity Discovery Runs. The worker supplies only tenant-scoped evidence references and composes a structured advisory candidate. It cannot create a MarketOpportunity, approval, product, launch, or execution action.
+
 ## OpenAI-compatible implementation note
 
 The adapter follows the official OpenAI Responses API conventions for instructions/input, bearer credentials, usage metadata, and JSON Schema structured output. Provider-specific availability, pricing, and limits remain configuration rather than hard-coded assumptions.
