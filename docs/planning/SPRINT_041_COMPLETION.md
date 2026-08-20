@@ -32,4 +32,4 @@ Status: implementation and local validation complete
 - Docker Compose: API, PostgreSQL, Redis, worker, and web healthy/running
 - PostgreSQL migration: downgrade to `0040_growth_experiments`, upgrade to head, current revision, and schema drift check passed
 - Security smoke test: unauthenticated dashboard access rejected with HTTP 401
-- GitHub Actions status is recorded after Draft PR publication.
+- GitHub Actions: backend, web, and documentation checks passed on Draft PR #40
