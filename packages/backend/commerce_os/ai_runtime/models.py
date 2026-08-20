@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
@@ -7,6 +8,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    DateTime,
     ForeignKey,
     Numeric,
     String,
@@ -25,6 +27,11 @@ class AIRequestStatus(StrEnum):
     SUBMITTED = "submitted"
     APPROVED_IF_REQUIRED = "approved_if_required"
     READY = "ready"
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    TIMED_OUT = "timed_out"
+    RATE_LIMITED = "rate_limited"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -48,6 +55,12 @@ class AIProvider(IdMixin, TimestampMixin, VersionMixin, Base):
     availability_state: Mapped[str] = mapped_column(String(30), nullable=False)
     provider_version: Mapped[str] = mapped_column(String(100), nullable=False)
     cost_metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    base_url: Mapped[str | None] = mapped_column(String(500))
+    credential_reference: Mapped[str | None] = mapped_column(String(200))
+    timeout_seconds: Mapped[int] = mapped_column(nullable=False, default=30)
+    runtime_configuration: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default=dict
+    )
 
 
 class AIModelCapability(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -85,6 +98,31 @@ class AIRequest(IdMixin, TimestampMixin, VersionMixin, Base):
     output_classification: Mapped[AIOutputClassification | None] = mapped_column(String(30))
     output_metadata: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     failure_reason: Mapped[str | None] = mapped_column(Text)
+    prompt_version_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("prompt_versions.id"), index=True
+    )
+    task_type: Mapped[str | None] = mapped_column(String(100))
+    system_instructions: Mapped[str | None] = mapped_column(Text)
+    input_content: Mapped[str | None] = mapped_column(Text)
+    expected_output_schema: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    runtime_configuration: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False, default=dict
+    )
+    provenance_context: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    selected_provider_identity: Mapped[str | None] = mapped_column(String(150))
+    selected_model_identity: Mapped[str | None] = mapped_column(String(200))
+    provider_request_id: Mapped[str | None] = mapped_column(String(300))
+    response_content: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    structured_output_valid: Mapped[bool | None] = mapped_column(Boolean)
+    input_tokens: Mapped[int | None] = mapped_column()
+    output_tokens: Mapped[int | None] = mapped_column()
+    total_tokens: Mapped[int | None] = mapped_column()
+    latency_ms: Mapped[int | None] = mapped_column()
+    retry_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    failure_category: Mapped[str | None] = mapped_column(String(50))
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class PromptPurpose(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -160,3 +198,8 @@ class AICostObservation(IdMixin, TimestampMixin, VersionMixin, Base):
     related_request_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("ai_requests.id"), index=True
     )
+    provider_reported_cost: Mapped[Decimal | None] = mapped_column(Numeric(19, 6))
+    cost_basis: Mapped[str] = mapped_column(String(30), nullable=False, default="estimated")
+    input_tokens: Mapped[int | None] = mapped_column()
+    output_tokens: Mapped[int | None] = mapped_column()
+    total_tokens: Mapped[int | None] = mapped_column()

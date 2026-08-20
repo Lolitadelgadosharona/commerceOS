@@ -37,6 +37,8 @@ Log authentication and authorization outcomes; privileged/PII access; configurat
 
 Store secrets only in an approved secret manager, encrypted with managed keys. Repositories, prompts, logs, events, analytics, and client bundles must not contain secrets. Scope credentials per environment/provider/purpose; rotate, revoke, inventory, and alert on misuse. Provider adapters receive credentials at runtime, and secret values are never returned through Customer 360 or model context.
 
+AI provider records store only an environment or external-secret reference. Sprint 043 resolves that reference immediately before invocation and excludes plaintext credentials from persistence, API responses, logs, audit metadata, and normalized exceptions. Deterministic adapters keep CI independent of real credentials.
+
 ## Retention and privacy lifecycle
 
 Each data class must have documented purpose/legal basis, source, owner, geography, retention period, deletion/de-identification behavior, and legal-hold exception before collection. Retain the minimum duration; isolate backups and apply expiry. Support authorized access, correction, export, restriction, and deletion requests. Immutable audit/financial records retain minimum legally required facts while PII is removed, tokenized, or cryptographically isolated when permissible.

@@ -25,6 +25,10 @@ class ProviderCreate(BaseModel):
     availability_state: Literal["available", "degraded", "unavailable", "disabled"]
     provider_version: str = Field(min_length=1, max_length=100)
     cost_metadata: dict[str, Any] = Field(default_factory=dict)
+    base_url: str | None = Field(default=None, max_length=500)
+    credential_reference: str | None = Field(default=None, pattern=r"^[A-Z][A-Z0-9_]{2,199}$")
+    timeout_seconds: int = Field(default=30, ge=1, le=300)
+    runtime_configuration: dict[str, Any] = Field(default_factory=dict)
 
 
 class ProviderRead(ReadModel, ProviderCreate):
@@ -76,6 +80,62 @@ class AIRequestRead(ReadModel):
     output_classification: str | None
     output_metadata: dict[str, Any]
     failure_reason: str | None
+    prompt_version_id: UUID | None
+    task_type: str | None
+    selected_provider_identity: str | None
+    selected_model_identity: str | None
+    provider_request_id: str | None
+    response_content: dict[str, Any] | None
+    structured_output_valid: bool | None
+    input_tokens: int | None
+    output_tokens: int | None
+    total_tokens: int | None
+    latency_ms: int | None
+    retry_count: int
+    failure_category: str | None
+
+
+class AIExecutionSubmit(BaseModel):
+    organization_id: UUID
+    purpose: str = Field(min_length=1, max_length=200)
+    context_type: str = Field(min_length=1, max_length=100)
+    context_reference: str = Field(min_length=1, max_length=500)
+    capability_id: UUID
+    prompt_version_id: UUID | None = None
+    task_type: str = Field(min_length=1, max_length=100)
+    system_instructions: str = Field(min_length=1, max_length=100_000)
+    input_content: str = Field(min_length=1, max_length=200_000)
+    output_classification: OutputClassification
+    expected_output_schema: dict[str, Any] | None = None
+    runtime_configuration: dict[str, Any] = Field(default_factory=dict)
+    provenance_context: dict[str, Any] = Field(default_factory=dict)
+    approval_request_id: UUID | None = None
+
+
+class AIExecutionResult(ReadModel):
+    organization_id: UUID
+    request_id: UUID
+    status: str
+    output_classification: str | None
+    response_content: dict[str, Any] | None
+    structured_output_valid: bool | None
+    provider_request_id: str | None
+    provider: str | None
+    model: str | None
+    input_tokens: int | None
+    output_tokens: int | None
+    total_tokens: int | None
+    latency_ms: int | None
+    retry_count: int
+    failure_category: str | None
+    failure_reason: str | None
+
+
+class ResearchAnalysisComposition(BaseModel):
+    organization_id: UUID
+    analysis_type: Literal["customer_pain", "market_insight", "opportunity_brief"]
+    confidence: float = Field(ge=0, le=1)
+    methodology_version: str = Field(default="governed-ai-runtime-v1", max_length=80)
 
 
 class PromptPurposeCreate(BaseModel):
