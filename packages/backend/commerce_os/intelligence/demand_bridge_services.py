@@ -8,6 +8,9 @@ from commerce_os.intelligence.demand_bridge_models import (
     DemandSignal,
     DemandSignalEvidence,
     DemandSignalSource,
+    DemandThemeAnalysis,
+    DemandThemeSignalLink,
+    PredictiveDemandMetadata,
 )
 from commerce_os.intelligence.demand_bridge_schemas import (
     BusinessDemandSignalCreate,
@@ -17,7 +20,10 @@ from commerce_os.intelligence.demand_bridge_schemas import (
     DemandDashboardRead,
     DemandSignalSourceCreate,
     DemandSourceVolume,
+    DemandThemeAnalysisCreate,
     EmergingDemandCategory,
+    EmergingDemandTheme,
+    PredictiveIndicator,
 )
 from commerce_os.intelligence.errors import IntelligenceScopeError
 from commerce_os.intelligence.voice_models import CustomerPainCluster
@@ -88,7 +94,62 @@ class DemandIntelligenceService:
                 for item in payload.evidence
             ]
         )
+        if payload.prediction is not None:
+            self.session.add(
+                PredictiveDemandMetadata(
+                    organization_id=payload.organization_id,
+                    demand_signal_id=entity.id,
+                    **payload.prediction.model_dump(),
+                )
+            )
         return self._commit(entity, actor_id, "intelligence.business_demand.ingested")
+
+    def analyze_theme(
+        self, payload: DemandThemeAnalysisCreate, actor_id: UUID
+    ) -> DemandThemeAnalysis:
+        unique_ids = set(payload.signal_ids)
+        signals = list(
+            self.session.scalars(
+                select(DemandSignal).where(
+                    DemandSignal.organization_id == payload.organization_id,
+                    DemandSignal.id.in_(unique_ids),
+                )
+            )
+        )
+        if len(signals) != len(unique_ids):
+            raise IntelligenceScopeError(
+                "Every theme input signal must exist in this organization."
+            )
+        if any(signal.status not in {"review", "approved"} for signal in signals):
+            raise IntelligenceScopeError(
+                "Demand themes require signals that have entered human review."
+            )
+        source_types = {signal.source_type for signal in signals}
+        diversity = len(source_types)
+        strength = "weak" if diversity == 1 else "medium" if diversity == 2 else "strong"
+        analysis = DemandThemeAnalysis(
+            organization_id=payload.organization_id,
+            name=payload.name,
+            category=payload.category,
+            evidence_count=sum(signal.evidence_count for signal in signals),
+            signal_diversity=diversity,
+            confidence=round(sum(signal.confidence for signal in signals) / len(signals), 4),
+            evidence_strength=strength,
+            summary=payload.summary,
+        )
+        self.session.add(analysis)
+        self.session.flush()
+        self.session.add_all(
+            [
+                DemandThemeSignalLink(
+                    organization_id=payload.organization_id,
+                    theme_analysis_id=analysis.id,
+                    demand_signal_id=signal.id,
+                )
+                for signal in signals
+            ]
+        )
+        return self._commit(analysis, actor_id, "intelligence.demand_theme.analyzed")
 
     def aggregate(self, payload: DemandAggregationCreate, actor_id: UUID) -> DemandSignal:
         signal_table = Base.metadata.tables["growth_sales_learning_signals"]
@@ -141,6 +202,10 @@ class DemandIntelligenceService:
                     source_domain="growth",
                     collection_method="deterministic_aggregation",
                     evidence_origin="human_accepted_customer_conversation",
+                    source_category="customer_voice",
+                    geographic_scope=None,
+                    time_window=None,
+                    trend_type=None,
                     status="active",
                 )
             )
@@ -283,6 +348,26 @@ class DemandIntelligenceService:
             .group_by(DemandSignal.category)
             .order_by(func.sum(DemandSignal.frequency).desc(), DemandSignal.category)
         ).all()
+        total_signals = sum(int(row[1]) for row in source_rows)
+        theme_rows = list(
+            self.session.scalars(
+                select(DemandThemeAnalysis)
+                .where(DemandThemeAnalysis.organization_id == organization_id)
+                .order_by(
+                    DemandThemeAnalysis.signal_diversity.desc(),
+                    DemandThemeAnalysis.confidence.desc(),
+                )
+                .limit(20)
+            )
+        )
+        predictive_rows = list(
+            self.session.scalars(
+                select(PredictiveDemandMetadata)
+                .where(PredictiveDemandMetadata.organization_id == organization_id)
+                .order_by(PredictiveDemandMetadata.created_at.desc())
+                .limit(20)
+            )
+        )
         return DemandDashboardRead(
             organization_id=organization_id,
             draft_signals=count("draft"),
@@ -294,6 +379,7 @@ class DemandIntelligenceService:
                     signal_count=int(row[1]),
                     evidence_count=int(row[2]),
                     average_confidence=round(float(row[3]), 4),
+                    signal_percentage=round(int(row[1]) / total_signals * 100, 2),
                 )
                 for row in source_rows
             ],
@@ -324,6 +410,36 @@ class DemandIntelligenceService:
                     )
                     .limit(20)
                 )
+            ],
+            emerging_demand_themes=[
+                EmergingDemandTheme(
+                    theme_analysis_id=theme.id,
+                    name=theme.name,
+                    category=theme.category,
+                    evidence_count=theme.evidence_count,
+                    signal_diversity=theme.signal_diversity,
+                    confidence=theme.confidence,
+                    evidence_strength=theme.evidence_strength,
+                )
+                for theme in theme_rows
+            ],
+            predictive_indicators=[
+                PredictiveIndicator(
+                    demand_signal_id=prediction.demand_signal_id,
+                    upcoming_trend=prediction.prediction_type,
+                    timeframe=prediction.forecast_window,
+                    evidence_sources=[
+                        row.source_reference
+                        for row in self.session.scalars(
+                            select(DemandSignalEvidence).where(
+                                DemandSignalEvidence.demand_signal_id == prediction.demand_signal_id
+                            )
+                        )
+                    ],
+                    confidence=prediction.confidence_score,
+                    uncertainty=prediction.uncertainty_notes,
+                )
+                for prediction in predictive_rows
             ],
             emerging_customer_pains=items,
         )

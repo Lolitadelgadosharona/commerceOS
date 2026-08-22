@@ -15,6 +15,20 @@ DemandSourceType = Literal[
     "competitor_review",
     "research_analysis",
     "manual_input",
+    "news_event",
+    "weather_environment",
+    "seasonal_pattern",
+]
+DemandSourceCategory = Literal[
+    "customer_voice",
+    "marketplace",
+    "search",
+    "social",
+    "news",
+    "weather",
+    "seasonality",
+    "manual",
+    "research",
 ]
 
 
@@ -25,6 +39,10 @@ class DemandSignalSourceCreate(BaseModel):
     source_domain: Literal["growth", "intelligence", "research", "manual"]
     collection_method: str = Field(min_length=1, max_length=80)
     evidence_origin: str = Field(min_length=1, max_length=250)
+    source_category: DemandSourceCategory = "customer_voice"
+    geographic_scope: str | None = Field(default=None, max_length=200)
+    time_window: str | None = Field(default=None, max_length=120)
+    trend_type: Literal["rising", "falling", "stable", "volatile", "seasonal"] | None = None
 
 
 class DemandSignalSourceRead(ReadModel):
@@ -34,6 +52,10 @@ class DemandSignalSourceRead(ReadModel):
     source_domain: str
     collection_method: str
     evidence_origin: str
+    source_category: str
+    geographic_scope: str | None
+    time_window: str | None
+    trend_type: str | None
     status: str
 
 
@@ -41,6 +63,14 @@ class BusinessDemandEvidenceInput(BaseModel):
     source_id: UUID
     source_reference: str = Field(min_length=1, max_length=500)
     evidence_text: str = Field(min_length=1, max_length=20_000)
+
+
+class PredictiveDemandInput(BaseModel):
+    prediction_type: str = Field(min_length=1, max_length=80)
+    forecast_window: str = Field(min_length=1, max_length=120)
+    confidence_score: float = Field(ge=0, le=1)
+    assumptions: list[str] = Field(min_length=1)
+    uncertainty_notes: str = Field(min_length=1, max_length=20_000)
 
 
 class BusinessDemandSignalCreate(BaseModel):
@@ -54,6 +84,7 @@ class BusinessDemandSignalCreate(BaseModel):
     confidence: float = Field(ge=0, le=1)
     confidence_basis: str = Field(min_length=1, max_length=20_000)
     evidence: list[BusinessDemandEvidenceInput] = Field(min_length=1)
+    prediction: PredictiveDemandInput | None = None
 
 
 class DemandAggregationCreate(BaseModel):
@@ -114,6 +145,7 @@ class DemandSourceVolume(BaseModel):
     signal_count: int
     evidence_count: int
     average_confidence: float
+    signal_percentage: float
 
 
 class EmergingDemandCategory(BaseModel):
@@ -132,6 +164,44 @@ class CustomerPainClusterOverview(BaseModel):
     status: str
 
 
+class DemandThemeAnalysisCreate(BaseModel):
+    organization_id: UUID
+    name: str = Field(min_length=1, max_length=200)
+    category: str = Field(min_length=1, max_length=80)
+    signal_ids: list[UUID] = Field(min_length=1)
+    summary: str = Field(min_length=1, max_length=20_000)
+
+
+class DemandThemeAnalysisRead(ReadModel):
+    organization_id: UUID
+    name: str
+    category: str
+    evidence_count: int
+    signal_diversity: int
+    confidence: float
+    evidence_strength: str
+    summary: str
+
+
+class EmergingDemandTheme(BaseModel):
+    theme_analysis_id: UUID
+    name: str
+    category: str
+    evidence_count: int
+    signal_diversity: int
+    confidence: float
+    evidence_strength: str
+
+
+class PredictiveIndicator(BaseModel):
+    demand_signal_id: UUID
+    upcoming_trend: str
+    timeframe: str
+    evidence_sources: list[str]
+    confidence: float
+    uncertainty: str
+
+
 class DemandDashboardRead(BaseModel):
     organization_id: UUID
     draft_signals: int
@@ -140,4 +210,6 @@ class DemandDashboardRead(BaseModel):
     source_overview: list[DemandSourceVolume]
     emerging_categories: list[EmergingDemandCategory]
     customer_pain_clusters: list[CustomerPainClusterOverview]
+    emerging_demand_themes: list[EmergingDemandTheme]
+    predictive_indicators: list[PredictiveIndicator]
     emerging_customer_pains: list[DemandDashboardItem]
