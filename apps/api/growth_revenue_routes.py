@@ -13,19 +13,24 @@ from commerce_os.growth.discovery_models import (
 )
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
+    BusinessGrowthProfile,
     GrowthGift,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
+    GrowthProspectRanking,
     SalesConversationAnalysis,
 )
 from commerce_os.growth.revenue_schemas import (
     AIModelPolicyCreate,
     AIModelPolicyRead,
+    BusinessGrowthProfileCreate,
+    BusinessGrowthProfileRead,
     GrowthDashboardRead,
     GrowthGiftCreate,
     GrowthGiftRead,
+    GrowthRevenueV2Dashboard,
     OpportunityAnalysisCreate,
     OpportunityAnalysisRead,
     OutreachDraftCreate,
@@ -33,6 +38,8 @@ from commerce_os.growth.revenue_schemas import (
     ProspectCreate,
     ProspectEvidenceCreate,
     ProspectEvidenceRead,
+    ProspectRankingCreate,
+    ProspectRankingRead,
     ProspectRead,
     ProspectTransition,
     SalesAnalysisCreate,
@@ -109,6 +116,34 @@ def list_evidence(
     organization_id: UUID, session: SessionDependency
 ) -> list[GrowthProspectEvidence]:
     return _list(session, GrowthProspectEvidence, organization_id)
+
+
+@router.post("/business-growth-profiles", response_model=BusinessGrowthProfileRead, status_code=201)
+def create_business_growth_profile(
+    payload: BusinessGrowthProfileCreate, request: Request, session: SessionDependency
+) -> BusinessGrowthProfile:
+    return GrowthRevenueService(session).create_business_profile(payload, actor_id(request))
+
+
+@router.get("/business-growth-profiles", response_model=list[BusinessGrowthProfileRead])
+def list_business_growth_profiles(
+    organization_id: UUID, session: SessionDependency
+) -> list[BusinessGrowthProfile]:
+    return _list(session, BusinessGrowthProfile, organization_id)
+
+
+@router.post("/growth-prospect-rankings", response_model=ProspectRankingRead)
+def rank_growth_prospect(
+    payload: ProspectRankingCreate, request: Request, session: SessionDependency
+) -> GrowthProspectRanking:
+    return GrowthRevenueService(session).rank_prospect(payload, actor_id(request))
+
+
+@router.get("/growth-prospect-rankings", response_model=list[ProspectRankingRead])
+def list_growth_prospect_rankings(
+    organization_id: UUID, session: SessionDependency
+) -> list[GrowthProspectRanking]:
+    return _list(session, GrowthProspectRanking, organization_id)
 
 
 @router.post(
@@ -281,3 +316,10 @@ def dashboard(organization_id: UUID, session: SessionDependency) -> GrowthDashbo
             OutreachTrackingEvent, OutreachTrackingEvent.event_type == "converted"
         ),
     )
+
+
+@router.get("/growthos-revenue-v2-dashboard", response_model=GrowthRevenueV2Dashboard)
+def revenue_v2_dashboard(
+    organization_id: UUID, session: SessionDependency
+) -> GrowthRevenueV2Dashboard:
+    return GrowthRevenueService(session).v2_dashboard(organization_id)

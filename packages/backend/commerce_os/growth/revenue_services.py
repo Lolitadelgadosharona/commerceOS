@@ -1,27 +1,32 @@
 from typing import Any, TypeVar, cast
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
 
 from commerce_os.ai_runtime.models import AIOutputClassification, AIRequest
 from commerce_os.growth.errors import GrowthError
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
+    BusinessGrowthProfile,
     GrowthGift,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
+    GrowthProspectRanking,
     SalesConversationAnalysis,
 )
 from commerce_os.growth.revenue_schemas import (
     AIModelPolicyCreate,
+    BusinessGrowthProfileCreate,
     GrowthGiftCreate,
+    GrowthRevenueV2Dashboard,
     OpportunityAnalysisCreate,
     OutreachDraftCreate,
     ProspectCreate,
     ProspectEvidenceCreate,
+    ProspectRankingCreate,
     SalesAnalysisCreate,
 )
 from commerce_os.shared.audit import record_audit_event
@@ -106,6 +111,66 @@ class GrowthRevenueService:
             actor_id,
             "growthos.prospect_evidence.created",
         )
+
+    def create_business_profile(
+        self, payload: BusinessGrowthProfileCreate, actor_id: UUID
+    ) -> BusinessGrowthProfile:
+        prospect = scoped_revenue(
+            self.session, GrowthProspect, payload.prospect_id, payload.organization_id
+        )
+        evidence_ids = [str(item) for item in payload.evidence_references]
+        for evidence_id in payload.evidence_references:
+            evidence = scoped_revenue(
+                self.session, GrowthProspectEvidence, evidence_id, payload.organization_id
+            )
+            if evidence.prospect_id != prospect.id:
+                raise GrowthError("Business profile evidence must belong to the selected prospect.")
+        values = payload.model_dump(exclude={"evidence_references"})
+        return self._save(
+            BusinessGrowthProfile(
+                **values,
+                industry=prospect.industry,
+                location=prospect.location,
+                evidence_references=evidence_ids,
+            ),
+            actor_id,
+            "growthos.business_profile.created",
+        )
+
+    def rank_prospect(
+        self, payload: ProspectRankingCreate, actor_id: UUID
+    ) -> GrowthProspectRanking:
+        scoped_revenue(self.session, GrowthProspect, payload.prospect_id, payload.organization_id)
+        inputs = payload.model_dump(exclude={"organization_id", "prospect_id"})
+        missing = [name for name, value in inputs.items() if value is None]
+        score = (
+            None
+            if missing
+            else round(sum(float(value) for value in inputs.values()) / len(inputs), 2)
+        )
+        explanation = (
+            f"Score unavailable; missing: {', '.join(missing)}."
+            if missing
+            else "Arithmetic mean of supplied pain, impact, accessibility, buying, and fit inputs."
+        )
+        entity = self.session.scalar(
+            select(GrowthProspectRanking).where(
+                GrowthProspectRanking.prospect_id == payload.prospect_id
+            )
+        )
+        values = {
+            **payload.model_dump(),
+            "score": score,
+            "missing_inputs": missing,
+            "explanation": explanation,
+            "formula_version": "growth-revenue-ranking-v1",
+        }
+        if entity is None:
+            entity = GrowthProspectRanking(**values)
+        else:
+            for name, value in values.items():
+                setattr(entity, name, value)
+        return self._save(entity, actor_id, "growthos.prospect_ranking.recorded")
 
     def create_opportunity(
         self, payload: OpportunityAnalysisCreate, actor_id: UUID
@@ -234,6 +299,9 @@ class GrowthRevenueService:
             "full-service agency",
             "as an ai",
             "ai-generated",
+            "guaranteed roi",
+            "guaranteed results",
+            "10x your revenue",
         }
         if any(phrase in combined for phrase in forbidden):
             raise GrowthError(
@@ -245,6 +313,46 @@ class GrowthRevenueService:
         self._organization(payload.organization_id)
         return self._save(
             AIModelPolicy(**payload.model_dump()), actor_id, "growthos.ai_model_policy.created"
+        )
+
+    def v2_dashboard(self, organization_id: UUID) -> GrowthRevenueV2Dashboard:
+        self._organization(organization_id)
+
+        def count(table_name: str, *criteria: ColumnElement[bool]) -> int:
+            table = Base.metadata.tables[table_name]
+            return int(
+                self.session.execute(
+                    select(func.count())
+                    .select_from(table)
+                    .where(table.c.organization_id == organization_id, *criteria)
+                ).scalar_one()
+                or 0
+            )
+
+        prospects = Base.metadata.tables["growth_prospects"]
+        demand = Base.metadata.tables["demand_signals"]
+        pipeline = {
+            status: count("growth_prospects", prospects.c.status == status)
+            for status in [
+                "discovered",
+                "researching",
+                "qualified",
+                "contacted",
+                "replied",
+                "customer",
+            ]
+        }
+        return GrowthRevenueV2Dashboard(
+            organization_id=organization_id,
+            business_profiles=count("business_growth_profiles"),
+            ranked_prospects=count("growth_prospect_rankings"),
+            pipeline=pipeline,
+            growth_demand_signals=count(
+                "demand_signals", demand.c.source_type == "growthos_conversation"
+            ),
+            commerce_independent_demand_signals=count(
+                "demand_signals", demand.c.source_type != "growthos_conversation"
+            ),
         )
 
     def _ai_request(self, request_id: UUID, organization_id: UUID, allowed: set[str]) -> AIRequest:

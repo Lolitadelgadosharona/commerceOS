@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 056 Product Opportunity Evaluation foundation
+Status: Sprint 057 GrowthOS Revenue Engine Foundation v2
 
 ## Governing documents
 
@@ -75,6 +75,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Demand Intelligence Enhancement Foundation v1.0](./architecture/DEMAND_INTELLIGENCE_ENHANCEMENT_FOUNDATION_V1_0.md) | Observed, customer voice, marketplace, trend, and predictive evidence with explainable multi-source diversity |
 | [Opportunity Discovery Engine Foundation v1.0](./architecture/OPPORTUNITY_DISCOVERY_FOUNDATION_V1_0.md) | Deterministic demand-to-opportunity candidates, append-only evidence, advisory assessment, and human review |
 | [Product Opportunity Evaluation Foundation v1.0](./architecture/PRODUCT_OPPORTUNITY_EVALUATION_FOUNDATION_V1_0.md) | Accepted opportunity-to-product hypotheses, deterministic evaluation, append-only evidence, and human review |
+| [GrowthOS Revenue Engine Foundation v2](./architecture/GROWTHOS_REVENUE_ENGINE_V2_FOUNDATION.md) | Independent GrowthOS and CommerceOS engines over shared evidence, AI, Sales Copilot, Demand, and Learning capabilities |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -188,5 +189,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 054 Completion Notes](./planning/SPRINT_054_COMPLETION.md)
 - [Sprint 055 Completion Notes](./planning/SPRINT_055_COMPLETION.md)
 - [Sprint 056 Completion Notes](./planning/SPRINT_056_COMPLETION.md)
+- [Sprint 057 Completion Notes](./planning/SPRINT_057_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.
