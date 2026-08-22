@@ -2,17 +2,27 @@ from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
 from commerce_os.growth.activation_models import (
+    ExperimentFeedbackSignal,
+    OfferExperiment,
+    OfferExperimentOutcome,
     OutreachTrackingEvent,
     ProspectExperimentLink,
     RevenueExperiment,
 )
 from commerce_os.growth.activation_schemas import (
+    FeedbackSignalCreate,
+    FeedbackSignalRead,
+    OfferExperimentCreate,
+    OfferExperimentRead,
+    OfferOutcomeCreate,
+    OfferOutcomeRead,
     OutreachEventCreate,
     OutreachEventRead,
     ProspectAssignmentCreate,
     ProspectAssignmentRead,
     ProspectPromotionCreate,
     RevenueExperimentCreate,
+    RevenueExperimentDashboard,
     RevenueExperimentRead,
     RevenueExperimentTransition,
 )
@@ -124,3 +134,48 @@ def record_event(
 @router.get("/outreach-tracking-events", response_model=list[OutreachEventRead])
 def list_events(organization_id: UUID, session: SessionDependency) -> list[OutreachTrackingEvent]:
     return _list(session, OutreachTrackingEvent, organization_id)
+
+
+@router.post("/offer-experiments", response_model=OfferExperimentRead, status_code=201)
+def create_offer_experiment(
+    payload: OfferExperimentCreate, request: Request, session: SessionDependency
+) -> OfferExperiment:
+    return RevenueActivationService(session).create_offer_experiment(payload, actor_id(request))
+
+
+@router.get("/offer-experiments", response_model=list[OfferExperimentRead])
+def list_offer_experiments(
+    organization_id: UUID, session: SessionDependency
+) -> list[OfferExperiment]:
+    return _list(session, OfferExperiment, organization_id)
+
+
+@router.post("/offer-experiment-outcomes", response_model=OfferOutcomeRead, status_code=201)
+def record_offer_outcome(
+    payload: OfferOutcomeCreate, request: Request, session: SessionDependency
+) -> OfferExperimentOutcome:
+    return RevenueActivationService(session).record_offer_outcome(payload, actor_id(request))
+
+
+@router.post("/experiment-feedback-signals", response_model=FeedbackSignalRead, status_code=201)
+def create_feedback_signal(
+    payload: FeedbackSignalCreate, request: Request, session: SessionDependency
+) -> ExperimentFeedbackSignal:
+    return RevenueActivationService(session).create_feedback_signal(payload, actor_id(request))
+
+
+@router.get("/experiment-feedback-signals", response_model=list[FeedbackSignalRead])
+def list_feedback_signals(
+    organization_id: UUID, session: SessionDependency
+) -> list[ExperimentFeedbackSignal]:
+    return _list(session, ExperimentFeedbackSignal, organization_id)
+
+
+@router.get(
+    "/revenue-experiments/{experiment_id}/dashboard",
+    response_model=RevenueExperimentDashboard,
+)
+def revenue_experiment_dashboard(
+    experiment_id: UUID, organization_id: UUID, session: SessionDependency
+) -> RevenueExperimentDashboard:
+    return RevenueActivationService(session).experiment_dashboard(experiment_id, organization_id)

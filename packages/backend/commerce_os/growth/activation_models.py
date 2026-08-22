@@ -1,8 +1,19 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, UniqueConstraint, Uuid, event
+from sqlalchemy import (
+    JSON,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+    event,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from commerce_os.shared.database import Base
@@ -21,6 +32,13 @@ class RevenueExperiment(IdMixin, TimestampMixin, VersionMixin, Base):
     message_strategy: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), index=True)
+    industry_profile_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("industry_growth_profiles.id"), index=True
+    )
+    segment: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    target_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    start_date: Mapped[date | None] = mapped_column(Date)
+    success_metrics: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
 
 
 class ProspectExperimentLink(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -57,3 +75,57 @@ class OutreachTrackingEvent(IdMixin, TimestampMixin, VersionMixin, Base):
 @event.listens_for(OutreachTrackingEvent, "before_delete")
 def _protect_outreach_event(*_: object) -> None:
     raise ValueError("Outreach tracking events are append-only.")
+
+
+class OfferExperiment(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "offer_experiments"
+    __table_args__ = (UniqueConstraint("revenue_experiment_id", "offer_type", "prospect_segment"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    revenue_experiment_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("revenue_experiments.id", ondelete="CASCADE"), index=True
+    )
+    offer_type: Mapped[str] = mapped_column(String(120), nullable=False)
+    prospect_segment: Mapped[str] = mapped_column(String(200), nullable=False)
+    hypothesis: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
+
+
+class OfferExperimentOutcome(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "offer_experiment_outcomes"
+    __table_args__ = (UniqueConstraint("offer_experiment_id", "prospect_id"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    offer_experiment_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("offer_experiments.id", ondelete="CASCADE"), index=True
+    )
+    prospect_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_prospects.id"), index=True)
+    outreach_sent: Mapped[bool] = mapped_column(nullable=False, default=False)
+    replied: Mapped[bool] = mapped_column(nullable=False, default=False)
+    positive_reply: Mapped[bool] = mapped_column(nullable=False, default=False)
+    converted: Mapped[bool] = mapped_column(nullable=False, default=False)
+    revenue_observation_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("revenue_observations.id"), index=True
+    )
+
+
+class ExperimentFeedbackSignal(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "experiment_feedback_signals"
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    revenue_experiment_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("revenue_experiments.id", ondelete="CASCADE"), index=True
+    )
+    offer_experiment_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("offer_experiments.id"), index=True
+    )
+    source_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
+    objection_category: Mapped[str | None] = mapped_column(String(80))
+    frequency: Mapped[int] = mapped_column(Integer, nullable=False)
+    industry: Mapped[str] = mapped_column(String(120), nullable=False)
+    recommended_response: Mapped[str] = mapped_column(Text, nullable=False)
+    learning_signal: Mapped[str] = mapped_column(Text, nullable=False)
+    industry_learning_signal_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("industry_learning_signals.id"), index=True
+    )
