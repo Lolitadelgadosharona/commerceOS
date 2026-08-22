@@ -31,4 +31,6 @@ ownership. Beauty is the first profile, while all storage and services are verti
 - Docker Compose configuration: valid.
 - Docker runtime and local PostgreSQL validation: blocked because the Docker daemon socket is not
   available at `/Users/richardwang/.docker/run/docker.sock`.
-- GitHub CI: pending branch publication.
+- GitHub CI: backend, web, and documentation jobs passed on Draft PR #57. The backend job
+  validated PostgreSQL migration, schema drift, and the full test suite. An initial PostgreSQL
+  check-constraint name truncation was corrected with stable names before the successful run.
