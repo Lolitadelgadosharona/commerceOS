@@ -1,16 +1,26 @@
 from typing import Any, TypeVar, cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from commerce_os.intelligence.demand_bridge_models import DemandSignal, DemandSignalEvidence
+from commerce_os.intelligence.demand_bridge_models import (
+    DemandSignal,
+    DemandSignalEvidence,
+    DemandSignalSource,
+)
 from commerce_os.intelligence.demand_bridge_schemas import (
+    BusinessDemandSignalCreate,
+    CustomerPainClusterOverview,
     DemandAggregationCreate,
     DemandDashboardItem,
     DemandDashboardRead,
+    DemandSignalSourceCreate,
+    DemandSourceVolume,
+    EmergingDemandCategory,
 )
 from commerce_os.intelligence.errors import IntelligenceScopeError
+from commerce_os.intelligence.voice_models import CustomerPainCluster
 from commerce_os.shared.audit import record_audit_event
 from commerce_os.shared.database import Base
 
@@ -26,6 +36,59 @@ TRANSITIONS = {
 class DemandIntelligenceService:
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def create_source(
+        self, payload: DemandSignalSourceCreate, actor_id: UUID
+    ) -> DemandSignalSource:
+        existing = self.session.scalar(
+            select(DemandSignalSource).where(
+                DemandSignalSource.organization_id == payload.organization_id,
+                DemandSignalSource.source_type == payload.source_type,
+            )
+        )
+        if existing is not None:
+            raise IntelligenceScopeError(
+                "This demand source type is already registered for the organization."
+            )
+        source = DemandSignalSource(**payload.model_dump(), status="active")
+        return self._commit(source, actor_id, "intelligence.demand_source.created")
+
+    def ingest(self, payload: BusinessDemandSignalCreate, actor_id: UUID) -> DemandSignal:
+        source = self._registered_source(payload.organization_id, payload.source_type)
+        entity = DemandSignal(
+            organization_id=payload.organization_id,
+            source_domain=source.source_domain,
+            source_reference_id=uuid4(),
+            source_type=source.source_type,
+            source_reference=payload.source_reference,
+            collection_method=source.collection_method,
+            evidence_origin=source.evidence_origin,
+            confidence_basis=payload.confidence_basis,
+            customer_segment=payload.customer_segment,
+            category=payload.category,
+            problem_statement=payload.problem_statement,
+            customer_language=payload.customer_language,
+            frequency=len(payload.evidence),
+            confidence=payload.confidence,
+            evidence_count=len(payload.evidence),
+            status="draft",
+        )
+        self.session.add(entity)
+        self.session.flush()
+        self.session.add_all(
+            [
+                DemandSignalEvidence(
+                    organization_id=payload.organization_id,
+                    demand_signal_id=entity.id,
+                    source_type=source.source_type,
+                    source_id=item.source_id,
+                    source_reference=item.source_reference,
+                    evidence_text=item.evidence_text,
+                )
+                for item in payload.evidence
+            ]
+        )
+        return self._commit(entity, actor_id, "intelligence.business_demand.ingested")
 
     def aggregate(self, payload: DemandAggregationCreate, actor_id: UUID) -> DemandSignal:
         signal_table = Base.metadata.tables["growth_sales_learning_signals"]
@@ -61,10 +124,36 @@ class DemandIntelligenceService:
         if any(not item for item in evidence_text):
             raise IntelligenceScopeError("Demand signals require original customer evidence.")
         ordered_insights = list(dict.fromkeys(str(row["insight"]).strip() for row in rows))
+        if (
+            self.session.scalar(
+                select(DemandSignalSource).where(
+                    DemandSignalSource.organization_id == payload.organization_id,
+                    DemandSignalSource.source_type == "growthos_conversation",
+                )
+            )
+            is None
+        ):
+            self.session.add(
+                DemandSignalSource(
+                    organization_id=payload.organization_id,
+                    source_type="growthos_conversation",
+                    display_name="GrowthOS Customer Conversations",
+                    source_domain="growth",
+                    collection_method="deterministic_aggregation",
+                    evidence_origin="human_accepted_customer_conversation",
+                    status="active",
+                )
+            )
+            self.session.flush()
         entity = DemandSignal(
             organization_id=payload.organization_id,
             source_domain="growth",
             source_reference_id=rows[0]["id"],
+            source_type="growthos_conversation",
+            source_reference=str(rows[0]["id"]),
+            collection_method="deterministic_aggregation",
+            evidence_origin="human_accepted_customer_conversation",
+            confidence_basis="Arithmetic mean of accepted GrowthOS learning signal confidence.",
             customer_segment=payload.customer_segment,
             category=payload.category,
             problem_statement=" | ".join(ordered_insights),
@@ -83,6 +172,7 @@ class DemandIntelligenceService:
                     demand_signal_id=entity.id,
                     source_type="growth_sales_learning_signal",
                     source_id=row["id"],
+                    source_reference=str(row["id"]),
                     evidence_text=row["customer_reply"],
                 )
                 for row in rows
@@ -159,16 +249,98 @@ class DemandIntelligenceService:
                     frequency=signal.frequency,
                     confidence=signal.confidence,
                     evidence_count=signal.evidence_count,
+                    source_type=signal.source_type,
+                    evidence_sources=[
+                        row.source_reference
+                        for row in self.session.scalars(
+                            select(DemandSignalEvidence).where(
+                                DemandSignalEvidence.demand_signal_id == signal.id
+                            )
+                        )
+                    ],
                     source_conversation_ids=conversation_ids,
                 )
             )
+        source_rows = self.session.execute(
+            select(
+                DemandSignal.source_type,
+                func.count(DemandSignal.id),
+                func.sum(DemandSignal.evidence_count),
+                func.avg(DemandSignal.confidence),
+            )
+            .where(DemandSignal.organization_id == organization_id)
+            .group_by(DemandSignal.source_type)
+            .order_by(func.count(DemandSignal.id).desc(), DemandSignal.source_type)
+        ).all()
+        category_rows = self.session.execute(
+            select(
+                DemandSignal.category,
+                func.count(DemandSignal.id),
+                func.sum(DemandSignal.frequency),
+                func.avg(DemandSignal.confidence),
+            )
+            .where(DemandSignal.organization_id == organization_id)
+            .group_by(DemandSignal.category)
+            .order_by(func.sum(DemandSignal.frequency).desc(), DemandSignal.category)
+        ).all()
         return DemandDashboardRead(
             organization_id=organization_id,
             draft_signals=count("draft"),
             signals_in_review=count("review"),
             approved_signals=count("approved"),
+            source_overview=[
+                DemandSourceVolume(
+                    source_type=row[0],
+                    signal_count=int(row[1]),
+                    evidence_count=int(row[2]),
+                    average_confidence=round(float(row[3]), 4),
+                )
+                for row in source_rows
+            ],
+            emerging_categories=[
+                EmergingDemandCategory(
+                    category=row[0],
+                    signal_count=int(row[1]),
+                    total_frequency=int(row[2]),
+                    average_confidence=round(float(row[3]), 4),
+                )
+                for row in category_rows
+            ],
+            customer_pain_clusters=[
+                CustomerPainClusterOverview(
+                    cluster_id=cluster.id,
+                    name=cluster.name,
+                    category=cluster.category,
+                    severity_score=cluster.severity_score,
+                    confidence_score=cluster.confidence_score,
+                    status=cluster.status,
+                )
+                for cluster in self.session.scalars(
+                    select(CustomerPainCluster)
+                    .where(CustomerPainCluster.organization_id == organization_id)
+                    .order_by(
+                        CustomerPainCluster.severity_score.desc(),
+                        CustomerPainCluster.confidence_score.desc(),
+                    )
+                    .limit(20)
+                )
+            ],
             emerging_customer_pains=items,
         )
+
+    def _registered_source(self, organization_id: UUID, source_type: str) -> DemandSignalSource:
+        source = self.session.scalar(
+            select(DemandSignalSource).where(
+                DemandSignalSource.organization_id == organization_id,
+                DemandSignalSource.source_type == source_type,
+                DemandSignalSource.status == "active",
+            )
+        )
+        if source is None:
+            raise IntelligenceScopeError(
+                "Demand source must be registered and active for this organization."
+            )
+        return source
 
     def scoped(self, model: type[EntityT], entity_id: UUID, organization_id: UUID) -> EntityT:
         entity = self.session.get(model, entity_id)

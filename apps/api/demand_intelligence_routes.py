@@ -4,12 +4,16 @@ from uuid import UUID
 from commerce_os.intelligence.demand_bridge_models import (
     DemandSignal,
     DemandSignalEvidence,
+    DemandSignalSource,
 )
 from commerce_os.intelligence.demand_bridge_schemas import (
+    BusinessDemandSignalCreate,
     DemandAggregationCreate,
     DemandDashboardRead,
     DemandSignalEvidenceRead,
     DemandSignalRead,
+    DemandSignalSourceCreate,
+    DemandSignalSourceRead,
     DemandSignalTransition,
 )
 from commerce_os.intelligence.demand_bridge_services import (
@@ -31,6 +35,38 @@ def _actor_id(request: Request) -> UUID:
     if actor is None:
         raise ApiError(401, "actor_required", "Verified actor identity is required.")
     return actor
+
+
+@router.post("/demand-sources", response_model=DemandSignalSourceRead, status_code=201)
+def create_demand_source(
+    payload: DemandSignalSourceCreate,
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+) -> DemandSignalSource:
+    return DemandIntelligenceService(session).create_source(payload, _actor_id(request))
+
+
+@router.get("/demand-sources", response_model=list[DemandSignalSourceRead])
+def list_demand_sources(
+    organization_id: Annotated[UUID, Query()],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[DemandSignalSource]:
+    return list(
+        session.scalars(
+            select(DemandSignalSource)
+            .where(DemandSignalSource.organization_id == organization_id)
+            .order_by(DemandSignalSource.source_type)
+        )
+    )
+
+
+@router.post("/demand-signals/ingest", response_model=DemandSignalRead, status_code=201)
+def ingest_business_demand_signal(
+    payload: BusinessDemandSignalCreate,
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+) -> DemandSignal:
+    return DemandIntelligenceService(session).ingest(payload, _actor_id(request))
 
 
 @router.post("/demand-signals", response_model=DemandSignalRead, status_code=201)
