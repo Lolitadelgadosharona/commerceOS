@@ -103,6 +103,11 @@ class GrowthGift(IdMixin, TimestampMixin, VersionMixin, Base):
     expected_value: Mapped[str] = mapped_column(Text, nullable=False, default="")
     preview_type: Mapped[str] = mapped_column(String(40), nullable=False, default="other")
     preview_status: Mapped[str] = mapped_column(String(30), nullable=False, default="draft")
+    gift_type: Mapped[str] = mapped_column(String(50), nullable=False, default="other")
+    before_asset_reference: Mapped[str | None] = mapped_column(String(500))
+    after_asset_reference: Mapped[str | None] = mapped_column(String(500))
+    customer_rationale: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    customer_response: Mapped[str | None] = mapped_column(Text)
 
 
 class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -121,6 +126,10 @@ class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
     approval_request_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("approval_requests.id"), index=True
     )
+    industry_profile_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("industry_growth_profiles.id"), index=True
+    )
+    industry_context: Mapped[str] = mapped_column(Text, nullable=False, default="")
     subject_options: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     opening_sentence: Mapped[str] = mapped_column(Text, nullable=False, default="")
     personalized_context: Mapped[str] = mapped_column(Text, nullable=False, default="")
@@ -147,6 +156,10 @@ class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     objection_type: Mapped[str | None] = mapped_column(String(80))
     urgency: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown")
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="draft")
+    industry_profile_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("industry_growth_profiles.id"), index=True
+    )
+    industry_context: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
 
 class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -158,6 +171,9 @@ class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):
     preferred_model: Mapped[str] = mapped_column(String(200), nullable=False)
     fallback_model: Mapped[str | None] = mapped_column(String(200))
     quality_requirement: Mapped[str] = mapped_column(String(50), nullable=False)
+    provider_name: Mapped[str] = mapped_column(String(120), nullable=False, default="unassigned")
+    cost_policy: Mapped[str] = mapped_column(String(40), nullable=False, default="balanced")
+    cost_limit: Mapped[float | None] = mapped_column()
 
 
 class BusinessGrowthProfile(IdMixin, TimestampMixin, VersionMixin, Base):

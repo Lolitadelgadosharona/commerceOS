@@ -123,6 +123,10 @@ class GrowthGiftCreate(BaseModel):
     expected_value: str = Field(default="", max_length=20_000)
     preview_type: Literal["website", "social", "seo", "google_profile", "other"] = "other"
     preview_status: Literal["draft", "ready", "reviewed"] = "draft"
+    gift_type: Literal["website", "geo", "social", "review", "content", "other"] = "other"
+    before_asset_reference: str | None = Field(default=None, max_length=500)
+    after_asset_reference: str | None = Field(default=None, max_length=500)
+    customer_rationale: str = Field(default="", max_length=20_000)
 
 
 class StatusTransition(BaseModel):
@@ -147,6 +151,11 @@ class GrowthGiftRead(ReadModel):
     expected_value: str
     preview_type: str
     preview_status: str
+    gift_type: str
+    before_asset_reference: str | None
+    after_asset_reference: str | None
+    customer_rationale: str
+    customer_response: str | None
 
 
 class OutreachDraftCreate(BaseModel):
@@ -159,6 +168,8 @@ class OutreachDraftCreate(BaseModel):
     tone: str = Field(min_length=1, max_length=80)
     evidence_used: list[UUID] = Field(min_length=1)
     ai_request_id: UUID
+    industry_profile_id: UUID | None = None
+    industry_context: str = Field(default="", max_length=20_000)
     subject_options: list[str] = Field(min_length=1, max_length=5)
     opening_sentence: str = Field(min_length=1, max_length=2_000)
     personalized_context: str = Field(min_length=1, max_length=5_000)
@@ -179,6 +190,8 @@ class OutreachDraftRead(ReadModel):
     status: str
     ai_request_id: UUID
     approval_request_id: UUID | None
+    industry_profile_id: UUID | None
+    industry_context: str
     subject_options: list[str]
     opening_sentence: str
     personalized_context: str
@@ -204,6 +217,8 @@ class SalesAnalysisCreate(BaseModel):
     buying_signal: str = Field(min_length=1, max_length=80)
     objection_type: ObjectionType | None = None
     urgency: Literal["low", "medium", "high", "unknown"] = "unknown"
+    industry_profile_id: UUID | None = None
+    industry_context: str = Field(default="", max_length=20_000)
 
 
 class SalesAnalysisRead(ReadModel):
@@ -222,6 +237,8 @@ class SalesAnalysisRead(ReadModel):
     objection_type: str | None
     urgency: str
     status: str
+    industry_profile_id: UUID | None
+    industry_context: str
 
 
 class AIModelPolicyCreate(BaseModel):
@@ -245,6 +262,9 @@ class AIModelPolicyCreate(BaseModel):
     preferred_model: str = Field(min_length=1, max_length=200)
     fallback_model: str | None = Field(default=None, max_length=200)
     quality_requirement: Literal["economy", "balanced", "premium"]
+    provider_name: str = Field(default="unassigned", min_length=1, max_length=120)
+    cost_policy: Literal["lowest_cost", "balanced", "quality_first", "capped"] = "balanced"
+    cost_limit: float | None = Field(default=None, ge=0)
 
 
 class AIModelPolicyRead(ReadModel):
@@ -253,6 +273,9 @@ class AIModelPolicyRead(ReadModel):
     preferred_model: str
     fallback_model: str | None
     quality_requirement: str
+    provider_name: str
+    cost_policy: str
+    cost_limit: float | None
 
 
 class GrowthDashboardRead(BaseModel):
