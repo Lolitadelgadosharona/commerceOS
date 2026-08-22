@@ -26,11 +26,7 @@ class GrowthObjectionRecord(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class GrowthSalesLearningSignal(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_sales_learning_signals"
-    __table_args__ = (
-        CheckConstraint(
-            "confidence BETWEEN 0 AND 1", name="growth_sales_learning_confidence_range"
-        ),
-    )
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),)
 
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     analysis_id: Mapped[UUID] = mapped_column(
@@ -50,11 +46,7 @@ class GrowthSalesLearningSignal(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class GrowthMessagePerformanceObservation(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_message_performance_observations"
-    __table_args__ = (
-        CheckConstraint(
-            "confidence BETWEEN 0 AND 1", name="growth_message_performance_confidence_range"
-        ),
-    )
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),)
 
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     outreach_draft_id: Mapped[UUID] = mapped_column(
