@@ -147,6 +147,15 @@ from commerce_os.growth.experiment_models import (
     GrowthLearningSignal,
     GrowthPerformanceObservation,
 )
+from commerce_os.growth.revenue_models import (
+    AIModelPolicy,
+    GrowthGift,
+    GrowthOpportunityAnalysis,
+    GrowthOutreachDraft,
+    GrowthProspect,
+    GrowthProspectEvidence,
+    SalesConversationAnalysis,
+)
 from commerce_os.intelligence.analysis_models import (
     MarketSignalAnalysis,
     OpportunityAssessment,
@@ -341,6 +350,13 @@ __all__ = [
     "GrowthLearningObservationLink",
     "GrowthLearningSignal",
     "GrowthPerformanceObservation",
+    "GrowthProspect",
+    "GrowthProspectEvidence",
+    "GrowthOpportunityAnalysis",
+    "GrowthGift",
+    "GrowthOutreachDraft",
+    "SalesConversationAnalysis",
+    "AIModelPolicy",
     "ImprovementRecommendation",
     "LearningConclusion",
     "LearningObservation",
