@@ -200,6 +200,9 @@ from commerce_os.intelligence.demand_bridge_models import (
     DemandSignal,
     DemandSignalEvidence,
     DemandSignalSource,
+    DemandThemeAnalysis,
+    DemandThemeSignalLink,
+    PredictiveDemandMetadata,
 )
 from commerce_os.intelligence.discovery_models import (
     OpportunityCandidate,
@@ -392,6 +395,9 @@ __all__ = [
     "DemandSignal",
     "DemandSignalEvidence",
     "DemandSignalSource",
+    "DemandThemeAnalysis",
+    "DemandThemeSignalLink",
+    "PredictiveDemandMetadata",
     "GrowthProspect",
     "GrowthProspectEvidence",
     "GrowthOpportunityAnalysis",

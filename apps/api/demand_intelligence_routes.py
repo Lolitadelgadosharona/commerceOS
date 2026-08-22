@@ -5,6 +5,7 @@ from commerce_os.intelligence.demand_bridge_models import (
     DemandSignal,
     DemandSignalEvidence,
     DemandSignalSource,
+    DemandThemeAnalysis,
 )
 from commerce_os.intelligence.demand_bridge_schemas import (
     BusinessDemandSignalCreate,
@@ -15,6 +16,8 @@ from commerce_os.intelligence.demand_bridge_schemas import (
     DemandSignalSourceCreate,
     DemandSignalSourceRead,
     DemandSignalTransition,
+    DemandThemeAnalysisCreate,
+    DemandThemeAnalysisRead,
 )
 from commerce_os.intelligence.demand_bridge_services import (
     DemandIntelligenceService,
@@ -67,6 +70,29 @@ def ingest_business_demand_signal(
     session: Annotated[Session, Depends(get_session)],
 ) -> DemandSignal:
     return DemandIntelligenceService(session).ingest(payload, _actor_id(request))
+
+
+@router.post("/demand-theme-analyses", response_model=DemandThemeAnalysisRead, status_code=201)
+def create_demand_theme_analysis(
+    payload: DemandThemeAnalysisCreate,
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+) -> DemandThemeAnalysis:
+    return DemandIntelligenceService(session).analyze_theme(payload, _actor_id(request))
+
+
+@router.get("/demand-theme-analyses", response_model=list[DemandThemeAnalysisRead])
+def list_demand_theme_analyses(
+    organization_id: Annotated[UUID, Query()],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[DemandThemeAnalysis]:
+    return list(
+        session.scalars(
+            select(DemandThemeAnalysis)
+            .where(DemandThemeAnalysis.organization_id == organization_id)
+            .order_by(DemandThemeAnalysis.created_at.desc())
+        )
+    )
 
 
 @router.post("/demand-signals", response_model=DemandSignalRead, status_code=201)
