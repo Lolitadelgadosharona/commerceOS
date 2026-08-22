@@ -205,10 +205,12 @@ class GrowthRevenueService:
     ) -> SalesConversationAnalysis:
         scoped_revenue(self.session, GrowthProspect, payload.prospect_id, payload.organization_id)
         self._ai_request(
-            payload.ai_request_id, payload.organization_id, {"analysis", "recommendation", "draft"}
+            payload.ai_request_id,
+            payload.organization_id,
+            {"analysis", "recommendation", "draft", "classification"},
         )
         return self._save(
-            SalesConversationAnalysis(**payload.model_dump()),
+            SalesConversationAnalysis(**payload.model_dump(), status="draft"),
             actor_id,
             "growthos.sales_analysis.created",
         )

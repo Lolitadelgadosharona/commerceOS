@@ -41,6 +41,7 @@ SOURCE_MAP = {
     "dispute_signal": ("decision", "customer_risk_signals"),
     "product_risk": ("intelligence", "product_risk_signals"),
     "market_signal": ("intelligence", "market_signals"),
+    "growth_conversation_analysis": ("growth", "sales_conversation_analyses"),
 }
 TRANSITIONS = {
     "draft": {"under_review", "rejected"},

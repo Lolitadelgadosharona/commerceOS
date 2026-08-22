@@ -144,6 +144,11 @@ from commerce_os.growth.channel_execution_models import (
     CreativeChannelExperiment,
     DistributionRecord,
 )
+from commerce_os.growth.conversation_learning_models import (
+    GrowthMessagePerformanceObservation,
+    GrowthObjectionRecord,
+    GrowthSalesLearningSignal,
+)
 from commerce_os.growth.discovery_models import (
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
@@ -368,6 +373,9 @@ __all__ = [
     "RevenueExperiment",
     "ProspectExperimentLink",
     "OutreachTrackingEvent",
+    "GrowthObjectionRecord",
+    "GrowthSalesLearningSignal",
+    "GrowthMessagePerformanceObservation",
     "ProspectDiscoverySource",
     "ProspectDiscoveryRun",
     "ProspectCandidate",
