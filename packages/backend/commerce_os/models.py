@@ -174,6 +174,7 @@ from commerce_os.growth.industry_intelligence_models import (
     IndustryGrowthProfile,
     IndustryLearningSignal,
 )
+from commerce_os.growth.revenue_execution_models import DailyGrowthOpportunity
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
@@ -417,6 +418,7 @@ __all__ = [
     "BusinessGrowthProfile",
     "GrowthProspectRanking",
     "GrowthOpportunityAnalysis",
+    "DailyGrowthOpportunity",
     "GrowthGEOAssessment",
     "GrowthServiceRecommendation",
     "IndustryGrowthEvidence",

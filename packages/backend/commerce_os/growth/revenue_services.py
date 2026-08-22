@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from commerce_os.ai_runtime.models import AIOutputClassification, AIRequest
 from commerce_os.growth.errors import GrowthError
+from commerce_os.growth.industry_intelligence_models import IndustryGrowthProfile
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
@@ -45,9 +46,12 @@ PROSPECT_TRANSITIONS = {
 GIFT_TRANSITIONS = {
     "draft": {"review", "cancelled"},
     "review": {"approved", "cancelled"},
-    "approved": {"ready_for_delivery", "cancelled"},
+    "approved": {"ready_for_delivery", "sent", "cancelled"},
     "ready_for_delivery": {"delivered", "cancelled"},
     "delivered": set(),
+    "sent": {"customer_response", "cancelled"},
+    "customer_response": {"converted", "cancelled"},
+    "converted": set(),
     "cancelled": set(),
 }
 OUTREACH_TRANSITIONS = {
@@ -215,7 +219,12 @@ class GrowthRevenueService:
         )
 
     def transition_gift(
-        self, entity: GrowthGift, status: str, actor_id: UUID, approval_id: UUID | None
+        self,
+        entity: GrowthGift,
+        status: str,
+        actor_id: UUID,
+        approval_id: UUID | None,
+        customer_response: str | None = None,
     ) -> GrowthGift:
         if status not in GIFT_TRANSITIONS[entity.status]:
             raise GrowthError(f"Growth Gift cannot transition from {entity.status} to {status}.")
@@ -224,6 +233,12 @@ class GrowthRevenueService:
             entity.approval_request_id = approval_id
         if status in {"ready_for_delivery", "delivered"} and entity.approval_request_id is None:
             raise GrowthError("A Growth Gift cannot be delivered without human approval.")
+        if status == "sent" and entity.approval_request_id is None:
+            raise GrowthError("A Growth Gift cannot be recorded as sent without human approval.")
+        if status == "customer_response":
+            if not customer_response:
+                raise GrowthError("Customer response state requires the observed response.")
+            entity.customer_response = customer_response
         entity.status = status
         return self._save(entity, actor_id, f"growthos.gift.{status}")
 
@@ -236,6 +251,12 @@ class GrowthRevenueService:
             raise GrowthError("Outreach gift must belong to the selected prospect.")
         if gift.status not in {"approved", "ready_for_delivery", "delivered"}:
             raise GrowthError("Outreach requires an approved Growth Gift.")
+        if payload.industry_profile_id is not None:
+            profile = self.session.get(IndustryGrowthProfile, payload.industry_profile_id)
+            if profile is None or profile.organization_id != payload.organization_id:
+                raise GrowthError("Industry profile was not found in this organization.")
+            if not payload.industry_context:
+                raise GrowthError("Industry-aware outreach requires explicit industry context.")
         self._ai_request(payload.ai_request_id, payload.organization_id, {"draft"})
         for evidence_id in payload.evidence_used:
             evidence = scoped_revenue(
@@ -274,6 +295,14 @@ class GrowthRevenueService:
             payload.organization_id,
             {"analysis", "recommendation", "draft", "classification"},
         )
+        if payload.industry_profile_id is not None:
+            profile = self.session.get(IndustryGrowthProfile, payload.industry_profile_id)
+            if profile is None or profile.organization_id != payload.organization_id:
+                raise GrowthError("Industry profile was not found in this organization.")
+            if not payload.industry_context:
+                raise GrowthError(
+                    "Industry-aware sales analysis requires explicit industry context."
+                )
         return self._save(
             SalesConversationAnalysis(**payload.model_dump(), status="draft"),
             actor_id,
@@ -311,6 +340,8 @@ class GrowthRevenueService:
 
     def create_model_policy(self, payload: AIModelPolicyCreate, actor_id: UUID) -> AIModelPolicy:
         self._organization(payload.organization_id)
+        if payload.cost_policy == "capped" and payload.cost_limit is None:
+            raise GrowthError("Capped model routing requires an explicit cost limit.")
         return self._save(
             AIModelPolicy(**payload.model_dump()), actor_id, "growthos.ai_model_policy.created"
         )
