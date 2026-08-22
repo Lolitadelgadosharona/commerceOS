@@ -34,4 +34,7 @@ Human Governance approval remains mandatory before communication.
 - Docker Compose configuration: valid.
 - Docker runtime and local PostgreSQL container validation: blocked because the local Docker
   daemon socket is unavailable; no silent installation or daemon activation was attempted.
-- CI and Draft PR: pending publication.
+- GitHub CI: backend, web, and documentation jobs passed on Draft PR #49. The backend job
+  validated PostgreSQL 16 migration upgrade and schema-drift consistency.
+- Publication: branch `codex/sprint-050-growthos-revenue-activation`, implementation commit
+  `2926036`, Draft PR #49 stacked on Sprint 049.
