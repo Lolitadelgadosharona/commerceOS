@@ -53,9 +53,7 @@ class GrowthProspectEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class GrowthOpportunityAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_opportunity_analyses"
-    __table_args__ = (
-        CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_opportunity_confidence_range"),
-    )
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_opp_conf_range"),)
 
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     prospect_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_prospects.id"), index=True)

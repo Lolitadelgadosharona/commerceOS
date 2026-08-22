@@ -90,9 +90,7 @@ def upgrade() -> None:
         sa.Column("missing_information", sa.JSON(), nullable=False),
         sa.Column("ai_request_id", sa.Uuid()),
         *common(),
-        sa.CheckConstraint(
-            "confidence BETWEEN 0 AND 1", name="growth_opportunity_confidence_range"
-        ),
+        sa.CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_opp_conf_range"),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.ForeignKeyConstraint(["prospect_id"], ["growth_prospects.id"]),
         sa.ForeignKeyConstraint(["ai_request_id"], ["ai_requests.id"]),
