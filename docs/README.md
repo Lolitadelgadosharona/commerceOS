@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 048 GrowthOS Revenue Engine foundation
+Status: Sprint 049 GrowthOS Prospect Discovery and Intelligence Bridge foundation
 
 ## Governing documents
 
@@ -67,6 +67,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [AI Creative Intelligence Foundation v1.0](./architecture/AI_CREATIVE_INTELLIGENCE_FOUNDATION_V1_0.md) | Evidence-grounded creative strategy, angle, and brief recommendations without production authority |
 | [AI Listing and GEO Content Intelligence Foundation v1.0](./architecture/AI_LISTING_GEO_INTELLIGENCE_FOUNDATION_V1_0.md) | Evidence-grounded listing, GEO, and FAQ recommendations without Product Truth or publishing authority |
 | [GrowthOS Revenue Engine Foundation v1.0](./architecture/GROWTH_OS_REVENUE_ENGINE_FOUNDATION_V1_0.md) | Founder-operated prospect, evidence, Growth Gift, outreach preparation, and Sales Copilot workflow without external execution |
+| [GrowthOS Prospect Discovery Foundation v1.0](./architecture/GROWTH_OS_PROSPECT_DISCOVERY_FOUNDATION_V1_0.md) | Controlled prospect discovery, immutable research evidence, deterministic qualification, governed AI research, and Intelligence signal bridge |
 | [Tech Stack Decision v1.0](./architecture/TECH_STACK_DECISION_V1_0.md) | Frozen frontend, backend, data, queue, testing, CI, and container stack |
 | [Repository Structure v1.0](./architecture/REPOSITORY_STRUCTURE_V1_0.md) | Target monorepo layout and dependency direction |
 | [Module Boundary v1.0](./architecture/MODULE_BOUNDARY_V1_0.md) | Eight-domain modular-monolith ownership and prohibited dependencies |
@@ -172,5 +173,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 046 Completion Notes](./planning/SPRINT_046_COMPLETION.md)
 - [Sprint 047 Completion Notes](./planning/SPRINT_047_COMPLETION.md)
 - [Sprint 048 Completion Notes](./planning/SPRINT_048_COMPLETION.md)
+- [Sprint 049 Completion Notes](./planning/SPRINT_049_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

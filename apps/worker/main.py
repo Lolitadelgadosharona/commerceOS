@@ -30,6 +30,17 @@ from commerce_os.decision.listing_geo_intelligence_services import (
 from commerce_os.decision.listing_geo_intelligence_services import (
     TEMPLATES as LISTING_GEO_TEMPLATES,
 )
+from commerce_os.growth.discovery_models import (
+    GrowthBusinessResearchResult,
+    GrowthBusinessResearchRun,
+    ProspectCandidate,
+)
+from commerce_os.growth.discovery_services import (
+    RESEARCH_OUTPUT_SCHEMA as GROWTH_RESEARCH_OUTPUT_SCHEMA,
+)
+from commerce_os.growth.discovery_services import GrowthDiscoveryService, scoped_growth_discovery
+from commerce_os.intelligence.business_signal_schemas import BusinessDemandSignalCreate
+from commerce_os.intelligence.business_signal_services import BusinessDemandSignalService
 from commerce_os.intelligence.discovery_models import OpportunityDiscoveryRun
 from commerce_os.intelligence.discovery_services import (
     DISCOVERY_OUTPUT_SCHEMA,
@@ -47,6 +58,7 @@ from commerce_os.intelligence.research_services import (
 )
 from commerce_os.shared.config import get_settings
 from redis import Redis
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +80,97 @@ def execute_ai_request(
     return service.execute(
         service.scoped_request(request_id, organization_id), worker_actor_id=service_actor_id
     )
+
+
+def execute_growth_business_research(
+    session: Session,
+    *,
+    run_id: UUID,
+    organization_id: UUID,
+    service_actor_id: UUID,
+    adapters: dict[str, ProviderAdapter] | None = None,
+) -> GrowthBusinessResearchRun:
+    """Execute evidence-only business research without outreach or opportunity creation."""
+    growth = GrowthDiscoveryService(session)
+    run = scoped_growth_discovery(session, GrowthBusinessResearchRun, run_id, organization_id)
+    if run.status != "queued":
+        raise ValueError("Only queued GrowthOS business research may execute.")
+    evidence = growth.evidence(run)
+    execution = AIExecutionService(session, adapters)
+    request = execution.submit(
+        AIExecutionSubmit(
+            organization_id=organization_id,
+            purpose="Governed GrowthOS business research",
+            context_type="growth_business_research_run",
+            context_reference=str(run.id),
+            capability_id=run.capability_id,
+            prompt_version_id=run.prompt_version_id,
+            task_type="business_analysis",
+            system_instructions=(
+                "Analyze only the supplied prospect evidence. Produce advisory business "
+                "research and explicitly list missing information and risk. Never contact "
+                "the business, create an opportunity, sales record, invoice, approval, or "
+                "external action."
+            ),
+            input_content=json.dumps(
+                {
+                    "candidate_id": str(run.candidate_id),
+                    "evidence_references": [
+                        {
+                            "id": str(item.id),
+                            "type": item.evidence_type,
+                            "source_url": item.source_url,
+                            "observation": item.observation,
+                            "confidence": item.confidence,
+                        }
+                        for item in evidence
+                    ],
+                },
+                sort_keys=True,
+            ),
+            output_classification="analysis",
+            expected_output_schema=GROWTH_RESEARCH_OUTPUT_SCHEMA,
+            runtime_configuration={"max_output_tokens": 2000},
+            provenance_context={
+                "source_domain": "growth",
+                "growth_business_research_run_id": str(run.id),
+                "methodology_version": run.methodology_version,
+            },
+        ),
+        service_actor_id,
+    )
+    run = growth.start_research(run, request.id, service_actor_id)
+    request = execution.execute(request, worker_actor_id=service_actor_id)
+    if str(request.status) != "succeeded" or request.response_content is None:
+        return growth.fail_research(
+            run, request.failure_reason or "Governed AI execution failed.", service_actor_id
+        )
+    run = growth.complete_research(run, request.response_content, service_actor_id)
+    result = session.scalar(
+        select(GrowthBusinessResearchResult).where(
+            GrowthBusinessResearchResult.research_run_id == run.id
+        )
+    )
+    candidate = session.get(ProspectCandidate, run.candidate_id)
+    if result is None or candidate is None:
+        raise ValueError("Completed business research is missing its scoped result or candidate.")
+    evidence_refs = [str(item.id) for item in evidence]
+    signals = BusinessDemandSignalService(session)
+    for issue in result.potential_growth_issues:
+        signals.create(
+            BusinessDemandSignalCreate(
+                organization_id=organization_id,
+                source_domain="growth",
+                industry=candidate.category,
+                signal_type="business_growth_issue",
+                description=issue,
+                evidence_reference=evidence_refs,
+                confidence=result.confidence,
+                source_research_result_id=result.id,
+            ),
+            service_actor_id,
+        )
+    return run
 
 
 def execute_research_run(

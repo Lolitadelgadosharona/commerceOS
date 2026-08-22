@@ -1,6 +1,12 @@
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
+from commerce_os.growth.discovery_models import (
+    GrowthBusinessResearchResult,
+    GrowthBusinessResearchRun,
+    ProspectCandidate,
+    ProspectQualificationAssessment,
+)
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     GrowthGift,
@@ -212,13 +218,45 @@ def dashboard(organization_id: UUID, session: SessionDependency) -> GrowthDashbo
             or 0
         )
 
+    candidate_count = count(ProspectCandidate)
+    qualified_candidates = count(ProspectCandidate, ProspectCandidate.status == "qualified")
+    average_score = session.scalar(
+        select(func.avg(ProspectQualificationAssessment.score)).where(
+            ProspectQualificationAssessment.organization_id == organization_id,
+            ProspectQualificationAssessment.score.is_not(None),
+        )
+    )
+    top_results = list(
+        session.scalars(
+            select(GrowthBusinessResearchResult)
+            .where(GrowthBusinessResearchResult.organization_id == organization_id)
+            .order_by(GrowthBusinessResearchResult.confidence.desc())
+            .limit(5)
+        )
+    )
     return GrowthDashboardRead(
         organization_id=organization_id,
-        prospects_discovered=count(GrowthProspect),
-        qualified_prospects=count(GrowthProspect, GrowthProspect.status == "qualified"),
+        prospects_discovered=count(GrowthProspect) + candidate_count,
+        qualified_prospects=(
+            count(GrowthProspect, GrowthProspect.status == "qualified") + qualified_candidates
+        ),
         opportunities_found=count(GrowthOpportunityAnalysis),
         gifts_created=count(GrowthGift),
         outreach_drafts=count(GrowthOutreachDraft),
         replies=count(GrowthProspect, GrowthProspect.status == "replied"),
         customers=count(GrowthProspect, GrowthProspect.status == "customer"),
+        research_runs=count(GrowthBusinessResearchRun),
+        top_opportunities=[
+            {
+                "research_result_id": str(item.id),
+                "summary": item.summary,
+                "confidence": item.confidence,
+            }
+            for item in top_results
+        ],
+        average_qualification_score=float(average_score) if average_score is not None else None,
+        pending_human_review=(
+            count(GrowthGift, GrowthGift.status == "review")
+            + count(GrowthOutreachDraft, GrowthOutreachDraft.status == "human_review")
+        ),
     )

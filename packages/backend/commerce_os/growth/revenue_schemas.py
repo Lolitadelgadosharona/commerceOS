@@ -181,7 +181,7 @@ class SalesAnalysisRead(ReadModel):
 
 class AIModelPolicyCreate(BaseModel):
     organization_id: UUID
-    task_type: str = Field(min_length=1, max_length=100)
+    task_type: Literal["prospect_research", "business_analysis", "customer_reply_analysis"]
     preferred_model: str = Field(min_length=1, max_length=200)
     fallback_model: str | None = Field(default=None, max_length=200)
     quality_requirement: Literal["economy", "balanced", "premium"]
@@ -204,3 +204,7 @@ class GrowthDashboardRead(BaseModel):
     outreach_drafts: int
     replies: int
     customers: int
+    research_runs: int = 0
+    top_opportunities: list[dict[str, object]] = Field(default_factory=list)
+    average_qualification_score: float | None = None
+    pending_human_review: int = 0
