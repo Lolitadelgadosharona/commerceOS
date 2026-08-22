@@ -194,5 +194,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 057 Completion Notes](./planning/SPRINT_057_COMPLETION.md)
 - [Sprint 058 Completion Notes](./planning/SPRINT_058_COMPLETION.md)
 - [Sprint 059 Completion Notes](./planning/SPRINT_059_COMPLETION.md)
+- [Revenue Validation Experiment Foundation v1.0](./architecture/REVENUE_VALIDATION_EXPERIMENT_FOUNDATION_V1_0.md)
+- [Sprint 060 Completion Notes](./planning/SPRINT_060_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

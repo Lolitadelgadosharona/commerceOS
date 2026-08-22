@@ -9,7 +9,17 @@ from commerce_os.shared.schemas import ReadModel
 
 class DiscoverySourceCreate(BaseModel):
     organization_id: UUID
-    source_type: Literal["google_maps", "website", "instagram", "linkedin", "manual"]
+    source_type: Literal[
+        "google_maps",
+        "google_business_profile",
+        "website",
+        "reviews",
+        "instagram",
+        "tiktok",
+        "reddit",
+        "linkedin",
+        "manual",
+    ]
     source_name: str = Field(min_length=1, max_length=160)
     capability: str = Field(min_length=1, max_length=100)
     status: Literal["active", "disabled"] = "active"

@@ -134,6 +134,9 @@ from commerce_os.governance.models import (
     UserRole,
 )
 from commerce_os.growth.activation_models import (
+    ExperimentFeedbackSignal,
+    OfferExperiment,
+    OfferExperimentOutcome,
     OutreachTrackingEvent,
     ProspectExperimentLink,
     RevenueExperiment,
@@ -418,6 +421,9 @@ __all__ = [
     "BusinessGrowthProfile",
     "GrowthProspectRanking",
     "GrowthOpportunityAnalysis",
+    "ExperimentFeedbackSignal",
+    "OfferExperiment",
+    "OfferExperimentOutcome",
     "DailyGrowthOpportunity",
     "GrowthGEOAssessment",
     "GrowthServiceRecommendation",
