@@ -69,7 +69,8 @@ def upgrade() -> None:
         sa.Column("confidence", sa.Float(), nullable=False),
         *common(),
         sa.CheckConstraint(
-            "confidence BETWEEN 0 AND 1", name="growth_sales_learning_confidence_range"
+            "confidence BETWEEN 0 AND 1",
+            name=op.f("ck_growth_sales_learning_signals_growth_sales_learning_confidence_range"),
         ),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.ForeignKeyConstraint(["analysis_id"], ["sales_conversation_analyses.id"]),
@@ -101,7 +102,10 @@ def upgrade() -> None:
         *common(),
         sa.CheckConstraint(
             "confidence BETWEEN 0 AND 1",
-            name="growth_message_performance_confidence_range",
+            name=op.f(
+                "ck_growth_message_performance_observations_"
+                "growth_message_performance_confidence_range"
+            ),
         ),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.ForeignKeyConstraint(["outreach_draft_id"], ["growth_outreach_drafts.id"]),
