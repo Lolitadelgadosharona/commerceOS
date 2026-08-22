@@ -3,16 +3,21 @@ from uuid import UUID
 
 from commerce_os.ai_runtime.models import AIRequest
 from commerce_os.growth.discovery_models import (
+    BusinessProfileEvidenceSnapshot,
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
+    InstagramEvidenceSnapshot,
     ProspectCandidate,
     ProspectDiscoveryRun,
     ProspectDiscoverySource,
     ProspectQualificationAssessment,
     ProspectResearchEvidence,
+    WebsiteEvidenceSnapshot,
 )
 from commerce_os.growth.discovery_schemas import (
     BusinessDemandSignalRead,
+    BusinessProfileEvidenceCreate,
+    BusinessProfileEvidenceRead,
     BusinessResearchResultRead,
     BusinessResearchRunRead,
     BusinessResearchStart,
@@ -21,10 +26,16 @@ from commerce_os.growth.discovery_schemas import (
     DiscoveryRunRead,
     DiscoverySourceCreate,
     DiscoverySourceRead,
+    InstagramEvidenceCreate,
+    InstagramEvidenceRead,
+    OperatorRevenueDashboard,
+    ProspectPipelineRead,
     QualificationInputs,
     QualificationRead,
     ResearchEvidenceCreate,
     ResearchEvidenceRead,
+    WebsiteEvidenceCreate,
+    WebsiteEvidenceRead,
 )
 from commerce_os.growth.discovery_services import GrowthDiscoveryService, scoped_growth_discovery
 from commerce_os.intelligence.business_signal_models import BusinessDemandSignal
@@ -140,6 +151,66 @@ def list_evidence(
     organization_id: UUID, session: SessionDependency
 ) -> list[ProspectResearchEvidence]:
     return _list(session, ProspectResearchEvidence, organization_id)
+
+
+@router.post("/website-evidence", response_model=WebsiteEvidenceRead, status_code=201)
+def collect_website_evidence(
+    payload: WebsiteEvidenceCreate, request: Request, session: SessionDependency
+) -> WebsiteEvidenceSnapshot:
+    return GrowthDiscoveryService(session).collect_website_evidence(payload, actor_id(request))
+
+
+@router.get("/website-evidence", response_model=list[WebsiteEvidenceRead])
+def list_website_evidence(
+    organization_id: UUID, session: SessionDependency
+) -> list[WebsiteEvidenceSnapshot]:
+    return _list(session, WebsiteEvidenceSnapshot, organization_id)
+
+
+@router.post(
+    "/business-profile-evidence", response_model=BusinessProfileEvidenceRead, status_code=201
+)
+def collect_business_profile_evidence(
+    payload: BusinessProfileEvidenceCreate, request: Request, session: SessionDependency
+) -> BusinessProfileEvidenceSnapshot:
+    return GrowthDiscoveryService(session).collect_business_profile_evidence(
+        payload, actor_id(request)
+    )
+
+
+@router.get("/business-profile-evidence", response_model=list[BusinessProfileEvidenceRead])
+def list_business_profile_evidence(
+    organization_id: UUID, session: SessionDependency
+) -> list[BusinessProfileEvidenceSnapshot]:
+    return _list(session, BusinessProfileEvidenceSnapshot, organization_id)
+
+
+@router.post("/instagram-evidence", response_model=InstagramEvidenceRead, status_code=201)
+def collect_instagram_evidence(
+    payload: InstagramEvidenceCreate, request: Request, session: SessionDependency
+) -> InstagramEvidenceSnapshot:
+    return GrowthDiscoveryService(session).collect_instagram_evidence(payload, actor_id(request))
+
+
+@router.get("/instagram-evidence", response_model=list[InstagramEvidenceRead])
+def list_instagram_evidence(
+    organization_id: UUID, session: SessionDependency
+) -> list[InstagramEvidenceSnapshot]:
+    return _list(session, InstagramEvidenceSnapshot, organization_id)
+
+
+@router.get("/prospect-candidates/{candidate_id}/pipeline", response_model=ProspectPipelineRead)
+def prospect_pipeline(
+    candidate_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProspectPipelineRead:
+    return GrowthDiscoveryService(session).pipeline(candidate_id, organization_id)
+
+
+@router.get("/operator-revenue-dashboard", response_model=OperatorRevenueDashboard)
+def operator_revenue_dashboard(
+    organization_id: UUID, session: SessionDependency
+) -> OperatorRevenueDashboard:
+    return GrowthDiscoveryService(session).operator_dashboard(organization_id)
 
 
 @router.post(

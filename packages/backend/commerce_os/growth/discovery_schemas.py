@@ -17,13 +17,21 @@ class DiscoverySourceCreate(BaseModel):
         "instagram",
         "tiktok",
         "reddit",
+        "yelp",
+        "google_trends",
+        "news",
         "linkedin",
         "manual",
+        "other",
     ]
     source_name: str = Field(min_length=1, max_length=160)
     capability: str = Field(min_length=1, max_length=100)
     status: Literal["active", "disabled"] = "active"
     metadata: dict[str, Any] = Field(default_factory=dict)
+    adapter_key: str = Field(default="manual", min_length=1, max_length=120)
+    collection_mode: Literal["human_review", "controlled_import", "controlled_connector"] = (
+        "human_review"
+    )
 
 
 class DiscoverySourceRead(ReadModel):
@@ -33,6 +41,92 @@ class DiscoverySourceRead(ReadModel):
     capability: str
     status: str
     source_metadata: dict[str, Any]
+    adapter_key: str
+    collection_mode: str
+
+
+class WebsiteEvidenceCreate(BaseModel):
+    organization_id: UUID
+    candidate_id: UUID
+    source_id: UUID
+    source_url: str = Field(min_length=1, max_length=1000)
+    business_name: str = Field(min_length=1, max_length=250)
+    location: str | None = Field(default=None, max_length=250)
+    services: list[str] = Field(default_factory=list)
+    website_structure: dict[str, Any] = Field(default_factory=dict)
+    homepage_signals: dict[str, Any] = Field(default_factory=dict)
+    booking_flow_signals: dict[str, Any] = Field(default_factory=dict)
+    seo_signals: dict[str, Any] = Field(default_factory=dict)
+    geo_visibility_signals: dict[str, Any] = Field(default_factory=dict)
+    captured_at: datetime
+    confidence: float = Field(ge=0, le=1)
+
+
+class WebsiteEvidenceRead(ReadModel, WebsiteEvidenceCreate):
+    pass
+
+
+class BusinessProfileEvidenceCreate(BaseModel):
+    organization_id: UUID
+    candidate_id: UUID
+    source_id: UUID
+    source_reference: str = Field(min_length=1, max_length=1000)
+    review_count: int | None = Field(default=None, ge=0)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    location: str | None = Field(default=None, max_length=250)
+    business_category: str | None = Field(default=None, max_length=160)
+    customer_language: list[str] = Field(default_factory=list)
+    captured_at: datetime
+    confidence: float = Field(ge=0, le=1)
+
+
+class BusinessProfileEvidenceRead(ReadModel, BusinessProfileEvidenceCreate):
+    pass
+
+
+class InstagramEvidenceCreate(BaseModel):
+    organization_id: UUID
+    candidate_id: UUID
+    source_id: UUID
+    profile_reference: str = Field(min_length=1, max_length=1000)
+    profile_information: dict[str, Any] = Field(default_factory=dict)
+    posting_frequency: str | None = Field(default=None, max_length=120)
+    content_themes: list[str] = Field(default_factory=list)
+    brand_signals: dict[str, Any] = Field(default_factory=dict)
+    captured_at: datetime
+    confidence: float = Field(ge=0, le=1)
+
+
+class InstagramEvidenceRead(ReadModel, InstagramEvidenceCreate):
+    pass
+
+
+class ProspectPipelineRead(BaseModel):
+    organization_id: UUID
+    candidate_id: UUID
+    candidate_status: str
+    evidence_count: int
+    growth_prospect_id: UUID | None
+    growth_profile_id: UUID | None
+    opportunity_ids: list[UUID]
+    growth_gift_ids: list[UUID]
+    outreach_draft_ids: list[UUID]
+    next_step: str
+
+
+class OperatorRevenueDashboard(BaseModel):
+    organization_id: UUID
+    day: str
+    daily_prospects_discovered: int
+    qualified_prospects: int
+    growth_opportunities: int
+    gifts_ready: int
+    outreach_drafts_ready: int
+    replies: int
+    positive_conversations: int
+    revenue_experiments: int
+    estimated_ai_cost: float
+    ai_cost_currency: str | None
 
 
 class DiscoveryRunCreate(BaseModel):

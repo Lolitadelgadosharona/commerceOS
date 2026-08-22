@@ -29,6 +29,8 @@ class ProspectDiscoverySource(IdMixin, TimestampMixin, VersionMixin, Base):
     capability: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     source_metadata: Mapped[dict[str, Any]] = mapped_column("metadata", JSON, nullable=False)
+    adapter_key: Mapped[str] = mapped_column(String(120), nullable=False, default="manual")
+    collection_mode: Mapped[str] = mapped_column(String(30), nullable=False, default="human_review")
 
 
 class ProspectDiscoveryRun(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -84,6 +86,77 @@ class ProspectResearchEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
     observation: Mapped[str] = mapped_column(Text, nullable=False)
     confidence: Mapped[float] = mapped_column(nullable=False)
     collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WebsiteEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "website_evidence_snapshots"
+    __table_args__ = (
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="website_evidence_conf_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id", ondelete="CASCADE"), index=True
+    )
+    source_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_sources.id"), index=True
+    )
+    source_url: Mapped[str] = mapped_column(String(1000), nullable=False)
+    business_name: Mapped[str] = mapped_column(String(250), nullable=False)
+    location: Mapped[str | None] = mapped_column(String(250))
+    services: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    website_structure: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    homepage_signals: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    booking_flow_signals: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    seo_signals: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    geo_visibility_signals: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+
+
+class BusinessProfileEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "business_profile_evidence_snapshots"
+    __table_args__ = (
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="business_profile_ev_conf_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id", ondelete="CASCADE"), index=True
+    )
+    source_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_sources.id"), index=True
+    )
+    source_reference: Mapped[str] = mapped_column(String(1000), nullable=False)
+    review_count: Mapped[int | None]
+    rating: Mapped[float | None]
+    location: Mapped[str | None] = mapped_column(String(250))
+    business_category: Mapped[str | None] = mapped_column(String(160))
+    customer_language: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+
+
+class InstagramEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "instagram_evidence_snapshots"
+    __table_args__ = (
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="instagram_evidence_conf_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id", ondelete="CASCADE"), index=True
+    )
+    source_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_sources.id"), index=True
+    )
+    profile_reference: Mapped[str] = mapped_column(String(1000), nullable=False)
+    profile_information: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    posting_frequency: Mapped[str | None] = mapped_column(String(120))
+    content_themes: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    brand_signals: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
 
 
 class GrowthBusinessResearchRun(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -147,5 +220,11 @@ class ProspectQualificationAssessment(IdMixin, TimestampMixin, VersionMixin, Bas
 
 @event.listens_for(ProspectResearchEvidence, "before_update")
 @event.listens_for(ProspectResearchEvidence, "before_delete")
+@event.listens_for(WebsiteEvidenceSnapshot, "before_update")
+@event.listens_for(WebsiteEvidenceSnapshot, "before_delete")
+@event.listens_for(BusinessProfileEvidenceSnapshot, "before_update")
+@event.listens_for(BusinessProfileEvidenceSnapshot, "before_delete")
+@event.listens_for(InstagramEvidenceSnapshot, "before_update")
+@event.listens_for(InstagramEvidenceSnapshot, "before_delete")
 def _protect_research_evidence(*_: object) -> None:
-    raise ValueError("Prospect research evidence is immutable.")
+    raise ValueError("Prospect discovery evidence is immutable.")
