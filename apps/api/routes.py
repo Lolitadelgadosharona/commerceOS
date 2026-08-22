@@ -42,6 +42,7 @@ from apps.api.crud import CrudRouter
 from apps.api.customer_360_routes import router as customer_360_router
 from apps.api.customer_need_routes import router as customer_need_router
 from apps.api.customer_voice_routes import router as customer_voice_router
+from apps.api.demand_intelligence_routes import router as demand_intelligence_router
 from apps.api.discovery_listing_routes import router as discovery_listing_router
 from apps.api.economics_intelligence_routes import router as economics_intelligence_router
 from apps.api.execution_routes import router as execution_router
@@ -106,6 +107,7 @@ api_router.include_router(opportunity_discovery_router, tags=["ai_opportunity_di
 api_router.include_router(opportunity_launch_router, tags=["opportunity_launch_orchestration"])
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
 api_router.include_router(customer_voice_router, tags=["customer_voice_intelligence"])
+api_router.include_router(demand_intelligence_router, tags=["demand_intelligence"])
 api_router.include_router(customer_need_router, tags=["product_opportunity_intelligence"])
 api_router.include_router(customer_360_router, tags=["customer_360"])
 api_router.include_router(commercial_risk_router, tags=["product_commercial_risk_intelligence"])

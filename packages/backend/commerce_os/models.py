@@ -196,6 +196,7 @@ from commerce_os.intelligence.connector_models import (
     RedditConnector,
 )
 from commerce_os.intelligence.customer_360_models import Customer360Profile, CustomerJourneyEvent
+from commerce_os.intelligence.demand_bridge_models import DemandSignal, DemandSignalEvidence
 from commerce_os.intelligence.discovery_models import (
     OpportunityCandidate,
     OpportunityDiscoveryEvidence,
@@ -384,6 +385,8 @@ __all__ = [
     "GrowthBusinessResearchResult",
     "ProspectQualificationAssessment",
     "BusinessDemandSignal",
+    "DemandSignal",
+    "DemandSignalEvidence",
     "GrowthProspect",
     "GrowthProspectEvidence",
     "GrowthOpportunityAnalysis",
