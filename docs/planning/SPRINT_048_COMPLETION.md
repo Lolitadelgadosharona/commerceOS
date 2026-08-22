@@ -24,5 +24,6 @@ GrowthOS cannot send communications, create Sales Opportunities or invoices, cha
 - Dependency audits: Python and npm reported no known vulnerabilities.
 - Web: Next.js production build passed; Playwright passed (1 test).
 - Alembic: SQLite upgrade, downgrade to Sprint 047, re-upgrade to `0048_growthos_revenue`, schema-drift check, and migration integration test passed.
-- Docker/PostgreSQL: blocked because the local Docker daemon socket is unavailable; no silent installation or daemon activation was attempted.
-- CI: pending remote branch publication.
+- Docker: blocked because the local Docker daemon socket is unavailable; no silent installation or daemon activation was attempted.
+- PostgreSQL: GitHub CI upgrade and schema-drift check passed against PostgreSQL 16; a local container downgrade/re-upgrade remains blocked with Docker.
+- CI: backend, web, and documentation jobs passed on the published Draft PR.
