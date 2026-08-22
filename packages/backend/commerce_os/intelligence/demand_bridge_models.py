@@ -1,10 +1,35 @@
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, Float, ForeignKey, Integer, String, Text, Uuid, event
+from sqlalchemy import (
+    CheckConstraint,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+    event,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from commerce_os.shared.database import Base
 from commerce_os.shared.models import IdMixin, TimestampMixin, VersionMixin
+
+
+class DemandSignalSource(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "demand_signal_sources"
+    __table_args__ = (UniqueConstraint("organization_id", "source_type"),)
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    source_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    source_domain: Mapped[str] = mapped_column(String(40), nullable=False)
+    collection_method: Mapped[str] = mapped_column(String(80), nullable=False)
+    evidence_origin: Mapped[str] = mapped_column(String(250), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
 
 
 class DemandSignal(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -18,6 +43,11 @@ class DemandSignal(IdMixin, TimestampMixin, VersionMixin, Base):
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     source_domain: Mapped[str] = mapped_column(String(40), nullable=False)
     source_reference_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    source_type: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
+    collection_method: Mapped[str] = mapped_column(String(80), nullable=False)
+    evidence_origin: Mapped[str] = mapped_column(String(250), nullable=False)
+    confidence_basis: Mapped[str] = mapped_column(Text, nullable=False)
     customer_segment: Mapped[str] = mapped_column(String(250), nullable=False)
     category: Mapped[str] = mapped_column(String(80), nullable=False)
     problem_statement: Mapped[str] = mapped_column(Text, nullable=False)
@@ -37,6 +67,7 @@ class DemandSignalEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
     )
     source_type: Mapped[str] = mapped_column(String(80), nullable=False)
     source_id: Mapped[UUID] = mapped_column(Uuid, nullable=False, index=True)
+    source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
     evidence_text: Mapped[str] = mapped_column(Text, nullable=False)
 
 
