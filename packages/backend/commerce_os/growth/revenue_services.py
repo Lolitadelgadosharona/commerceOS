@@ -40,8 +40,9 @@ PROSPECT_TRANSITIONS = {
 GIFT_TRANSITIONS = {
     "draft": {"review", "cancelled"},
     "review": {"approved", "cancelled"},
-    "approved": {"sent", "cancelled"},
-    "sent": set(),
+    "approved": {"ready_for_delivery", "cancelled"},
+    "ready_for_delivery": {"delivered", "cancelled"},
+    "delivered": set(),
     "cancelled": set(),
 }
 OUTREACH_TRANSITIONS = {
@@ -69,7 +70,7 @@ class GrowthRevenueService:
     def create_prospect(self, payload: ProspectCreate, actor_id: UUID) -> GrowthProspect:
         self._organization(payload.organization_id)
         return self._save(
-            GrowthProspect(**payload.model_dump(), status="discovered"),
+            GrowthProspect(**payload.model_dump(), status="discovered", source_candidate_id=None),
             actor_id,
             "growthos.prospect.created",
         )
@@ -131,8 +132,19 @@ class GrowthRevenueService:
         )
         if opportunity.prospect_id != payload.prospect_id:
             raise GrowthError("Growth Gift opportunity must belong to the selected prospect.")
+        evidence_ids = [str(item) for item in payload.evidence_reference]
+        if not set(evidence_ids).issubset(set(opportunity.evidence_reference)):
+            raise GrowthError("Growth Gift evidence must be cited by its opportunity analysis.")
+        for evidence_id in payload.evidence_reference:
+            evidence = scoped_revenue(
+                self.session, GrowthProspectEvidence, evidence_id, payload.organization_id
+            )
+            if evidence.prospect_id != payload.prospect_id:
+                raise GrowthError("Growth Gift evidence must belong to the selected prospect.")
+        values = payload.model_dump()
+        values["evidence_reference"] = evidence_ids
         return self._save(
-            GrowthGift(**payload.model_dump(), status="draft", approval_request_id=None),
+            GrowthGift(**values, status="draft", approval_request_id=None),
             actor_id,
             "growthos.gift.created",
         )
@@ -145,8 +157,8 @@ class GrowthRevenueService:
         if status == "approved":
             self._approval(entity, approval_id, "growth_gift", "approve_growth_gift")
             entity.approval_request_id = approval_id
-        if status == "sent" and entity.approval_request_id is None:
-            raise GrowthError("A Growth Gift cannot be sent without human approval.")
+        if status in {"ready_for_delivery", "delivered"} and entity.approval_request_id is None:
+            raise GrowthError("A Growth Gift cannot be delivered without human approval.")
         entity.status = status
         return self._save(entity, actor_id, f"growthos.gift.{status}")
 
@@ -157,6 +169,8 @@ class GrowthRevenueService:
         )
         if gift.prospect_id != payload.prospect_id:
             raise GrowthError("Outreach gift must belong to the selected prospect.")
+        if gift.status not in {"approved", "ready_for_delivery", "delivered"}:
+            raise GrowthError("Outreach requires an approved Growth Gift.")
         self._ai_request(payload.ai_request_id, payload.organization_id, {"draft"})
         for evidence_id in payload.evidence_used:
             evidence = scoped_revenue(
@@ -164,6 +178,7 @@ class GrowthRevenueService:
             )
             if evidence.prospect_id != payload.prospect_id:
                 raise GrowthError("Outreach evidence must belong to the selected prospect.")
+        self._validate_outreach_language(payload)
         values = payload.model_dump()
         values["evidence_used"] = [str(item) for item in payload.evidence_used]
         return self._save(
@@ -197,6 +212,32 @@ class GrowthRevenueService:
             actor_id,
             "growthos.sales_analysis.created",
         )
+
+    @staticmethod
+    def _validate_outreach_language(payload: OutreachDraftCreate) -> None:
+        combined = " ".join(
+            [
+                *payload.subject_options,
+                payload.opening_sentence,
+                payload.personalized_context,
+                payload.problem_observation,
+                payload.gift_explanation,
+                payload.soft_cta,
+                payload.body,
+            ]
+        ).casefold()
+        forbidden = {
+            "we help businesses",
+            "optimize conversion",
+            "full-service agency",
+            "as an ai",
+            "ai-generated",
+        }
+        if any(phrase in combined for phrase in forbidden):
+            raise GrowthError(
+                "Outreach must use specific human research language, "
+                "not generic agency or AI language."
+            )
 
     def create_model_policy(self, payload: AIModelPolicyCreate, actor_id: UUID) -> AIModelPolicy:
         self._organization(payload.organization_id)

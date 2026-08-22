@@ -137,9 +137,12 @@ def test_governed_ai_and_external_communication_boundaries(db_session: Session) 
             description="Evidence-based demonstration",
             before_state="Unclear hero",
             after_state="Clear outcome and action",
+            evidence_reference=[evidence.id],
         ),
         user.id,
     )
+    gift.status = "approved"
+    db_session.commit()
     draft_request = completed_request(db_session, entities, "draft")
     draft = service.create_outreach(
         OutreachDraftCreate(
@@ -152,6 +155,12 @@ def test_governed_ai_and_external_communication_boundaries(db_session: Session) 
             tone="helpful",
             evidence_used=[evidence.id],
             ai_request_id=draft_request.id,
+            subject_options=["A homepage observation"],
+            opening_sentence="I noticed the homepage makes the booking path hard to find.",
+            personalized_context="This observation is specific to the supplied homepage evidence.",
+            problem_observation="The booking action is not visible in the initial view.",
+            gift_explanation="I prepared a small homepage clarity preview.",
+            soft_cta="Would it be useful if I shared it?",
         ),
         user.id,
     )
@@ -169,6 +178,9 @@ def test_governed_ai_and_external_communication_boundaries(db_session: Session) 
             recommended_action="Human follow-up",
             suggested_reply="Draft reply for human review.",
             ai_request_id=analysis_request.id,
+            customer_reply="This looks interesting. Can you explain the next step?",
+            buying_signal="positive",
+            objection_type=None,
         ),
         user.id,
     )

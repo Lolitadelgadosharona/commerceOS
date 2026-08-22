@@ -39,6 +39,7 @@ class ProspectRead(ReadModel):
     business_type: str
     source: str
     status: str
+    source_candidate_id: UUID | None
 
 
 class ProspectEvidenceCreate(BaseModel):
@@ -105,6 +106,7 @@ class GrowthGiftCreate(BaseModel):
     before_state: str = Field(min_length=1, max_length=20_000)
     after_state: str = Field(min_length=1, max_length=20_000)
     asset_reference: str | None = Field(default=None, max_length=500)
+    evidence_reference: list[UUID] = Field(min_length=1)
 
 
 class StatusTransition(BaseModel):
@@ -123,6 +125,7 @@ class GrowthGiftRead(ReadModel):
     asset_reference: str | None
     status: str
     approval_request_id: UUID | None
+    evidence_reference: list[str]
 
 
 class OutreachDraftCreate(BaseModel):
@@ -135,6 +138,12 @@ class OutreachDraftCreate(BaseModel):
     tone: str = Field(min_length=1, max_length=80)
     evidence_used: list[UUID] = Field(min_length=1)
     ai_request_id: UUID
+    subject_options: list[str] = Field(min_length=1, max_length=5)
+    opening_sentence: str = Field(min_length=1, max_length=2_000)
+    personalized_context: str = Field(min_length=1, max_length=5_000)
+    problem_observation: str = Field(min_length=1, max_length=5_000)
+    gift_explanation: str = Field(min_length=1, max_length=5_000)
+    soft_cta: str = Field(min_length=1, max_length=2_000)
 
 
 class OutreachDraftRead(ReadModel):
@@ -149,6 +158,12 @@ class OutreachDraftRead(ReadModel):
     status: str
     ai_request_id: UUID
     approval_request_id: UUID | None
+    subject_options: list[str]
+    opening_sentence: str
+    personalized_context: str
+    problem_observation: str
+    gift_explanation: str
+    soft_cta: str
 
 
 class SalesAnalysisCreate(BaseModel):
@@ -164,6 +179,9 @@ class SalesAnalysisCreate(BaseModel):
     recommended_action: str = Field(min_length=1, max_length=20_000)
     suggested_reply: str = Field(min_length=1, max_length=20_000)
     ai_request_id: UUID
+    customer_reply: str = Field(min_length=1, max_length=20_000)
+    buying_signal: str = Field(min_length=1, max_length=80)
+    objection_type: str | None = Field(default=None, max_length=80)
 
 
 class SalesAnalysisRead(ReadModel):
@@ -177,11 +195,23 @@ class SalesAnalysisRead(ReadModel):
     recommended_action: str
     suggested_reply: str
     ai_request_id: UUID
+    customer_reply: str
+    buying_signal: str
+    objection_type: str | None
 
 
 class AIModelPolicyCreate(BaseModel):
     organization_id: UUID
-    task_type: Literal["prospect_research", "business_analysis", "customer_reply_analysis"]
+    task_type: Literal[
+        "prospect_research",
+        "business_analysis",
+        "customer_reply_analysis",
+        "prospect_summarization",
+        "evidence_classification",
+        "draft_variations",
+        "opportunity_evaluation",
+        "final_outreach_polishing",
+    ]
     preferred_model: str = Field(min_length=1, max_length=200)
     fallback_model: str | None = Field(default=None, max_length=200)
     quality_requirement: Literal["economy", "balanced", "premium"]
@@ -208,3 +238,10 @@ class GrowthDashboardRead(BaseModel):
     top_opportunities: list[dict[str, object]] = Field(default_factory=list)
     average_qualification_score: float | None = None
     pending_human_review: int = 0
+    active_revenue_experiments: int = 0
+    prospects_awaiting_review: int = 0
+    growth_gifts_ready: int = 0
+    outreach_waiting_approval: int = 0
+    replies_received: int = 0
+    positive_conversations: int = 0
+    conversion_signals: int = 0

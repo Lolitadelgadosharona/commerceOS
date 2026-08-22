@@ -133,6 +133,11 @@ from commerce_os.governance.models import (
     User,
     UserRole,
 )
+from commerce_os.growth.activation_models import (
+    OutreachTrackingEvent,
+    ProspectExperimentLink,
+    RevenueExperiment,
+)
 from commerce_os.growth.channel_execution_models import (
     ChannelExecutionPlan,
     ChannelPerformanceObservation,
@@ -360,6 +365,9 @@ __all__ = [
     "GrowthLearningObservationLink",
     "GrowthLearningSignal",
     "GrowthPerformanceObservation",
+    "RevenueExperiment",
+    "ProspectExperimentLink",
+    "OutreachTrackingEvent",
     "ProspectDiscoverySource",
     "ProspectDiscoveryRun",
     "ProspectCandidate",

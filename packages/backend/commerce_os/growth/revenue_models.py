@@ -32,6 +32,9 @@ class GrowthProspect(IdMixin, TimestampMixin, VersionMixin, Base):
     business_type: Mapped[str] = mapped_column(String(120), nullable=False)
     source: Mapped[str] = mapped_column(String(120), nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="discovered")
+    source_candidate_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id"), unique=True, index=True
+    )
 
 
 class GrowthProspectEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -87,6 +90,7 @@ class GrowthGift(IdMixin, TimestampMixin, VersionMixin, Base):
     approval_request_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("approval_requests.id"), index=True
     )
+    evidence_reference: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
 
 class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -105,6 +109,12 @@ class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
     approval_request_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("approval_requests.id"), index=True
     )
+    subject_options: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    opening_sentence: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    personalized_context: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    problem_observation: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    gift_explanation: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    soft_cta: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
 
 class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -120,6 +130,9 @@ class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     recommended_action: Mapped[str] = mapped_column(Text, nullable=False)
     suggested_reply: Mapped[str] = mapped_column(Text, nullable=False)
     ai_request_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("ai_requests.id"), index=True)
+    customer_reply: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    buying_signal: Mapped[str] = mapped_column(String(80), nullable=False, default="unknown")
+    objection_type: Mapped[str | None] = mapped_column(String(80))
 
 
 class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):

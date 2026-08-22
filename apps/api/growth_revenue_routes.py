@@ -1,6 +1,10 @@
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
+from commerce_os.growth.activation_models import (
+    OutreachTrackingEvent,
+    RevenueExperiment,
+)
 from commerce_os.growth.discovery_models import (
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
@@ -258,5 +262,22 @@ def dashboard(organization_id: UUID, session: SessionDependency) -> GrowthDashbo
         pending_human_review=(
             count(GrowthGift, GrowthGift.status == "review")
             + count(GrowthOutreachDraft, GrowthOutreachDraft.status == "human_review")
+        ),
+        active_revenue_experiments=count(RevenueExperiment, RevenueExperiment.status == "active"),
+        prospects_awaiting_review=count(ProspectCandidate, ProspectCandidate.status == "qualified"),
+        growth_gifts_ready=count(GrowthGift, GrowthGift.status == "ready_for_delivery"),
+        outreach_waiting_approval=count(
+            GrowthOutreachDraft, GrowthOutreachDraft.status == "human_review"
+        ),
+        replies_received=count(
+            OutreachTrackingEvent,
+            OutreachTrackingEvent.event_type == "reply_received",
+        ),
+        positive_conversations=count(
+            SalesConversationAnalysis,
+            SalesConversationAnalysis.buying_signal.in_(["positive", "strong"]),
+        ),
+        conversion_signals=count(
+            OutreachTrackingEvent, OutreachTrackingEvent.event_type == "converted"
         ),
     )
