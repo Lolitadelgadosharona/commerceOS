@@ -206,6 +206,8 @@ from commerce_os.intelligence.demand_bridge_models import (
 )
 from commerce_os.intelligence.discovery_models import (
     OpportunityCandidate,
+    OpportunityCandidateAssessment,
+    OpportunityCandidateEvidence,
     OpportunityDiscoveryEvidence,
     OpportunityDiscoveryRun,
 )
@@ -538,6 +540,8 @@ __all__ = [
     "OpportunityAssessment",
     "OpportunityReport",
     "OpportunityCandidate",
+    "OpportunityCandidateAssessment",
+    "OpportunityCandidateEvidence",
     "OpportunityDiscoveryEvidence",
     "OpportunityDiscoveryRun",
     "ActionPlan",

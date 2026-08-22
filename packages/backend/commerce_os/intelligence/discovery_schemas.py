@@ -60,10 +60,13 @@ class OpportunityDiscoveryRunRead(ReadModel):
 
 class OpportunityCandidateRead(ReadModel):
     organization_id: UUID
-    discovery_run_id: UUID
+    discovery_run_id: UUID | None
     title: str
+    category: str
     problem_statement: str
     customer_segment: str
+    opportunity_description: str
+    market_context: str
     evidence_summary: str
     evidence_references: list[dict[str, Any]]
     solution_direction: str
@@ -76,6 +79,75 @@ class OpportunityCandidateRead(ReadModel):
     status: str
     methodology_version: str
     decision_queue_item_id: UUID | None
+
+
+OpportunityEvidenceType = Literal[
+    "customer_pain",
+    "marketplace",
+    "search",
+    "social",
+    "news",
+    "weather",
+    "seasonal",
+    "growth_conversation",
+    "research",
+]
+
+
+class OpportunityCandidateCreate(BaseModel):
+    organization_id: UUID
+    title: str = Field(min_length=1, max_length=250)
+    category: str = Field(min_length=1, max_length=150)
+    customer_segment: str = Field(min_length=1, max_length=5000)
+    customer_problem: str = Field(min_length=1, max_length=20_000)
+    opportunity_description: str = Field(min_length=1, max_length=20_000)
+    solution_direction: str = Field(min_length=1, max_length=20_000)
+    market_context: str = Field(min_length=1, max_length=20_000)
+    demand_signal_ids: list[UUID] = Field(min_length=1)
+    market_timing: str = Field(min_length=1, max_length=5000)
+    risks: list[str] = Field(default_factory=list)
+    missing_information: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
+
+
+class OpportunityCandidateEvidenceRead(ReadModel):
+    organization_id: UUID
+    opportunity_candidate_id: UUID
+    demand_signal_id: UUID
+    evidence_type: str
+    evidence_summary: str
+    contribution: str
+    confidence: float
+
+
+class OpportunityCandidateAssessmentRead(ReadModel):
+    organization_id: UUID
+    opportunity_candidate_id: UUID
+    demand_strength: str
+    signal_diversity: int
+    market_timing: str
+    confidence: float
+    risks: list[str]
+    missing_information: list[str]
+    assumptions: list[str]
+
+
+class OpportunityReview(BaseModel):
+    action: Literal["accept", "reject"]
+    approval_request_id: UUID | None = None
+
+
+class OpportunityThemeRead(BaseModel):
+    category: str
+    evidence_count: int
+    source_diversity: int
+    confidence: float
+
+
+class OpportunityDiscoveryDashboard(BaseModel):
+    opportunity_themes: list[OpportunityThemeRead]
+    emerging_opportunities: list[OpportunityCandidateRead]
+    review_queue: list[OpportunityCandidateRead]
 
 
 class DiscoveryTemplateRead(BaseModel):
