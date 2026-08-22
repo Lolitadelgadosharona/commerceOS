@@ -26,4 +26,5 @@ No scraper, autonomous research agent, outreach sender, customer-truth mutation,
 - Web: Next.js production build passed; Playwright passed (1 test).
 - Alembic: SQLite upgrade, downgrade to Sprint 048, re-upgrade to `0049_growthos_discovery`, schema-drift check, and migration integration test passed.
 - Docker: blocked because the local Docker daemon socket is unavailable; no silent installation or daemon activation was attempted.
-- PostgreSQL and CI: pending remote branch publication.
+- PostgreSQL: GitHub CI upgrade and schema-drift check passed against PostgreSQL 16; a local container downgrade/re-upgrade remains blocked with Docker.
+- CI: backend, web, and documentation jobs passed on the published Draft PR.
