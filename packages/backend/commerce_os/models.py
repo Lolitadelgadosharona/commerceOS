@@ -139,6 +139,15 @@ from commerce_os.growth.channel_execution_models import (
     CreativeChannelExperiment,
     DistributionRecord,
 )
+from commerce_os.growth.discovery_models import (
+    GrowthBusinessResearchResult,
+    GrowthBusinessResearchRun,
+    ProspectCandidate,
+    ProspectDiscoveryRun,
+    ProspectDiscoverySource,
+    ProspectQualificationAssessment,
+    ProspectResearchEvidence,
+)
 from commerce_os.growth.experiment_models import (
     DistributionCampaign,
     ExperimentVariant,
@@ -161,6 +170,7 @@ from commerce_os.intelligence.analysis_models import (
     OpportunityAssessment,
     OpportunityReport,
 )
+from commerce_os.intelligence.business_signal_models import BusinessDemandSignal
 from commerce_os.intelligence.commercial_risk_models import (
     CommercialViabilityAssessment,
     ProductRiskAssessment,
@@ -350,6 +360,14 @@ __all__ = [
     "GrowthLearningObservationLink",
     "GrowthLearningSignal",
     "GrowthPerformanceObservation",
+    "ProspectDiscoverySource",
+    "ProspectDiscoveryRun",
+    "ProspectCandidate",
+    "ProspectResearchEvidence",
+    "GrowthBusinessResearchRun",
+    "GrowthBusinessResearchResult",
+    "ProspectQualificationAssessment",
+    "BusinessDemandSignal",
     "GrowthProspect",
     "GrowthProspectEvidence",
     "GrowthOpportunityAnalysis",

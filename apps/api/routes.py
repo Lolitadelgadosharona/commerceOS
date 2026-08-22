@@ -48,6 +48,7 @@ from apps.api.execution_routes import router as execution_router
 from apps.api.executive_routes import router as executive_router
 from apps.api.finance_routes import router as finance_router
 from apps.api.governance_routes import router as governance_router
+from apps.api.growth_discovery_routes import router as growth_discovery_router
 from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.growth_revenue_routes import router as growth_revenue_router
 from apps.api.intelligence_routes import router as intelligence_router
@@ -113,6 +114,7 @@ api_router.include_router(creative_generation_router, tags=["creative_generation
 api_router.include_router(creative_intelligence_router, tags=["ai_creative_intelligence"])
 api_router.include_router(creative_production_router, tags=["creative_ai_production"])
 api_router.include_router(growth_experiment_router, tags=["growth_experiments"])
+api_router.include_router(growth_discovery_router, tags=["growthos_prospect_discovery"])
 api_router.include_router(growth_revenue_router, tags=["growthos_revenue_engine"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
 api_router.include_router(learning_router, tags=["closed_loop_learning"])
