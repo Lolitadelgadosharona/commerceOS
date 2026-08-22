@@ -139,11 +139,11 @@ def upgrade() -> None:
         *common(),
         sa.CheckConstraint(
             "confidence BETWEEN 0 AND 1",
-            name=op.f("ck_growth_service_recommendations_service_recommendation_confidence_range"),
+            name=op.f("ck_growth_service_recommendations_confidence_range"),
         ),
         sa.CheckConstraint(
             "purchase_probability IS NULL OR purchase_probability BETWEEN 0 AND 1",
-            name=op.f("ck_growth_service_recommendations_service_purchase_probability_range"),
+            name=op.f("ck_growth_service_recommendations_purchase_probability_range"),
         ),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.ForeignKeyConstraint(["prospect_id"], ["growth_prospects.id"]),

@@ -93,12 +93,10 @@ class GrowthGEOAssessment(IdMixin, TimestampMixin, VersionMixin, Base):
 class GrowthServiceRecommendation(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_service_recommendations"
     __table_args__ = (
-        CheckConstraint(
-            "confidence BETWEEN 0 AND 1", name="service_recommendation_confidence_range"
-        ),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),
         CheckConstraint(
             "purchase_probability IS NULL OR purchase_probability BETWEEN 0 AND 1",
-            name="service_purchase_probability_range",
+            name="purchase_probability_range",
         ),
     )
 
