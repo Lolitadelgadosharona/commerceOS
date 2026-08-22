@@ -153,13 +153,16 @@ from commerce_os.growth.conversation_learning_models import (
     GrowthSalesLearningSignal,
 )
 from commerce_os.growth.discovery_models import (
+    BusinessProfileEvidenceSnapshot,
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
+    InstagramEvidenceSnapshot,
     ProspectCandidate,
     ProspectDiscoveryRun,
     ProspectDiscoverySource,
     ProspectQualificationAssessment,
     ProspectResearchEvidence,
+    WebsiteEvidenceSnapshot,
 )
 from commerce_os.growth.experiment_models import (
     DistributionCampaign,
@@ -406,6 +409,9 @@ __all__ = [
     "ProspectDiscoveryRun",
     "ProspectCandidate",
     "ProspectResearchEvidence",
+    "WebsiteEvidenceSnapshot",
+    "BusinessProfileEvidenceSnapshot",
+    "InstagramEvidenceSnapshot",
     "GrowthBusinessResearchRun",
     "GrowthBusinessResearchResult",
     "ProspectQualificationAssessment",
