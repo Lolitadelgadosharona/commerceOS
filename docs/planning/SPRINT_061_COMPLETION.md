@@ -36,4 +36,6 @@ No crawler, message sender, sales automation, negotiation, or payment collection
 - Docker Compose configuration: valid.
 - Docker runtime and local PostgreSQL validation: blocked because the Docker daemon socket is not
   available at `/Users/richardwang/.docker/run/docker.sock`.
-- GitHub CI: pending Draft PR.
+- GitHub CI: backend, web, and documentation jobs passed on Draft PR #60 after shortening a
+  PostgreSQL-truncated check-constraint name. The backend job validated PostgreSQL migration,
+  schema drift, and the full test suite.
