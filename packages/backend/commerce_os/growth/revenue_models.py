@@ -133,6 +133,8 @@ class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     customer_reply: Mapped[str] = mapped_column(Text, nullable=False, default="")
     buying_signal: Mapped[str] = mapped_column(String(80), nullable=False, default="unknown")
     objection_type: Mapped[str | None] = mapped_column(String(80))
+    urgency: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="draft")
 
 
 class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):

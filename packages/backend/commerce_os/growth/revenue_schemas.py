@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from commerce_os.growth.conversation_learning_schemas import ObjectionType
 from commerce_os.shared.schemas import ReadModel
 
 ProspectStatus = Literal[
@@ -181,7 +182,8 @@ class SalesAnalysisCreate(BaseModel):
     ai_request_id: UUID
     customer_reply: str = Field(min_length=1, max_length=20_000)
     buying_signal: str = Field(min_length=1, max_length=80)
-    objection_type: str | None = Field(default=None, max_length=80)
+    objection_type: ObjectionType | None = None
+    urgency: Literal["low", "medium", "high", "unknown"] = "unknown"
 
 
 class SalesAnalysisRead(ReadModel):
@@ -198,6 +200,8 @@ class SalesAnalysisRead(ReadModel):
     customer_reply: str
     buying_signal: str
     objection_type: str | None
+    urgency: str
+    status: str
 
 
 class AIModelPolicyCreate(BaseModel):
@@ -211,6 +215,12 @@ class AIModelPolicyCreate(BaseModel):
         "draft_variations",
         "opportunity_evaluation",
         "final_outreach_polishing",
+        "conversation_classification",
+        "conversation_sentiment",
+        "conversation_tagging",
+        "complex_customer_reasoning",
+        "reply_drafting",
+        "negotiation_preparation",
     ]
     preferred_model: str = Field(min_length=1, max_length=200)
     fallback_model: str | None = Field(default=None, max_length=200)

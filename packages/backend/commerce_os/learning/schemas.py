@@ -20,6 +20,7 @@ SourceType = Literal[
     "dispute_signal",
     "product_risk",
     "market_signal",
+    "growth_conversation_analysis",
 ]
 
 
