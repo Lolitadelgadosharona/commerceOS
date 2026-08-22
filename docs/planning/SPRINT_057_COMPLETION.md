@@ -33,4 +33,5 @@ signals remain optional additional Demand Intelligence evidence rather than the 
 - Docker Compose configuration: valid.
 - Docker runtime and local PostgreSQL validation: blocked because the Docker daemon socket is not
   available at `/Users/richardwang/.docker/run/docker.sock`.
-- GitHub CI: pending branch publication.
+- GitHub CI: backend, web, and documentation jobs passed on Draft PR #56. The backend job
+  validated the migration and schema drift against PostgreSQL.
