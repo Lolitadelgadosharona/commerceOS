@@ -2,6 +2,7 @@ from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     Float,
     ForeignKey,
@@ -10,6 +11,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    event,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -52,6 +54,10 @@ class RiskLevel(StrEnum):
 
 
 class CandidateStatus(StrEnum):
+    DRAFT = "draft"
+    UNDER_REVIEW = "under_review"
+    ACCEPTED = "accepted"
+    ARCHIVED = "archived"
     PROPOSED = "proposed"
     REVIEWING = "reviewing"
     SELECTED = "selected"
@@ -122,15 +128,87 @@ class ProductCandidate(IdMixin, TimestampMixin, VersionMixin, Base):
     organization_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("organizations.id"), nullable=False, index=True
     )
-    opportunity_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("market_opportunities.id", ondelete="CASCADE"), nullable=False, index=True
+    opportunity_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("market_opportunities.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    opportunity_candidate_id: Mapped[UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("opportunity_discovery_candidates.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
     )
     product_name: Mapped[str] = mapped_column(String(250), nullable=False)
     category: Mapped[str] = mapped_column(String(150), nullable=False)
     customer_need: Mapped[str] = mapped_column(Text, nullable=False)
+    target_customer: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    product_description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    value_proposition: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    confidence_score: Mapped[float] = mapped_column(Float, nullable=False, default=0)
     estimated_margin: Mapped[float] = mapped_column(Float, nullable=False)
     risk_level: Mapped[RiskLevel] = mapped_column(String(30), nullable=False)
     status: Mapped[CandidateStatus] = mapped_column(String(30), nullable=False)
+
+
+class ProductEvaluation(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "product_evaluations"
+    __table_args__ = (
+        UniqueConstraint("product_candidate_id"),
+        CheckConstraint("demand_fit_score BETWEEN 0 AND 100", name="demand_fit_range"),
+        CheckConstraint("problem_solution_fit BETWEEN 0 AND 100", name="solution_fit_range"),
+        CheckConstraint("gross_margin_estimate BETWEEN 0 AND 1", name="gross_margin_range"),
+        CheckConstraint("evaluation_score BETWEEN 0 AND 100", name="evaluation_score_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    product_candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("product_candidates.id", ondelete="CASCADE"), index=True
+    )
+    demand_fit_score: Mapped[float] = mapped_column(Float, nullable=False)
+    problem_solution_fit: Mapped[float] = mapped_column(Float, nullable=False)
+    estimated_price_range: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    estimated_cost_range: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    gross_margin_estimate: Mapped[float] = mapped_column(Float, nullable=False)
+    shipping_complexity: Mapped[str] = mapped_column(String(20), nullable=False)
+    fulfillment_risk: Mapped[str] = mapped_column(String(20), nullable=False)
+    ip_risk: Mapped[str] = mapped_column(String(20), nullable=False)
+    regulatory_risk: Mapped[str] = mapped_column(String(20), nullable=False)
+    payment_risk: Mapped[str] = mapped_column(String(20), nullable=False)
+    dispute_risk: Mapped[str] = mapped_column(String(20), nullable=False)
+    strengths: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    weaknesses: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    assumptions: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    missing_information: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    evaluation_score: Mapped[float] = mapped_column(Float, nullable=False)
+    recommendation: Mapped[str] = mapped_column(Text, nullable=False)
+    formula_version: Mapped[str] = mapped_column(String(50), nullable=False)
+
+
+class ProductCandidateEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "product_candidate_evidence"
+    __table_args__ = (
+        UniqueConstraint("product_candidate_id", "evidence_source", "source_reference"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    product_candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("product_candidates.id", ondelete="CASCADE"), index=True
+    )
+    evidence_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_reference: Mapped[str] = mapped_column(String(500), nullable=False)
+    evidence_summary: Mapped[str] = mapped_column(Text, nullable=False)
+    relevance: Mapped[str] = mapped_column(Text, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+@event.listens_for(ProductCandidateEvidence, "before_update")
+@event.listens_for(ProductCandidateEvidence, "before_delete")
+def _protect_product_candidate_evidence(*_: object) -> None:
+    raise ValueError("Product candidate evidence is append-only.")
 
 
 class OpportunityScore(IdMixin, TimestampMixin, VersionMixin, Base):
