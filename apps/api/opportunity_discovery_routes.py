@@ -3,12 +3,22 @@ from uuid import UUID
 
 from commerce_os.governance.executive_schemas import DecisionQueueCreate
 from commerce_os.governance.executive_services import DecisionQueueService
-from commerce_os.intelligence.discovery_models import OpportunityCandidate, OpportunityDiscoveryRun
+from commerce_os.intelligence.discovery_models import (
+    OpportunityCandidate,
+    OpportunityCandidateAssessment,
+    OpportunityCandidateEvidence,
+    OpportunityDiscoveryRun,
+)
 from commerce_os.intelligence.discovery_schemas import (
     DiscoveryTemplateRead,
+    OpportunityCandidateAssessmentRead,
+    OpportunityCandidateCreate,
+    OpportunityCandidateEvidenceRead,
     OpportunityCandidateRead,
+    OpportunityDiscoveryDashboard,
     OpportunityDiscoveryRunCreate,
     OpportunityDiscoveryRunRead,
+    OpportunityReview,
 )
 from commerce_os.intelligence.discovery_services import (
     OpportunityDiscoveryService,
@@ -104,11 +114,60 @@ def list_candidates(
     return _list(session, OpportunityCandidate, organization_id)
 
 
+@router.post("/opportunity-candidates", response_model=OpportunityCandidateRead, status_code=201)
+def create_candidate(
+    payload: OpportunityCandidateCreate, request: Request, session: SessionDependency
+) -> OpportunityCandidate:
+    return OpportunityDiscoveryService(session).create_candidate(payload, actor_id(request))
+
+
 @router.get("/opportunity-candidates/{candidate_id}", response_model=OpportunityCandidateRead)
 def get_candidate(
     candidate_id: UUID, organization_id: UUID, session: SessionDependency
 ) -> OpportunityCandidate:
     return scoped_discovery(session, OpportunityCandidate, candidate_id, organization_id)
+
+
+@router.get(
+    "/opportunities/{candidate_id}/evidence",
+    response_model=list[OpportunityCandidateEvidenceRead],
+)
+def candidate_evidence(
+    candidate_id: UUID, organization_id: UUID, session: SessionDependency
+) -> list[OpportunityCandidateEvidence]:
+    return OpportunityDiscoveryService(session).candidate_evidence(candidate_id, organization_id)
+
+
+@router.get(
+    "/opportunities/{candidate_id}/assessment",
+    response_model=OpportunityCandidateAssessmentRead,
+)
+def candidate_assessment(
+    candidate_id: UUID, organization_id: UUID, session: SessionDependency
+) -> OpportunityCandidateAssessment:
+    return OpportunityDiscoveryService(session).candidate_assessment(candidate_id, organization_id)
+
+
+@router.post("/opportunities/{candidate_id}/review", response_model=OpportunityCandidateRead)
+def review_discovered_opportunity(
+    candidate_id: UUID,
+    organization_id: UUID,
+    payload: OpportunityReview,
+    request: Request,
+    session: SessionDependency,
+) -> OpportunityCandidate:
+    service = OpportunityDiscoveryService(session)
+    candidate = scoped_discovery(session, OpportunityCandidate, candidate_id, organization_id)
+    return service.review_candidate(
+        candidate, payload.action, payload.approval_request_id, actor_id(request)
+    )
+
+
+@router.get("/opportunity-discovery-dashboard", response_model=OpportunityDiscoveryDashboard)
+def discovery_dashboard(
+    organization_id: UUID, session: SessionDependency
+) -> OpportunityDiscoveryDashboard:
+    return OpportunityDiscoveryService(session).dashboard(organization_id)
 
 
 @router.post(

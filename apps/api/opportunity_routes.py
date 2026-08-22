@@ -1,6 +1,12 @@
 from typing import Annotated, TypeVar
 from uuid import UUID
 
+from commerce_os.intelligence.discovery_models import OpportunityCandidate
+from commerce_os.intelligence.discovery_schemas import (
+    OpportunityCandidateCreate,
+    OpportunityCandidateRead,
+)
+from commerce_os.intelligence.discovery_services import OpportunityDiscoveryService
 from commerce_os.intelligence.errors import IntelligenceNotFoundError
 from commerce_os.intelligence.opportunity_models import (
     MarketOpportunity,
@@ -29,7 +35,7 @@ from commerce_os.intelligence.opportunity_services import (
     OpportunityService,
 )
 from commerce_os.shared.database import Base, get_session
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -59,13 +65,19 @@ def _list_for_organization(
 
 @router.post(
     "/opportunities",
-    response_model=MarketOpportunityRead,
+    response_model=MarketOpportunityRead | OpportunityCandidateRead,
     status_code=201,
     tags=["opportunities"],
 )
 def create_opportunity(
-    payload: MarketOpportunityCreate, session: SessionDependency
-) -> MarketOpportunity:
+    payload: MarketOpportunityCreate | OpportunityCandidateCreate,
+    request: Request,
+    session: SessionDependency,
+) -> MarketOpportunity | OpportunityCandidate:
+    if isinstance(payload, OpportunityCandidateCreate):
+        from apps.api.opportunity_discovery_routes import actor_id
+
+        return OpportunityDiscoveryService(session).create_candidate(payload, actor_id(request))
     opportunity = MarketOpportunity(**payload.model_dump())
     session.add(opportunity)
     session.commit()
@@ -73,11 +85,17 @@ def create_opportunity(
     return opportunity
 
 
-@router.get("/opportunities", response_model=list[MarketOpportunityRead], tags=["opportunities"])
+@router.get(
+    "/opportunities",
+    response_model=list[MarketOpportunityRead | OpportunityCandidateRead],
+    tags=["opportunities"],
+)
 def list_opportunities(
     organization_id: UUID, session: SessionDependency
-) -> list[MarketOpportunity]:
-    return _list_for_organization(session, MarketOpportunity, organization_id)
+) -> list[MarketOpportunity | OpportunityCandidate]:
+    markets = _list_for_organization(session, MarketOpportunity, organization_id)
+    candidates = _list_for_organization(session, OpportunityCandidate, organization_id)
+    return [*candidates, *markets]
 
 
 @router.get(

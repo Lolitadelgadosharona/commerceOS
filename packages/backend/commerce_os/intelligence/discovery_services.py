@@ -5,14 +5,20 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from commerce_os.ai_runtime.models import AIRequest
+from commerce_os.intelligence.demand_bridge_models import DemandSignal
 from commerce_os.intelligence.discovery_models import (
     OpportunityCandidate,
+    OpportunityCandidateAssessment,
+    OpportunityCandidateEvidence,
     OpportunityDiscoveryEvidence,
     OpportunityDiscoveryRun,
 )
 from commerce_os.intelligence.discovery_schemas import (
     DiscoveryTemplateRead,
+    OpportunityCandidateCreate,
+    OpportunityDiscoveryDashboard,
     OpportunityDiscoveryRunCreate,
+    OpportunityThemeRead,
 )
 from commerce_os.intelligence.errors import IntelligenceScopeError, IntelligenceValidationError
 from commerce_os.intelligence.research_models import ResearchRun
@@ -199,8 +205,11 @@ class OpportunityDiscoveryService:
             organization_id=run.organization_id,
             discovery_run_id=run.id,
             title=str(content["title"]),
+            category="uncategorized",
             problem_statement=str(content["problem"]),
             customer_segment=str(content["customer_segment"]),
+            opportunity_description=str(content["evidence_summary"]),
+            market_context="Governed AI discovery run",
             evidence_summary=str(content["evidence_summary"]),
             evidence_references=references,
             solution_direction=str(content["solution_direction"]),
@@ -240,6 +249,195 @@ class OpportunityDiscoveryService:
         self.session.commit()
         self.session.refresh(candidate)
         return candidate
+
+    def create_candidate(
+        self, payload: OpportunityCandidateCreate, actor_id: UUID
+    ) -> OpportunityCandidate:
+        signal_ids = set(payload.demand_signal_ids)
+        signals = list(
+            self.session.scalars(
+                select(DemandSignal).where(
+                    DemandSignal.organization_id == payload.organization_id,
+                    DemandSignal.id.in_(signal_ids),
+                )
+            )
+        )
+        if len(signals) != len(signal_ids):
+            raise IntelligenceScopeError("Every demand signal must exist in this organization.")
+        if any(signal.status not in {"review", "approved"} for signal in signals):
+            raise IntelligenceValidationError(
+                "Opportunity discovery requires demand signals in human review."
+            )
+        source_types = {signal.source_type for signal in signals}
+        diversity = len(source_types)
+        strength = "weak" if diversity == 1 else "medium" if diversity == 2 else "strong"
+        confidence = round(sum(signal.confidence for signal in signals) / len(signals), 4)
+        references = [
+            {
+                "type": signal.source_type,
+                "id": str(signal.id),
+                "source_reference": signal.source_reference,
+            }
+            for signal in signals
+        ]
+        candidate = OpportunityCandidate(
+            organization_id=payload.organization_id,
+            discovery_run_id=None,
+            title=payload.title,
+            category=payload.category,
+            problem_statement=payload.customer_problem,
+            customer_segment=payload.customer_segment,
+            opportunity_description=payload.opportunity_description,
+            market_context=payload.market_context,
+            evidence_summary=f"{len(signals)} reviewed demand signals across {diversity} sources.",
+            evidence_references=references,
+            solution_direction=payload.solution_direction,
+            customer_language=list(dict.fromkeys(signal.customer_language for signal in signals)),
+            confidence_score=confidence,
+            risk_summary=payload.risks,
+            open_questions=[],
+            missing_evidence=payload.missing_information,
+            advisory_score=round(confidence * 100, 2),
+            status="draft",
+            methodology_version="deterministic-demand-opportunity-v1",
+            decision_queue_item_id=None,
+        )
+        self.session.add(candidate)
+        self.session.flush()
+        for signal in signals:
+            self.session.add(
+                OpportunityCandidateEvidence(
+                    organization_id=payload.organization_id,
+                    opportunity_candidate_id=candidate.id,
+                    demand_signal_id=signal.id,
+                    evidence_type=self._evidence_type(signal.source_type),
+                    evidence_summary=signal.problem_statement,
+                    contribution=f"{signal.frequency} observations; source {signal.source_type}",
+                    confidence=signal.confidence,
+                )
+            )
+        self.session.add(
+            OpportunityCandidateAssessment(
+                organization_id=payload.organization_id,
+                opportunity_candidate_id=candidate.id,
+                demand_strength=strength,
+                signal_diversity=diversity,
+                market_timing=payload.market_timing,
+                confidence=confidence,
+                risks=payload.risks,
+                missing_information=payload.missing_information,
+                assumptions=payload.assumptions,
+            )
+        )
+        return self._save(candidate, actor_id, "opportunity_discovery.candidate.created")
+
+    def review_candidate(
+        self,
+        candidate: OpportunityCandidate,
+        action: str,
+        approval_request_id: UUID | None,
+        actor_id: UUID,
+    ) -> OpportunityCandidate:
+        if candidate.status not in {"draft", "under_review"}:
+            raise IntelligenceValidationError("Only pending candidates may be reviewed.")
+        if action == "accept":
+            approvals = Base.metadata.tables["approval_requests"]
+            approved = (
+                self.session.scalar(
+                    select(approvals.c.id).where(
+                        approvals.c.id == approval_request_id,
+                        approvals.c.organization_id == candidate.organization_id,
+                        approvals.c.status == "approved",
+                    )
+                )
+                if approval_request_id is not None
+                else None
+            )
+            if approved is None:
+                raise IntelligenceValidationError(
+                    "Acceptance requires an approved governance request in this organization."
+                )
+            candidate.status = "accepted"
+        else:
+            candidate.status = "rejected"
+        return self._save(
+            candidate, actor_id, f"opportunity_discovery.candidate.{candidate.status}"
+        )
+
+    def candidate_evidence(
+        self, candidate_id: UUID, organization_id: UUID
+    ) -> list[OpportunityCandidateEvidence]:
+        scoped_discovery(self.session, OpportunityCandidate, candidate_id, organization_id)
+        return list(
+            self.session.scalars(
+                select(OpportunityCandidateEvidence)
+                .where(OpportunityCandidateEvidence.opportunity_candidate_id == candidate_id)
+                .order_by(OpportunityCandidateEvidence.created_at)
+            )
+        )
+
+    def candidate_assessment(
+        self, candidate_id: UUID, organization_id: UUID
+    ) -> OpportunityCandidateAssessment:
+        scoped_discovery(self.session, OpportunityCandidate, candidate_id, organization_id)
+        assessment = self.session.scalar(
+            select(OpportunityCandidateAssessment).where(
+                OpportunityCandidateAssessment.opportunity_candidate_id == candidate_id
+            )
+        )
+        if assessment is None:
+            raise IntelligenceScopeError("Opportunity assessment was not found.")
+        return assessment
+
+    def dashboard(self, organization_id: UUID) -> OpportunityDiscoveryDashboard:
+        candidates = list(
+            self.session.scalars(
+                select(OpportunityCandidate)
+                .where(OpportunityCandidate.organization_id == organization_id)
+                .order_by(OpportunityCandidate.created_at.desc())
+            )
+        )
+        evidence = list(
+            self.session.scalars(
+                select(OpportunityCandidateEvidence).where(
+                    OpportunityCandidateEvidence.organization_id == organization_id
+                )
+            )
+        )
+        themes: dict[str, list[OpportunityCandidate]] = {}
+        for candidate in candidates:
+            themes.setdefault(candidate.category, []).append(candidate)
+        theme_items = []
+        for category, items in sorted(themes.items()):
+            ids = {item.id for item in items}
+            linked = [item for item in evidence if item.opportunity_candidate_id in ids]
+            theme_items.append(
+                OpportunityThemeRead(
+                    category=category,
+                    evidence_count=len(linked),
+                    source_diversity=len({item.evidence_type for item in linked}),
+                    confidence=round(sum(item.confidence_score for item in items) / len(items), 4),
+                )
+            )
+        return OpportunityDiscoveryDashboard(
+            opportunity_themes=theme_items,
+            emerging_opportunities=candidates,
+            review_queue=[item for item in candidates if item.status in {"draft", "under_review"}],
+        )
+
+    @staticmethod
+    def _evidence_type(source_type: str) -> str:
+        mapping = {
+            "growthos_conversation": "growth_conversation",
+            "amazon_review": "marketplace",
+            "etsy_review": "marketplace",
+            "google_trend": "search",
+            "reddit": "social",
+            "weather_environment": "weather",
+            "seasonal_pattern": "seasonal",
+            "research_analysis": "research",
+        }
+        return mapping.get(source_type, "customer_pain")
 
     def mark_review(
         self, candidate: OpportunityCandidate, queue_id: UUID, actor_id: UUID
