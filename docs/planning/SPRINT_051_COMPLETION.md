@@ -33,4 +33,8 @@ and future recommendations remain drafts or advice for human review.
 - Docker Compose configuration: valid.
 - Docker runtime and local PostgreSQL validation: blocked because the local Docker daemon
   socket is unavailable; no silent installation or daemon activation was attempted.
-- CI and Draft PR: pending publication.
+- GitHub CI: backend, web, and documentation jobs passed on Draft PR #50. The backend job
+  validated PostgreSQL 16 migration upgrade and schema-drift consistency after constraint-name
+  normalization.
+- Publication: branch `codex/sprint-051-growthos-conversation-intelligence`, implementation
+  commit `b4ffe3e`, PostgreSQL constraint fix `670e7c1`, Draft PR #50 stacked on Sprint 050.
