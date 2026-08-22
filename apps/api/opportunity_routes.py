@@ -15,6 +15,8 @@ from commerce_os.intelligence.opportunity_models import (
     OpportunityScore,
     OpportunityStatus,
     ProductCandidate,
+    ProductCandidateEvidence,
+    ProductEvaluation,
 )
 from commerce_os.intelligence.opportunity_schemas import (
     MarketOpportunityCreate,
@@ -27,7 +29,12 @@ from commerce_os.intelligence.opportunity_schemas import (
     OpportunityScoreCreate,
     OpportunityScoreRead,
     ProductCandidateCreate,
+    ProductCandidateEvidenceRead,
     ProductCandidateRead,
+    ProductCandidateReview,
+    ProductEvaluationDashboard,
+    ProductEvaluationRead,
+    ProductOpportunityCandidateCreate,
 )
 from commerce_os.intelligence.opportunity_services import (
     OpportunityRiskService,
@@ -161,8 +168,14 @@ def get_opportunity_evidence(evidence_id: UUID, session: SessionDependency) -> O
     tags=["product_candidates"],
 )
 def create_product_candidate(
-    payload: ProductCandidateCreate, session: SessionDependency
+    payload: ProductCandidateCreate | ProductOpportunityCandidateCreate,
+    request: Request,
+    session: SessionDependency,
 ) -> ProductCandidate:
+    if isinstance(payload, ProductOpportunityCandidateCreate):
+        from apps.api.opportunity_discovery_routes import actor_id
+
+        return OpportunityService(session).evaluate_candidate(payload, actor_id(request))
     return OpportunityService(session).add_candidate(payload)
 
 
@@ -184,6 +197,58 @@ def list_product_candidates(
 )
 def get_product_candidate(candidate_id: UUID, session: SessionDependency) -> ProductCandidate:
     return _get_or_raise(session, ProductCandidate, candidate_id)
+
+
+@router.get(
+    "/product-candidates/{candidate_id}/evaluation",
+    response_model=ProductEvaluationRead,
+    tags=["product_candidates"],
+)
+def get_product_evaluation(
+    candidate_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProductEvaluation:
+    return OpportunityService(session).evaluation(candidate_id, organization_id)
+
+
+@router.get(
+    "/product-candidates/{candidate_id}/evidence",
+    response_model=list[ProductCandidateEvidenceRead],
+    tags=["product_candidates"],
+)
+def get_product_candidate_evidence(
+    candidate_id: UUID, organization_id: UUID, session: SessionDependency
+) -> list[ProductCandidateEvidence]:
+    return OpportunityService(session).evidence(candidate_id, organization_id)
+
+
+@router.post(
+    "/product-candidates/{candidate_id}/review",
+    response_model=ProductCandidateRead,
+    tags=["product_candidates"],
+)
+def review_product_candidate(
+    candidate_id: UUID,
+    organization_id: UUID,
+    payload: ProductCandidateReview,
+    request: Request,
+    session: SessionDependency,
+) -> ProductCandidate:
+    from apps.api.opportunity_discovery_routes import actor_id
+
+    service = OpportunityService(session)
+    candidate = service._candidate(candidate_id, organization_id)
+    return service.review(candidate, payload.action, payload.approval_request_id, actor_id(request))
+
+
+@router.get(
+    "/product-evaluation-dashboard",
+    response_model=ProductEvaluationDashboard,
+    tags=["product_candidates"],
+)
+def product_evaluation_dashboard(
+    organization_id: UUID, session: SessionDependency
+) -> ProductEvaluationDashboard:
+    return OpportunityService(session).dashboard(organization_id)
 
 
 @router.post(

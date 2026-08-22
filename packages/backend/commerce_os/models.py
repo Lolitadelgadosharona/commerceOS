@@ -251,6 +251,8 @@ from commerce_os.intelligence.opportunity_models import (
     OpportunityRisk,
     OpportunityScore,
     ProductCandidate,
+    ProductCandidateEvidence,
+    ProductEvaluation,
 )
 from commerce_os.intelligence.product_models import (
     ProductEconomics,
@@ -498,6 +500,8 @@ __all__ = [
     "OpportunityRisk",
     "OpportunityScore",
     "ProductCandidate",
+    "ProductCandidateEvidence",
+    "ProductEvaluation",
     "ProductEconomics",
     "ProductHypothesis",
     "ProductInvestmentScore",
