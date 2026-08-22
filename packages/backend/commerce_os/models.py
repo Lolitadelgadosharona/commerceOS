@@ -166,6 +166,14 @@ from commerce_os.growth.experiment_models import (
     GrowthLearningSignal,
     GrowthPerformanceObservation,
 )
+from commerce_os.growth.industry_intelligence_models import (
+    GrowthGEOAssessment,
+    GrowthServiceRecommendation,
+    IndustryGrowthEvidence,
+    IndustryGrowthPattern,
+    IndustryGrowthProfile,
+    IndustryLearningSignal,
+)
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
@@ -409,6 +417,12 @@ __all__ = [
     "BusinessGrowthProfile",
     "GrowthProspectRanking",
     "GrowthOpportunityAnalysis",
+    "GrowthGEOAssessment",
+    "GrowthServiceRecommendation",
+    "IndustryGrowthEvidence",
+    "IndustryGrowthPattern",
+    "IndustryGrowthProfile",
+    "IndustryLearningSignal",
     "GrowthGift",
     "GrowthOutreachDraft",
     "SalesConversationAnalysis",
