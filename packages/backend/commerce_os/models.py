@@ -168,11 +168,13 @@ from commerce_os.growth.experiment_models import (
 )
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
+    BusinessGrowthProfile,
     GrowthGift,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
+    GrowthProspectRanking,
     SalesConversationAnalysis,
 )
 from commerce_os.intelligence.analysis_models import (
@@ -404,6 +406,8 @@ __all__ = [
     "PredictiveDemandMetadata",
     "GrowthProspect",
     "GrowthProspectEvidence",
+    "BusinessGrowthProfile",
+    "GrowthProspectRanking",
     "GrowthOpportunityAnalysis",
     "GrowthGift",
     "GrowthOutreachDraft",

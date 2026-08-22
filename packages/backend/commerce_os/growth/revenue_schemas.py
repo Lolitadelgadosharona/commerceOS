@@ -67,6 +67,14 @@ class OpportunityAnalysisCreate(BaseModel):
     organization_id: UUID
     prospect_id: UUID
     opportunity_type: Literal[
+        "website_conversion",
+        "seo",
+        "google_business",
+        "social_media",
+        "content",
+        "branding",
+        "customer_retention",
+        "reputation_management",
         "homepage_fix",
         "booking_experience_fix",
         "google_profile_fix",
@@ -77,6 +85,7 @@ class OpportunityAnalysisCreate(BaseModel):
     problem_statement: str = Field(min_length=1, max_length=20_000)
     evidence_reference: list[UUID] = Field(min_length=1)
     customer_impact: str = Field(min_length=1, max_length=20_000)
+    purchase_probability: float | None = Field(default=None, ge=0, le=1)
     confidence: float = Field(ge=0, le=1)
     recommended_offer: str = Field(min_length=1, max_length=20_000)
     risks: list[str] = Field(default_factory=list)
@@ -91,6 +100,7 @@ class OpportunityAnalysisRead(ReadModel):
     problem_statement: str
     evidence_reference: list[str]
     customer_impact: str
+    purchase_probability: float | None
     confidence: float
     recommended_offer: str
     risks: list[str]
@@ -108,6 +118,11 @@ class GrowthGiftCreate(BaseModel):
     after_state: str = Field(min_length=1, max_length=20_000)
     asset_reference: str | None = Field(default=None, max_length=500)
     evidence_reference: list[UUID] = Field(min_length=1)
+    observed_issue: str = Field(default="", max_length=20_000)
+    recommended_improvement: str = Field(default="", max_length=20_000)
+    expected_value: str = Field(default="", max_length=20_000)
+    preview_type: Literal["website", "social", "seo", "google_profile", "other"] = "other"
+    preview_status: Literal["draft", "ready", "reviewed"] = "draft"
 
 
 class StatusTransition(BaseModel):
@@ -127,6 +142,11 @@ class GrowthGiftRead(ReadModel):
     status: str
     approval_request_id: UUID | None
     evidence_reference: list[str]
+    observed_issue: str
+    recommended_improvement: str
+    expected_value: str
+    preview_type: str
+    preview_status: str
 
 
 class OutreachDraftCreate(BaseModel):
@@ -255,3 +275,64 @@ class GrowthDashboardRead(BaseModel):
     replies_received: int = 0
     positive_conversations: int = 0
     conversion_signals: int = 0
+
+
+class BusinessGrowthProfileCreate(BaseModel):
+    organization_id: UUID
+    prospect_id: UUID
+    business_identity: dict[str, str]
+    evidence_references: list[UUID] = Field(min_length=1)
+    digital_presence: dict[str, object]
+    customer_signals: list[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
+    growth_opportunities: list[str] = Field(default_factory=list)
+    confidence: float = Field(ge=0, le=1)
+
+
+class BusinessGrowthProfileRead(ReadModel):
+    organization_id: UUID
+    prospect_id: UUID
+    business_identity: dict[str, str]
+    industry: str
+    location: str | None
+    evidence_references: list[str]
+    digital_presence: dict[str, object]
+    customer_signals: list[str]
+    strengths: list[str]
+    weaknesses: list[str]
+    growth_opportunities: list[str]
+    confidence: float
+
+
+class ProspectRankingCreate(BaseModel):
+    organization_id: UUID
+    prospect_id: UUID
+    pain_severity: float | None = Field(default=None, ge=0, le=100)
+    business_impact: float | None = Field(default=None, ge=0, le=100)
+    accessibility: float | None = Field(default=None, ge=0, le=100)
+    buying_signals: float | None = Field(default=None, ge=0, le=100)
+    solution_fit: float | None = Field(default=None, ge=0, le=100)
+
+
+class ProspectRankingRead(ReadModel):
+    organization_id: UUID
+    prospect_id: UUID
+    pain_severity: float | None
+    business_impact: float | None
+    accessibility: float | None
+    buying_signals: float | None
+    solution_fit: float | None
+    score: float | None
+    missing_inputs: list[str]
+    explanation: str
+    formula_version: str
+
+
+class GrowthRevenueV2Dashboard(BaseModel):
+    organization_id: UUID
+    business_profiles: int
+    ranked_prospects: int
+    pipeline: dict[str, int]
+    growth_demand_signals: int
+    commerce_independent_demand_signals: int

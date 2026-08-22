@@ -56,7 +56,13 @@ class GrowthProspectEvidence(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class GrowthOpportunityAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_opportunity_analyses"
-    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_opp_conf_range"),)
+    __table_args__ = (
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_opp_conf_range"),
+        CheckConstraint(
+            "purchase_probability IS NULL OR purchase_probability BETWEEN 0 AND 1",
+            name="purchase_probability_range",
+        ),
+    )
 
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     prospect_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_prospects.id"), index=True)
@@ -64,6 +70,7 @@ class GrowthOpportunityAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     problem_statement: Mapped[str] = mapped_column(Text, nullable=False)
     evidence_reference: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     customer_impact: Mapped[str] = mapped_column(Text, nullable=False)
+    purchase_probability: Mapped[float | None] = mapped_column()
     confidence: Mapped[float] = mapped_column(nullable=False)
     recommended_offer: Mapped[str] = mapped_column(Text, nullable=False)
     risks: Mapped[list[str]] = mapped_column(JSON, nullable=False)
@@ -91,6 +98,11 @@ class GrowthGift(IdMixin, TimestampMixin, VersionMixin, Base):
         Uuid, ForeignKey("approval_requests.id"), index=True
     )
     evidence_reference: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    observed_issue: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    recommended_improvement: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    expected_value: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    preview_type: Mapped[str] = mapped_column(String(40), nullable=False, default="other")
+    preview_status: Mapped[str] = mapped_column(String(30), nullable=False, default="draft")
 
 
 class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -146,6 +158,51 @@ class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):
     preferred_model: Mapped[str] = mapped_column(String(200), nullable=False)
     fallback_model: Mapped[str | None] = mapped_column(String(200))
     quality_requirement: Mapped[str] = mapped_column(String(50), nullable=False)
+
+
+class BusinessGrowthProfile(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "business_growth_profiles"
+    __table_args__ = (
+        UniqueConstraint("prospect_id"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    prospect_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("growth_prospects.id", ondelete="CASCADE"), index=True
+    )
+    business_identity: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
+    industry: Mapped[str] = mapped_column(String(120), nullable=False)
+    location: Mapped[str | None] = mapped_column(String(250))
+    evidence_references: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    digital_presence: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    customer_signals: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    strengths: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    weaknesses: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    growth_opportunities: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+
+
+class GrowthProspectRanking(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "growth_prospect_rankings"
+    __table_args__ = (
+        UniqueConstraint("prospect_id"),
+        CheckConstraint("score IS NULL OR score BETWEEN 0 AND 100", name="score_range"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    prospect_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("growth_prospects.id", ondelete="CASCADE"), index=True
+    )
+    pain_severity: Mapped[float | None]
+    business_impact: Mapped[float | None]
+    accessibility: Mapped[float | None]
+    buying_signals: Mapped[float | None]
+    solution_fit: Mapped[float | None]
+    score: Mapped[float | None]
+    missing_inputs: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    explanation: Mapped[str] = mapped_column(Text, nullable=False)
+    formula_version: Mapped[str] = mapped_column(String(80), nullable=False)
 
 
 @event.listens_for(GrowthProspectEvidence, "before_update")
