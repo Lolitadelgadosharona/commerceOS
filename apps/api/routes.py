@@ -56,6 +56,7 @@ from apps.api.growth_conversation_learning_routes import (
 from apps.api.growth_discovery_routes import router as growth_discovery_router
 from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.growth_revenue_routes import router as growth_revenue_router
+from apps.api.industry_intelligence_routes import router as industry_intelligence_router
 from apps.api.intelligence_routes import router as intelligence_router
 from apps.api.launch_preparation_routes import router as launch_preparation_router
 from apps.api.learning_routes import router as learning_router
@@ -126,6 +127,7 @@ api_router.include_router(
     growth_conversation_learning_router, tags=["growthos_conversation_learning"]
 )
 api_router.include_router(growth_revenue_router, tags=["growthos_revenue_engine"])
+api_router.include_router(industry_intelligence_router, tags=["growthos_industry_intelligence"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
 api_router.include_router(learning_router, tags=["closed_loop_learning"])
 
