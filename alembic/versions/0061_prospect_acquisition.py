@@ -83,7 +83,7 @@ def upgrade() -> None:
         sa.Column("captured_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("confidence", sa.Float(), nullable=False),
         *common(),
-        sa.CheckConstraint("confidence BETWEEN 0 AND 1", name="business_profile_ev_conf_range"),
+        sa.CheckConstraint("confidence BETWEEN 0 AND 1", name="bp_ev_conf"),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
         sa.ForeignKeyConstraint(["candidate_id"], ["prospect_candidates.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["source_id"], ["prospect_discovery_sources.id"]),

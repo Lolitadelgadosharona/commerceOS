@@ -116,9 +116,7 @@ class WebsiteEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
 
 class BusinessProfileEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "business_profile_evidence_snapshots"
-    __table_args__ = (
-        CheckConstraint("confidence BETWEEN 0 AND 1", name="business_profile_ev_conf_range"),
-    )
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="bp_ev_conf"),)
 
     organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
     candidate_id: Mapped[UUID] = mapped_column(
