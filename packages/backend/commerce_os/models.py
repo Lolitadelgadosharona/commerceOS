@@ -184,6 +184,12 @@ from commerce_os.growth.industry_intelligence_models import (
     IndustryLearningSignal,
 )
 from commerce_os.growth.revenue_execution_models import DailyGrowthOpportunity
+from commerce_os.growth.revenue_launch_models import (
+    CustomerLifecycleEvent,
+    PaymentReadinessRecord,
+    ProspectRevenuePipeline,
+    RevenueOfferTracking,
+)
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
@@ -442,6 +448,10 @@ __all__ = [
     "OfferExperiment",
     "OfferExperimentOutcome",
     "DailyGrowthOpportunity",
+    "ProspectRevenuePipeline",
+    "RevenueOfferTracking",
+    "PaymentReadinessRecord",
+    "CustomerLifecycleEvent",
     "GrowthGEOAssessment",
     "GrowthServiceRecommendation",
     "IndustryGrowthEvidence",

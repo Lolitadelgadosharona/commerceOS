@@ -202,5 +202,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 062 Completion Notes](./planning/SPRINT_062_COMPLETION.md)
 - [GrowthOS Revenue Machine Completion v1.0](./architecture/GROWTHOS_REVENUE_MACHINE_COMPLETION_V1_0.md)
 - [Sprint 063 Completion Notes](./planning/SPRINT_063_COMPLETION.md)
+- [Revenue Launch Foundation v1.0](./architecture/REVENUE_LAUNCH_FOUNDATION_V1_0.md)
+- [Sprint 064 Completion Notes](./planning/SPRINT_064_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

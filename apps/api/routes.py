@@ -75,6 +75,7 @@ from apps.api.reddit_intelligence_routes import router as reddit_intelligence_ro
 from apps.api.research_analyst_routes import router as research_analyst_router
 from apps.api.revenue_conversation_routes import router as revenue_conversation_router
 from apps.api.revenue_execution_routes import router as revenue_execution_router
+from apps.api.revenue_launch_routes import router as revenue_launch_router
 from apps.api.sales_support_routes import router as sales_support_router
 from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
@@ -130,6 +131,7 @@ api_router.include_router(
 api_router.include_router(growth_revenue_router, tags=["growthos_revenue_engine"])
 api_router.include_router(industry_intelligence_router, tags=["growthos_industry_intelligence"])
 api_router.include_router(revenue_execution_router, tags=["growthos_revenue_execution"])
+api_router.include_router(revenue_launch_router, tags=["growthos_revenue_launch"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
 api_router.include_router(learning_router, tags=["closed_loop_learning"])
 
