@@ -62,6 +62,7 @@ from apps.api.launch_preparation_routes import router as launch_preparation_rout
 from apps.api.learning_routes import router as learning_router
 from apps.api.listing_geo_intelligence_routes import router as listing_geo_intelligence_router
 from apps.api.listing_intelligence_routes import router as listing_intelligence_router
+from apps.api.live_revenue_routes import router as live_revenue_router
 from apps.api.market_connector_routes import router as market_connector_router
 from apps.api.market_intelligence_routes import router as market_intelligence_router
 from apps.api.marketplace_voice_routes import router as marketplace_voice_router
@@ -134,6 +135,7 @@ api_router.include_router(industry_intelligence_router, tags=["growthos_industry
 api_router.include_router(revenue_execution_router, tags=["growthos_revenue_execution"])
 api_router.include_router(revenue_launch_router, tags=["growthos_revenue_launch"])
 api_router.include_router(revenue_operations_router, tags=["growthos_revenue_operations"])
+api_router.include_router(live_revenue_router, tags=["growthos_live_revenue"])
 api_router.include_router(revenue_conversation_router, tags=["revenue_conversation_intelligence"])
 api_router.include_router(learning_router, tags=["closed_loop_learning"])
 

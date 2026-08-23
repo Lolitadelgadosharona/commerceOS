@@ -183,6 +183,14 @@ from commerce_os.growth.industry_intelligence_models import (
     IndustryGrowthProfile,
     IndustryLearningSignal,
 )
+from commerce_os.growth.live_revenue_models import (
+    CustomerDeliveryItem,
+    CustomerServiceDelivery,
+    DailyRevenueRun,
+    DailyRevenueRunProspect,
+    FounderActionItem,
+    GrowthExternalDataConnector,
+)
 from commerce_os.growth.revenue_execution_models import DailyGrowthOpportunity
 from commerce_os.growth.revenue_launch_models import (
     CustomerLifecycleEvent,
@@ -460,6 +468,12 @@ __all__ = [
     "DailyExperimentWorkspaceItem",
     "EmailWorkflowReference",
     "GrowthCustomerFeedback",
+    "DailyRevenueRun",
+    "DailyRevenueRunProspect",
+    "FounderActionItem",
+    "GrowthExternalDataConnector",
+    "CustomerServiceDelivery",
+    "CustomerDeliveryItem",
     "GrowthGEOAssessment",
     "GrowthServiceRecommendation",
     "IndustryGrowthEvidence",
