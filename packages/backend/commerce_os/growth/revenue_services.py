@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Any, TypeVar, cast
 from uuid import UUID
 
@@ -6,23 +7,32 @@ from sqlalchemy.orm import Session
 
 from commerce_os.ai_runtime.models import AIOutputClassification, AIRequest
 from commerce_os.growth.errors import GrowthError
-from commerce_os.growth.industry_intelligence_models import IndustryGrowthProfile
+from commerce_os.growth.industry_intelligence_models import (
+    IndustryGrowthEvidence,
+    IndustryGrowthProfile,
+)
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
+    GrowthDiagnosis,
     GrowthGift,
+    GrowthOfferRecommendation,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
     GrowthProspectRanking,
+    IndustryDeliveryKnowledge,
     SalesConversationAnalysis,
 )
 from commerce_os.growth.revenue_schemas import (
     AIModelPolicyCreate,
     BusinessGrowthProfileCreate,
+    GrowthDiagnosisCreate,
     GrowthGiftCreate,
     GrowthRevenueV2Dashboard,
+    IndustryDeliveryKnowledgeCreate,
+    OfferRecommendationCreate,
     OpportunityAnalysisCreate,
     OutreachDraftCreate,
     ProspectCreate,
@@ -194,6 +204,88 @@ class GrowthRevenueService:
             GrowthOpportunityAnalysis(**values), actor_id, "growthos.opportunity.created"
         )
 
+    def create_diagnosis(self, payload: GrowthDiagnosisCreate, actor_id: UUID) -> GrowthDiagnosis:
+        scoped_revenue(self.session, GrowthProspect, payload.prospect_id, payload.organization_id)
+        if payload.industry_profile_id is not None:
+            profile = self.session.get(IndustryGrowthProfile, payload.industry_profile_id)
+            if profile is None or profile.organization_id != payload.organization_id:
+                raise GrowthError("Industry profile was not found in this organization.")
+        evidence_ids = [str(item) for item in payload.evidence_references]
+        for evidence_id in payload.evidence_references:
+            evidence = scoped_revenue(
+                self.session, GrowthProspectEvidence, evidence_id, payload.organization_id
+            )
+            if evidence.prospect_id != payload.prospect_id:
+                raise GrowthError("Diagnosis evidence must belong to the selected prospect.")
+        if payload.ai_request_id is not None:
+            self._ai_request(payload.ai_request_id, payload.organization_id, {"analysis"})
+        self._reject_unsupported_claims(
+            " ".join(
+                [
+                    payload.business_situation,
+                    *payload.growth_problems,
+                    payload.customer_impact,
+                    *payload.recommended_improvements,
+                ]
+            )
+        )
+        values = payload.model_dump(exclude={"evidence_references"})
+        return self._save(
+            GrowthDiagnosis(**values, evidence_references=evidence_ids, status="draft"),
+            actor_id,
+            "growthos.diagnosis.created",
+        )
+
+    def recommend_offer(
+        self, payload: OfferRecommendationCreate, actor_id: UUID
+    ) -> GrowthOfferRecommendation:
+        scoped_revenue(self.session, GrowthProspect, payload.prospect_id, payload.organization_id)
+        diagnosis = scoped_revenue(
+            self.session, GrowthDiagnosis, payload.diagnosis_id, payload.organization_id
+        )
+        if diagnosis.prospect_id != payload.prospect_id:
+            raise GrowthError("Offer diagnosis must belong to the selected prospect.")
+        if payload.location_count > 1:
+            offer_type = "expansion_package"
+            rationale = (
+                "Multiple locations were explicitly supplied; "
+                "expansion coordination is the primary fit."
+            )
+        elif payload.high_review_weak_visibility:
+            offer_type = "visibility_package"
+            rationale = (
+                "Strong reviews and weak visibility were explicitly supplied; "
+                "visibility is the primary gap."
+            )
+        elif payload.business_stage == "new":
+            offer_type = "launch_growth_package"
+            rationale = (
+                "The business was explicitly identified as new; "
+                "launch foundations are the primary fit."
+            )
+        else:
+            offer_type = "growth_optimization_package"
+            rationale = (
+                "The existing single-location business is best served by focused optimization."
+            )
+        return self._save(
+            GrowthOfferRecommendation(
+                organization_id=payload.organization_id,
+                prospect_id=payload.prospect_id,
+                diagnosis_id=payload.diagnosis_id,
+                offer_type=offer_type,
+                rationale=rationale,
+                customer_fit=payload.customer_fit,
+                scope_summary=payload.scope_summary,
+                confidence=payload.confidence,
+                risks=payload.risks,
+                status="draft",
+                formula_version="growth-offer-rules-v1",
+            ),
+            actor_id,
+            "growthos.offer_recommendation.created",
+        )
+
     def create_gift(self, payload: GrowthGiftCreate, actor_id: UUID) -> GrowthGift:
         scoped_revenue(self.session, GrowthProspect, payload.prospect_id, payload.organization_id)
         opportunity = scoped_revenue(
@@ -201,6 +293,12 @@ class GrowthRevenueService:
         )
         if opportunity.prospect_id != payload.prospect_id:
             raise GrowthError("Growth Gift opportunity must belong to the selected prospect.")
+        if payload.growth_diagnosis_id is not None:
+            diagnosis = scoped_revenue(
+                self.session, GrowthDiagnosis, payload.growth_diagnosis_id, payload.organization_id
+            )
+            if diagnosis.prospect_id != payload.prospect_id:
+                raise GrowthError("Growth Gift diagnosis must belong to the selected prospect.")
         evidence_ids = [str(item) for item in payload.evidence_reference]
         if not set(evidence_ids).issubset(set(opportunity.evidence_reference)):
             raise GrowthError("Growth Gift evidence must be cited by its opportunity analysis.")
@@ -251,6 +349,21 @@ class GrowthRevenueService:
             raise GrowthError("Outreach gift must belong to the selected prospect.")
         if gift.status not in {"approved", "ready_for_delivery", "delivered"}:
             raise GrowthError("Outreach requires an approved Growth Gift.")
+        message_versions = payload.message_versions or {
+            "founder_friendly": payload.body,
+            "consultant": payload.body,
+            "gift_first": payload.body,
+        }
+        if set(message_versions) != {"founder_friendly", "consultant", "gift_first"}:
+            raise GrowthError(
+                "Outreach requires founder-friendly, consultant, and gift-first versions."
+            )
+        if payload.growth_diagnosis_id is not None:
+            diagnosis = scoped_revenue(
+                self.session, GrowthDiagnosis, payload.growth_diagnosis_id, payload.organization_id
+            )
+            if diagnosis.prospect_id != payload.prospect_id:
+                raise GrowthError("Outreach diagnosis must belong to the selected prospect.")
         if payload.industry_profile_id is not None:
             profile = self.session.get(IndustryGrowthProfile, payload.industry_profile_id)
             if profile is None or profile.organization_id != payload.organization_id:
@@ -264,9 +377,10 @@ class GrowthRevenueService:
             )
             if evidence.prospect_id != payload.prospect_id:
                 raise GrowthError("Outreach evidence must belong to the selected prospect.")
-        self._validate_outreach_language(payload)
+        self._validate_outreach_language(payload, message_versions)
         values = payload.model_dump()
         values["evidence_used"] = [str(item) for item in payload.evidence_used]
+        values["message_versions"] = message_versions
         return self._save(
             GrowthOutreachDraft(**values, status="draft", approval_request_id=None),
             actor_id,
@@ -304,13 +418,55 @@ class GrowthRevenueService:
                     "Industry-aware sales analysis requires explicit industry context."
                 )
         return self._save(
-            SalesConversationAnalysis(**payload.model_dump(), status="draft"),
+            SalesConversationAnalysis(
+                **payload.model_dump(exclude={"reply_classification"}),
+                reply_classification=payload.reply_classification
+                or {
+                    "not_interested": "not_now",
+                    "wrong_person": "referral",
+                    "needs_time": "not_now",
+                }.get(payload.intent, payload.intent),
+                status="draft",
+            ),
             actor_id,
             "growthos.sales_analysis.created",
         )
 
+    def create_delivery_knowledge(
+        self, payload: IndustryDeliveryKnowledgeCreate, actor_id: UUID
+    ) -> IndustryDeliveryKnowledge:
+        profile = self.session.get(IndustryGrowthProfile, payload.industry_profile_id)
+        if profile is None or profile.organization_id != payload.organization_id:
+            raise GrowthError("Industry profile was not found in this organization.")
+        evidence_ids = [str(item) for item in payload.evidence_references]
+        for evidence_id in payload.evidence_references:
+            evidence = self.session.get(IndustryGrowthEvidence, evidence_id)
+            if (
+                evidence is None
+                or evidence.organization_id != payload.organization_id
+                or evidence.industry_profile_id != payload.industry_profile_id
+            ):
+                raise GrowthError(
+                    "Delivery knowledge evidence must belong to the industry profile."
+                )
+        values = payload.model_dump(exclude={"evidence_references"})
+        return self._save(
+            IndustryDeliveryKnowledge(**values, evidence_references=evidence_ids, status="active"),
+            actor_id,
+            "growthos.industry_delivery_knowledge.created",
+        )
+
     @staticmethod
-    def _validate_outreach_language(payload: OutreachDraftCreate) -> None:
+    def _reject_unsupported_claims(content: str) -> None:
+        prohibited = {"guaranteed revenue", "guaranteed roi", "10x revenue", "guaranteed results"}
+        if any(claim in content.casefold() for claim in prohibited):
+            raise GrowthError("Diagnosis cannot contain unsupported revenue or outcome promises.")
+
+    @staticmethod
+    def _validate_outreach_language(
+        payload: OutreachDraftCreate, message_versions: Mapping[Any, str] | None = None
+    ) -> None:
+        versions = message_versions or payload.message_versions
         combined = " ".join(
             [
                 *payload.subject_options,
@@ -320,6 +476,7 @@ class GrowthRevenueService:
                 payload.gift_explanation,
                 payload.soft_cta,
                 payload.body,
+                *versions.values(),
             ]
         ).casefold()
         forbidden = {

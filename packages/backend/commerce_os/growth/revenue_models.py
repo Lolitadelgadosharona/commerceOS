@@ -80,6 +80,45 @@ class GrowthOpportunityAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
     )
 
 
+class GrowthDiagnosis(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "growth_diagnoses"
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_diag_conf"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    prospect_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_prospects.id"), index=True)
+    industry_profile_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("industry_growth_profiles.id"), index=True
+    )
+    business_situation: Mapped[str] = mapped_column(Text, nullable=False)
+    growth_problems: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    evidence_references: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    customer_impact: Mapped[str] = mapped_column(Text, nullable=False)
+    recommended_improvements: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+    risks: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
+    ai_request_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("ai_requests.id"), index=True
+    )
+
+
+class GrowthOfferRecommendation(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "growth_offer_recommendations"
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="growth_offer_conf"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    prospect_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_prospects.id"), index=True)
+    diagnosis_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("growth_diagnoses.id"), index=True)
+    offer_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    rationale: Mapped[str] = mapped_column(Text, nullable=False)
+    customer_fit: Mapped[str] = mapped_column(Text, nullable=False)
+    scope_summary: Mapped[str] = mapped_column(Text, nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+    risks: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
+    formula_version: Mapped[str] = mapped_column(String(80), nullable=False)
+
+
 class GrowthGift(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_gifts"
 
@@ -108,6 +147,12 @@ class GrowthGift(IdMixin, TimestampMixin, VersionMixin, Base):
     after_asset_reference: Mapped[str | None] = mapped_column(String(500))
     customer_rationale: Mapped[str] = mapped_column(Text, nullable=False, default="")
     customer_response: Mapped[str | None] = mapped_column(Text)
+    growth_diagnosis_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("growth_diagnoses.id"), index=True
+    )
+    personalized_diagnosis: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    implementation_scope: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    customer_value_explanation: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
 
 class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -136,6 +181,10 @@ class GrowthOutreachDraft(IdMixin, TimestampMixin, VersionMixin, Base):
     problem_observation: Mapped[str] = mapped_column(Text, nullable=False, default="")
     gift_explanation: Mapped[str] = mapped_column(Text, nullable=False, default="")
     soft_cta: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    growth_diagnosis_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("growth_diagnoses.id"), index=True
+    )
+    message_versions: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False, default=dict)
 
 
 class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -160,6 +209,23 @@ class SalesConversationAnalysis(IdMixin, TimestampMixin, VersionMixin, Base):
         Uuid, ForeignKey("industry_growth_profiles.id"), index=True
     )
     industry_context: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    reply_classification: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown")
+    response_risk: Mapped[str] = mapped_column(String(40), nullable=False, default="unknown")
+
+
+class IndustryDeliveryKnowledge(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "industry_delivery_knowledge"
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    industry_profile_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("industry_growth_profiles.id", ondelete="CASCADE"), index=True
+    )
+    knowledge_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    title: Mapped[str] = mapped_column(String(250), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    evidence_references: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    version_label: Mapped[str] = mapped_column(String(40), nullable=False)
 
 
 class AIModelPolicy(IdMixin, TimestampMixin, VersionMixin, Base):

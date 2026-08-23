@@ -108,6 +108,62 @@ class OpportunityAnalysisRead(ReadModel):
     ai_request_id: UUID | None
 
 
+class GrowthDiagnosisCreate(BaseModel):
+    organization_id: UUID
+    prospect_id: UUID
+    industry_profile_id: UUID | None = None
+    business_situation: str = Field(min_length=1, max_length=20_000)
+    growth_problems: list[str] = Field(min_length=1)
+    evidence_references: list[UUID] = Field(min_length=1)
+    customer_impact: str = Field(min_length=1, max_length=20_000)
+    recommended_improvements: list[str] = Field(min_length=1)
+    confidence: float = Field(ge=0, le=1)
+    risks: list[str] = Field(default_factory=list)
+    ai_request_id: UUID | None = None
+
+
+class GrowthDiagnosisRead(ReadModel):
+    organization_id: UUID
+    prospect_id: UUID
+    industry_profile_id: UUID | None
+    business_situation: str
+    growth_problems: list[str]
+    evidence_references: list[str]
+    customer_impact: str
+    recommended_improvements: list[str]
+    confidence: float
+    risks: list[str]
+    status: str
+    ai_request_id: UUID | None
+
+
+class OfferRecommendationCreate(BaseModel):
+    organization_id: UUID
+    prospect_id: UUID
+    diagnosis_id: UUID
+    business_stage: Literal["new", "existing"]
+    location_count: int = Field(default=1, ge=1)
+    high_review_weak_visibility: bool = False
+    customer_fit: str = Field(min_length=1, max_length=20_000)
+    scope_summary: str = Field(min_length=1, max_length=20_000)
+    confidence: float = Field(ge=0, le=1)
+    risks: list[str] = Field(default_factory=list)
+
+
+class OfferRecommendationRead(ReadModel):
+    organization_id: UUID
+    prospect_id: UUID
+    diagnosis_id: UUID
+    offer_type: str
+    rationale: str
+    customer_fit: str
+    scope_summary: str
+    confidence: float
+    risks: list[str]
+    status: str
+    formula_version: str
+
+
 class GrowthGiftCreate(BaseModel):
     organization_id: UUID
     prospect_id: UUID
@@ -127,6 +183,10 @@ class GrowthGiftCreate(BaseModel):
     before_asset_reference: str | None = Field(default=None, max_length=500)
     after_asset_reference: str | None = Field(default=None, max_length=500)
     customer_rationale: str = Field(default="", max_length=20_000)
+    growth_diagnosis_id: UUID | None = None
+    personalized_diagnosis: str = Field(default="", max_length=20_000)
+    implementation_scope: str = Field(default="", max_length=20_000)
+    customer_value_explanation: str = Field(default="", max_length=20_000)
 
 
 class StatusTransition(BaseModel):
@@ -156,6 +216,10 @@ class GrowthGiftRead(ReadModel):
     after_asset_reference: str | None
     customer_rationale: str
     customer_response: str | None
+    growth_diagnosis_id: UUID | None
+    personalized_diagnosis: str
+    implementation_scope: str
+    customer_value_explanation: str
 
 
 class OutreachDraftCreate(BaseModel):
@@ -176,6 +240,10 @@ class OutreachDraftCreate(BaseModel):
     problem_observation: str = Field(min_length=1, max_length=5_000)
     gift_explanation: str = Field(min_length=1, max_length=5_000)
     soft_cta: str = Field(min_length=1, max_length=2_000)
+    growth_diagnosis_id: UUID | None = None
+    message_versions: dict[Literal["founder_friendly", "consultant", "gift_first"], str] = Field(
+        default_factory=dict
+    )
 
 
 class OutreachDraftRead(ReadModel):
@@ -198,6 +266,8 @@ class OutreachDraftRead(ReadModel):
     problem_observation: str
     gift_explanation: str
     soft_cta: str
+    growth_diagnosis_id: UUID | None
+    message_versions: dict[str, str]
 
 
 class SalesAnalysisCreate(BaseModel):
@@ -219,6 +289,10 @@ class SalesAnalysisCreate(BaseModel):
     urgency: Literal["low", "medium", "high", "unknown"] = "unknown"
     industry_profile_id: UUID | None = None
     industry_context: str = Field(default="", max_length=20_000)
+    reply_classification: (
+        Literal["interested", "question", "price_objection", "not_now", "referral"] | None
+    ) = None
+    response_risk: Literal["low", "medium", "high", "unknown"] = "unknown"
 
 
 class SalesAnalysisRead(ReadModel):
@@ -239,6 +313,31 @@ class SalesAnalysisRead(ReadModel):
     status: str
     industry_profile_id: UUID | None
     industry_context: str
+    reply_classification: str
+    response_risk: str
+
+
+class IndustryDeliveryKnowledgeCreate(BaseModel):
+    organization_id: UUID
+    industry_profile_id: UUID
+    knowledge_type: Literal[
+        "website_optimization", "geo", "social_content", "review_improvement", "common_objection"
+    ]
+    title: str = Field(min_length=1, max_length=250)
+    content: str = Field(min_length=1, max_length=20_000)
+    evidence_references: list[UUID] = Field(min_length=1)
+    version_label: str = Field(min_length=1, max_length=40)
+
+
+class IndustryDeliveryKnowledgeRead(ReadModel):
+    organization_id: UUID
+    industry_profile_id: UUID
+    knowledge_type: str
+    title: str
+    content: str
+    evidence_references: list[str]
+    status: str
+    version_label: str
 
 
 class AIModelPolicyCreate(BaseModel):

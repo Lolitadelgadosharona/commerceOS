@@ -14,12 +14,15 @@ from commerce_os.growth.discovery_models import (
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
+    GrowthDiagnosis,
     GrowthGift,
+    GrowthOfferRecommendation,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
     GrowthProspectRanking,
+    IndustryDeliveryKnowledge,
     SalesConversationAnalysis,
 )
 from commerce_os.growth.revenue_schemas import (
@@ -28,9 +31,15 @@ from commerce_os.growth.revenue_schemas import (
     BusinessGrowthProfileCreate,
     BusinessGrowthProfileRead,
     GrowthDashboardRead,
+    GrowthDiagnosisCreate,
+    GrowthDiagnosisRead,
     GrowthGiftCreate,
     GrowthGiftRead,
     GrowthRevenueV2Dashboard,
+    IndustryDeliveryKnowledgeCreate,
+    IndustryDeliveryKnowledgeRead,
+    OfferRecommendationCreate,
+    OfferRecommendationRead,
     OpportunityAnalysisCreate,
     OpportunityAnalysisRead,
     OutreachDraftCreate,
@@ -162,6 +171,36 @@ def list_opportunities(
     return _list(session, GrowthOpportunityAnalysis, organization_id)
 
 
+@router.post("/growth-diagnoses", response_model=GrowthDiagnosisRead, status_code=201)
+def create_growth_diagnosis(
+    payload: GrowthDiagnosisCreate, request: Request, session: SessionDependency
+) -> GrowthDiagnosis:
+    return GrowthRevenueService(session).create_diagnosis(payload, actor_id(request))
+
+
+@router.get("/growth-diagnoses", response_model=list[GrowthDiagnosisRead])
+def list_growth_diagnoses(
+    organization_id: UUID, session: SessionDependency
+) -> list[GrowthDiagnosis]:
+    return _list(session, GrowthDiagnosis, organization_id)
+
+
+@router.post(
+    "/growth-offer-recommendations", response_model=OfferRecommendationRead, status_code=201
+)
+def create_offer_recommendation(
+    payload: OfferRecommendationCreate, request: Request, session: SessionDependency
+) -> GrowthOfferRecommendation:
+    return GrowthRevenueService(session).recommend_offer(payload, actor_id(request))
+
+
+@router.get("/growth-offer-recommendations", response_model=list[OfferRecommendationRead])
+def list_offer_recommendations(
+    organization_id: UUID, session: SessionDependency
+) -> list[GrowthOfferRecommendation]:
+    return _list(session, GrowthOfferRecommendation, organization_id)
+
+
 @router.post("/growth-gifts", response_model=GrowthGiftRead, status_code=201)
 def create_gift(
     payload: GrowthGiftCreate, request: Request, session: SessionDependency
@@ -230,6 +269,24 @@ def list_sales_analyses(
     organization_id: UUID, session: SessionDependency
 ) -> list[SalesConversationAnalysis]:
     return _list(session, SalesConversationAnalysis, organization_id)
+
+
+@router.post(
+    "/industry-delivery-knowledge",
+    response_model=IndustryDeliveryKnowledgeRead,
+    status_code=201,
+)
+def create_industry_delivery_knowledge(
+    payload: IndustryDeliveryKnowledgeCreate, request: Request, session: SessionDependency
+) -> IndustryDeliveryKnowledge:
+    return GrowthRevenueService(session).create_delivery_knowledge(payload, actor_id(request))
+
+
+@router.get("/industry-delivery-knowledge", response_model=list[IndustryDeliveryKnowledgeRead])
+def list_industry_delivery_knowledge(
+    organization_id: UUID, session: SessionDependency
+) -> list[IndustryDeliveryKnowledge]:
+    return _list(session, IndustryDeliveryKnowledge, organization_id)
 
 
 @router.post("/ai-model-policies", response_model=AIModelPolicyRead, status_code=201)
