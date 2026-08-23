@@ -11,26 +11,33 @@ from sqlalchemy.orm import Session
 from commerce_os.ai_runtime.models import AIModelCapability, PromptVersion
 from commerce_os.growth.discovery_models import (
     BusinessProfileEvidenceSnapshot,
+    DiscoveryAutomationPlan,
+    GoogleBusinessDiscoveryResult,
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
     InstagramEvidenceSnapshot,
     ProspectCandidate,
     ProspectDiscoveryRun,
     ProspectDiscoverySource,
+    ProspectMemoryEvent,
     ProspectQualificationAssessment,
     ProspectResearchEvidence,
     WebsiteEvidenceSnapshot,
 )
 from commerce_os.growth.discovery_schemas import (
+    AutomationPlanCreate,
     BusinessProfileEvidenceCreate,
     BusinessResearchStart,
     CandidateCreate,
     DiscoveryRunCreate,
     DiscoverySourceCreate,
+    GoogleBusinessResultCreate,
     InstagramEvidenceCreate,
     OperatorRevenueDashboard,
+    ProspectMemoryEventCreate,
     ProspectPipelineRead,
     QualificationInputs,
+    RankedProspectRead,
     ResearchEvidenceCreate,
     WebsiteEvidenceCreate,
 )
@@ -41,7 +48,7 @@ from commerce_os.shared.models import utc_now
 
 EntityT = TypeVar("EntityT", bound=Base)
 DISCOVERY_TRANSITIONS = {
-    "draft": {"queued", "cancelled"},
+    "draft": {"queued", "running", "cancelled"},
     "queued": {"running", "cancelled"},
     "running": {"completed", "failed"},
     "completed": set(),
@@ -109,6 +116,15 @@ class GrowthDiscoveryService:
         )
         if source.status != "active":
             raise GrowthError("Discovery runs require an active source definition.")
+        if payload.automation_plan_id is not None:
+            plan = scoped_growth_discovery(
+                self.session,
+                DiscoveryAutomationPlan,
+                payload.automation_plan_id,
+                payload.organization_id,
+            )
+            if plan.source_id != source.id:
+                raise GrowthError("Automation plan source must match the discovery run source.")
         return self._save(
             ProspectDiscoveryRun(
                 **payload.model_dump(),
@@ -117,6 +133,7 @@ class GrowthDiscoveryService:
                 completed_at=None,
                 created_by=actor_id,
                 failure_reason=None,
+                result_count=0,
             ),
             actor_id,
             "growthos.discovery_run.created",
@@ -136,8 +153,142 @@ class GrowthDiscoveryService:
             run.started_at = utc_now()
         if status in {"completed", "failed", "cancelled"}:
             run.completed_at = utc_now()
+        if status == "completed":
+            run.result_count = int(
+                self.session.scalar(
+                    select(func.count())
+                    .select_from(GoogleBusinessDiscoveryResult)
+                    .where(GoogleBusinessDiscoveryResult.discovery_run_id == run.id)
+                )
+                or 0
+            )
         run.failure_reason = failure_reason if status == "failed" else None
         return self._save(run, actor_id, f"growthos.discovery_run.{status}")
+
+    def create_automation_plan(
+        self, payload: AutomationPlanCreate, actor_id: UUID
+    ) -> DiscoveryAutomationPlan:
+        source = scoped_growth_discovery(
+            self.session, ProspectDiscoverySource, payload.source_id, payload.organization_id
+        )
+        if source.status != "active" or source.collection_mode != "controlled_connector":
+            raise GrowthError("Automation plans require an active controlled connector source.")
+        return self._save(
+            DiscoveryAutomationPlan(
+                **payload.model_dump(), status="active", last_run_at=None, created_by=actor_id
+            ),
+            actor_id,
+            "growthos.discovery_automation.created",
+        )
+
+    def start_automation_run(
+        self, plan: DiscoveryAutomationPlan, actor_id: UUID
+    ) -> ProspectDiscoveryRun:
+        if plan.status != "active":
+            raise GrowthError("Only active discovery automation plans may start a run.")
+        run = self.create_run(
+            DiscoveryRunCreate(
+                organization_id=plan.organization_id,
+                source_id=plan.source_id,
+                query=f"{plan.industry} businesses in {plan.geography}",
+                target_industry=plan.industry,
+                target_location=plan.geography,
+                automation_plan_id=plan.id,
+                query_criteria=plan.query_criteria,
+            ),
+            actor_id,
+        )
+        run = self.transition_run(run, "running", actor_id)
+        plan.last_run_at = run.started_at
+        plan.next_run_at = (
+            run.started_at + timedelta(days=1) if run.started_at is not None else None
+        )
+        self.session.add(plan)
+        self.session.commit()
+        return run
+
+    def record_google_business_result(
+        self, payload: GoogleBusinessResultCreate, actor_id: UUID
+    ) -> GoogleBusinessDiscoveryResult:
+        run = scoped_growth_discovery(
+            self.session,
+            ProspectDiscoveryRun,
+            payload.discovery_run_id,
+            payload.organization_id,
+        )
+        source = scoped_growth_discovery(
+            self.session, ProspectDiscoverySource, run.source_id, payload.organization_id
+        )
+        if run.status != "running":
+            raise GrowthError("Google Business results require a running discovery run.")
+        if source.source_type != "google_business_profile":
+            raise GrowthError("Google Business results require a Google Business source.")
+        candidate = self.create_candidate(
+            CandidateCreate(
+                organization_id=payload.organization_id,
+                discovery_run_id=run.id,
+                business_name=payload.business_name,
+                website=payload.website,
+                location=payload.location,
+                category=payload.category,
+                source_reference=payload.external_reference,
+                confidence=payload.confidence,
+            ),
+            actor_id,
+        )
+        return self._save(
+            GoogleBusinessDiscoveryResult(**payload.model_dump(), candidate_id=candidate.id),
+            actor_id,
+            "growthos.google_business_result.recorded",
+        )
+
+    def record_memory_event(
+        self, payload: ProspectMemoryEventCreate, actor_id: UUID
+    ) -> ProspectMemoryEvent:
+        scoped_growth_discovery(
+            self.session, ProspectCandidate, payload.candidate_id, payload.organization_id
+        )
+        scoped_growth_discovery(
+            self.session, ProspectDiscoverySource, payload.source_id, payload.organization_id
+        )
+        if payload.previous_state == payload.observed_state:
+            raise GrowthError("Prospect memory requires an observed change.")
+        return self._save(
+            ProspectMemoryEvent(**payload.model_dump()),
+            actor_id,
+            "growthos.prospect_memory.recorded",
+        )
+
+    def ranked_prospects(self, organization_id: UUID) -> list[RankedProspectRead]:
+        self._organization(organization_id)
+        rows = list(
+            self.session.execute(
+                select(ProspectCandidate, ProspectQualificationAssessment)
+                .join(
+                    ProspectQualificationAssessment,
+                    ProspectQualificationAssessment.candidate_id == ProspectCandidate.id,
+                )
+                .where(ProspectCandidate.organization_id == organization_id)
+                .order_by(
+                    ProspectQualificationAssessment.score.desc().nullslast(),
+                    ProspectCandidate.created_at,
+                )
+            )
+        )
+        return [
+            RankedProspectRead(
+                candidate_id=candidate.id,
+                business_name=candidate.business_name,
+                location=candidate.location,
+                score=assessment.score,
+                growth_pain=assessment.calculation_inputs.get("pain_signal"),
+                purchase_probability=assessment.calculation_inputs.get("purchase_probability"),
+                accessibility=assessment.calculation_inputs.get("accessibility"),
+                quick_win=assessment.calculation_inputs.get("quick_win_potential"),
+                missing_inputs=assessment.missing_inputs,
+            )
+            for candidate, assessment in rows
+        ]
 
     def create_candidate(self, payload: CandidateCreate, actor_id: UUID) -> ProspectCandidate:
         run = scoped_growth_discovery(

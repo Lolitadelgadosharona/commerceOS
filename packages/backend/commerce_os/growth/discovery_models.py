@@ -33,6 +33,25 @@ class ProspectDiscoverySource(IdMixin, TimestampMixin, VersionMixin, Base):
     collection_mode: Mapped[str] = mapped_column(String(30), nullable=False, default="human_review")
 
 
+class DiscoveryAutomationPlan(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "discovery_automation_plans"
+    __table_args__ = (UniqueConstraint("organization_id", "name"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    source_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_sources.id"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    industry: Mapped[str] = mapped_column(String(160), nullable=False)
+    geography: Mapped[str] = mapped_column(String(250), nullable=False)
+    query_criteria: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    cadence: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), index=True)
+
+
 class ProspectDiscoveryRun(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "prospect_discovery_runs"
 
@@ -48,6 +67,11 @@ class ProspectDiscoveryRun(IdMixin, TimestampMixin, VersionMixin, Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), index=True)
     failure_reason: Mapped[str | None] = mapped_column(Text)
+    automation_plan_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("discovery_automation_plans.id"), index=True
+    )
+    query_criteria: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    result_count: Mapped[int] = mapped_column(nullable=False, default=0)
 
 
 class ProspectCandidate(IdMixin, TimestampMixin, VersionMixin, Base):
@@ -157,6 +181,51 @@ class InstagramEvidenceSnapshot(IdMixin, TimestampMixin, VersionMixin, Base):
     confidence: Mapped[float] = mapped_column(nullable=False)
 
 
+class GoogleBusinessDiscoveryResult(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "google_business_discovery_results"
+    __table_args__ = (
+        UniqueConstraint("discovery_run_id", "external_reference"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="gb_result_conf"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    discovery_run_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_runs.id", ondelete="CASCADE"), index=True
+    )
+    candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id"), index=True
+    )
+    external_reference: Mapped[str] = mapped_column(String(1000), nullable=False)
+    business_name: Mapped[str] = mapped_column(String(250), nullable=False)
+    category: Mapped[str] = mapped_column(String(160), nullable=False)
+    location: Mapped[str] = mapped_column(String(250), nullable=False)
+    rating: Mapped[float | None]
+    review_count: Mapped[int | None]
+    website: Mapped[str | None] = mapped_column(String(500))
+    public_profile: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+
+
+class ProspectMemoryEvent(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "prospect_memory_events"
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="prospect_memory_conf"),)
+
+    organization_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("organizations.id"), index=True)
+    candidate_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_candidates.id", ondelete="CASCADE"), index=True
+    )
+    source_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("prospect_discovery_sources.id"), index=True
+    )
+    change_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    source_reference: Mapped[str] = mapped_column(String(1000), nullable=False)
+    previous_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    observed_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+
+
 class GrowthBusinessResearchRun(IdMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "growth_business_research_runs"
 
@@ -224,5 +293,9 @@ class ProspectQualificationAssessment(IdMixin, TimestampMixin, VersionMixin, Bas
 @event.listens_for(BusinessProfileEvidenceSnapshot, "before_delete")
 @event.listens_for(InstagramEvidenceSnapshot, "before_update")
 @event.listens_for(InstagramEvidenceSnapshot, "before_delete")
+@event.listens_for(GoogleBusinessDiscoveryResult, "before_update")
+@event.listens_for(GoogleBusinessDiscoveryResult, "before_delete")
+@event.listens_for(ProspectMemoryEvent, "before_update")
+@event.listens_for(ProspectMemoryEvent, "before_delete")
 def _protect_research_evidence(*_: object) -> None:
     raise ValueError("Prospect discovery evidence is immutable.")
