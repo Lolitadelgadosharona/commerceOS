@@ -135,6 +135,8 @@ class DiscoveryRunCreate(BaseModel):
     query: str = Field(min_length=1, max_length=20_000)
     target_industry: str = Field(min_length=1, max_length=160)
     target_location: str = Field(min_length=1, max_length=250)
+    automation_plan_id: UUID | None = None
+    query_criteria: dict[str, Any] = Field(default_factory=dict)
 
 
 class DiscoveryRunRead(ReadModel):
@@ -148,6 +150,83 @@ class DiscoveryRunRead(ReadModel):
     completed_at: datetime | None
     created_by: UUID
     failure_reason: str | None
+    automation_plan_id: UUID | None
+    query_criteria: dict[str, Any]
+    result_count: int
+
+
+class AutomationPlanCreate(BaseModel):
+    organization_id: UUID
+    source_id: UUID
+    name: str = Field(min_length=1, max_length=200)
+    industry: str = Field(min_length=1, max_length=160)
+    geography: str = Field(min_length=1, max_length=250)
+    query_criteria: dict[str, Any] = Field(default_factory=dict)
+    cadence: Literal["daily"] = "daily"
+    next_run_at: datetime | None = None
+
+
+class AutomationPlanRead(ReadModel):
+    organization_id: UUID
+    source_id: UUID
+    name: str
+    industry: str
+    geography: str
+    query_criteria: dict[str, Any]
+    cadence: str
+    status: str
+    next_run_at: datetime | None
+    last_run_at: datetime | None
+    created_by: UUID
+
+
+class GoogleBusinessResultCreate(BaseModel):
+    organization_id: UUID
+    discovery_run_id: UUID
+    external_reference: str = Field(min_length=1, max_length=1000)
+    business_name: str = Field(min_length=1, max_length=250)
+    category: str = Field(min_length=1, max_length=160)
+    location: str = Field(min_length=1, max_length=250)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    review_count: int | None = Field(default=None, ge=0)
+    website: str | None = Field(default=None, max_length=500)
+    public_profile: dict[str, Any] = Field(default_factory=dict)
+    captured_at: datetime
+    confidence: float = Field(ge=0, le=1)
+
+
+class GoogleBusinessResultRead(ReadModel, GoogleBusinessResultCreate):
+    candidate_id: UUID
+
+
+class ProspectMemoryEventCreate(BaseModel):
+    organization_id: UUID
+    candidate_id: UUID
+    source_id: UUID
+    change_type: Literal[
+        "website_update", "social_change", "review_change", "location_change", "business_event"
+    ]
+    source_reference: str = Field(min_length=1, max_length=1000)
+    previous_state: dict[str, Any] = Field(default_factory=dict)
+    observed_state: dict[str, Any] = Field(min_length=1)
+    observed_at: datetime
+    confidence: float = Field(ge=0, le=1)
+
+
+class ProspectMemoryEventRead(ReadModel, ProspectMemoryEventCreate):
+    pass
+
+
+class RankedProspectRead(BaseModel):
+    candidate_id: UUID
+    business_name: str
+    location: str
+    score: float | None
+    growth_pain: float | None
+    purchase_probability: float | None
+    accessibility: float | None
+    quick_win: float | None
+    missing_inputs: list[str]
 
 
 class CandidateCreate(BaseModel):

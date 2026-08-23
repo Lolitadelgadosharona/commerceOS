@@ -4,17 +4,22 @@ from uuid import UUID
 from commerce_os.ai_runtime.models import AIRequest
 from commerce_os.growth.discovery_models import (
     BusinessProfileEvidenceSnapshot,
+    DiscoveryAutomationPlan,
+    GoogleBusinessDiscoveryResult,
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
     InstagramEvidenceSnapshot,
     ProspectCandidate,
     ProspectDiscoveryRun,
     ProspectDiscoverySource,
+    ProspectMemoryEvent,
     ProspectQualificationAssessment,
     ProspectResearchEvidence,
     WebsiteEvidenceSnapshot,
 )
 from commerce_os.growth.discovery_schemas import (
+    AutomationPlanCreate,
+    AutomationPlanRead,
     BusinessDemandSignalRead,
     BusinessProfileEvidenceCreate,
     BusinessProfileEvidenceRead,
@@ -26,12 +31,17 @@ from commerce_os.growth.discovery_schemas import (
     DiscoveryRunRead,
     DiscoverySourceCreate,
     DiscoverySourceRead,
+    GoogleBusinessResultCreate,
+    GoogleBusinessResultRead,
     InstagramEvidenceCreate,
     InstagramEvidenceRead,
     OperatorRevenueDashboard,
+    ProspectMemoryEventCreate,
+    ProspectMemoryEventRead,
     ProspectPipelineRead,
     QualificationInputs,
     QualificationRead,
+    RankedProspectRead,
     ResearchEvidenceCreate,
     ResearchEvidenceRead,
     WebsiteEvidenceCreate,
@@ -84,6 +94,32 @@ def list_sources(
     return _list(session, ProspectDiscoverySource, organization_id)
 
 
+@router.post("/discovery-automation-plans", response_model=AutomationPlanRead, status_code=201)
+def create_automation_plan(
+    payload: AutomationPlanCreate, request: Request, session: SessionDependency
+) -> DiscoveryAutomationPlan:
+    return GrowthDiscoveryService(session).create_automation_plan(payload, actor_id(request))
+
+
+@router.get("/discovery-automation-plans", response_model=list[AutomationPlanRead])
+def list_automation_plans(
+    organization_id: UUID, session: SessionDependency
+) -> list[DiscoveryAutomationPlan]:
+    return _list(session, DiscoveryAutomationPlan, organization_id)
+
+
+@router.post(
+    "/discovery-automation-plans/{plan_id}/runs",
+    response_model=DiscoveryRunRead,
+    status_code=201,
+)
+def start_automation_run(
+    plan_id: UUID, organization_id: UUID, request: Request, session: SessionDependency
+) -> ProspectDiscoveryRun:
+    plan = scoped_growth_discovery(session, DiscoveryAutomationPlan, plan_id, organization_id)
+    return GrowthDiscoveryService(session).start_automation_run(plan, actor_id(request))
+
+
 @router.post("/prospect-discovery-runs", response_model=DiscoveryRunRead, status_code=201)
 def create_run(
     payload: DiscoveryRunCreate, request: Request, session: SessionDependency
@@ -130,6 +166,39 @@ def cancel_run(
 @router.get("/prospect-candidates", response_model=list[CandidateRead])
 def list_candidates(organization_id: UUID, session: SessionDependency) -> list[ProspectCandidate]:
     return _list(session, ProspectCandidate, organization_id)
+
+
+@router.post("/google-business-results", response_model=GoogleBusinessResultRead, status_code=201)
+def record_google_business_result(
+    payload: GoogleBusinessResultCreate, request: Request, session: SessionDependency
+) -> GoogleBusinessDiscoveryResult:
+    return GrowthDiscoveryService(session).record_google_business_result(payload, actor_id(request))
+
+
+@router.get("/google-business-results", response_model=list[GoogleBusinessResultRead])
+def list_google_business_results(
+    organization_id: UUID, session: SessionDependency
+) -> list[GoogleBusinessDiscoveryResult]:
+    return _list(session, GoogleBusinessDiscoveryResult, organization_id)
+
+
+@router.post("/prospect-memory", response_model=ProspectMemoryEventRead, status_code=201)
+def record_prospect_memory(
+    payload: ProspectMemoryEventCreate, request: Request, session: SessionDependency
+) -> ProspectMemoryEvent:
+    return GrowthDiscoveryService(session).record_memory_event(payload, actor_id(request))
+
+
+@router.get("/prospect-memory", response_model=list[ProspectMemoryEventRead])
+def list_prospect_memory(
+    organization_id: UUID, session: SessionDependency
+) -> list[ProspectMemoryEvent]:
+    return _list(session, ProspectMemoryEvent, organization_id)
+
+
+@router.get("/ranked-prospects", response_model=list[RankedProspectRead])
+def ranked_prospects(organization_id: UUID, session: SessionDependency) -> list[RankedProspectRead]:
+    return GrowthDiscoveryService(session).ranked_prospects(organization_id)
 
 
 @router.get("/prospect-candidates/{candidate_id}", response_model=CandidateRead)

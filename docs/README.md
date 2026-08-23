@@ -198,5 +198,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 060 Completion Notes](./planning/SPRINT_060_COMPLETION.md)
 - [First Revenue Machine Prospect Discovery Foundation v1.0](./architecture/FIRST_REVENUE_MACHINE_PROSPECT_DISCOVERY_FOUNDATION_V1_0.md)
 - [Sprint 061 Completion Notes](./planning/SPRINT_061_COMPLETION.md)
+- [Discovery Automation Layer v1.0](./architecture/DISCOVERY_AUTOMATION_LAYER_V1_0.md)
+- [Sprint 062 Completion Notes](./planning/SPRINT_062_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.
