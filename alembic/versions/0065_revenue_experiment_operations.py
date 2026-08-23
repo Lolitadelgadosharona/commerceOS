@@ -1,6 +1,6 @@
 """Revenue experiment operation layer.
 
-Revision ID: 0065_revenue_experiment_operations
+Revision ID: 0065_revenue_operations
 Revises: 0064_revenue_launch_foundation
 """
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 from alembic import op
 
-revision: str = "0065_revenue_experiment_operations"
+revision: str = "0065_revenue_operations"
 down_revision: str | None = "0064_revenue_launch_foundation"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

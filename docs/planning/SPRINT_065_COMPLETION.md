@@ -12,7 +12,7 @@ Status: implementation and local validation complete; Product Review pending
   Loop.
 - Added a read-only Revenue Experiment Operations Dashboard using Finance revenue truth and AI
   Runtime cost observations.
-- Added authenticated APIs and reversible migration `0065_revenue_experiment_operations`.
+- Added authenticated APIs and reversible migration `0065_revenue_operations`.
 
 ## Authority boundary
 
