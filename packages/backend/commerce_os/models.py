@@ -187,12 +187,15 @@ from commerce_os.growth.revenue_execution_models import DailyGrowthOpportunity
 from commerce_os.growth.revenue_models import (
     AIModelPolicy,
     BusinessGrowthProfile,
+    GrowthDiagnosis,
     GrowthGift,
+    GrowthOfferRecommendation,
     GrowthOpportunityAnalysis,
     GrowthOutreachDraft,
     GrowthProspect,
     GrowthProspectEvidence,
     GrowthProspectRanking,
+    IndustryDeliveryKnowledge,
     SalesConversationAnalysis,
 )
 from commerce_os.intelligence.analysis_models import (
@@ -433,6 +436,8 @@ __all__ = [
     "BusinessGrowthProfile",
     "GrowthProspectRanking",
     "GrowthOpportunityAnalysis",
+    "GrowthDiagnosis",
+    "GrowthOfferRecommendation",
     "ExperimentFeedbackSignal",
     "OfferExperiment",
     "OfferExperimentOutcome",
@@ -446,6 +451,7 @@ __all__ = [
     "GrowthGift",
     "GrowthOutreachDraft",
     "SalesConversationAnalysis",
+    "IndustryDeliveryKnowledge",
     "AIModelPolicy",
     "ImprovementRecommendation",
     "LearningConclusion",
