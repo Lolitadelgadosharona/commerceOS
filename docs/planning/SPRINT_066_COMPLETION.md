@@ -30,4 +30,4 @@ sell, negotiate, collect payment, deliver services, or create SaaS behavior.
   schema check passed.
 - Docker Compose configuration: valid.
 - Container runtime: not executed because the local Docker daemon is unavailable.
-- GitHub CI: pending publication of the Draft PR.
+- GitHub CI: backend, docs, and web jobs passed on Draft PR #65.
