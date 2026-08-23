@@ -204,6 +204,11 @@ from commerce_os.growth.revenue_models import (
     IndustryDeliveryKnowledge,
     SalesConversationAnalysis,
 )
+from commerce_os.growth.revenue_operations_models import (
+    DailyExperimentWorkspaceItem,
+    EmailWorkflowReference,
+    GrowthCustomerFeedback,
+)
 from commerce_os.intelligence.analysis_models import (
     MarketSignalAnalysis,
     OpportunityAssessment,
@@ -452,6 +457,9 @@ __all__ = [
     "RevenueOfferTracking",
     "PaymentReadinessRecord",
     "CustomerLifecycleEvent",
+    "DailyExperimentWorkspaceItem",
+    "EmailWorkflowReference",
+    "GrowthCustomerFeedback",
     "GrowthGEOAssessment",
     "GrowthServiceRecommendation",
     "IndustryGrowthEvidence",

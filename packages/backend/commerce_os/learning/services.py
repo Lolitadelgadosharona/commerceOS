@@ -42,6 +42,7 @@ SOURCE_MAP = {
     "product_risk": ("intelligence", "product_risk_signals"),
     "market_signal": ("intelligence", "market_signals"),
     "growth_conversation_analysis": ("growth", "sales_conversation_analyses"),
+    "growth_customer_feedback": ("growth", "growth_customer_feedback"),
 }
 TRANSITIONS = {
     "draft": {"under_review", "rejected"},

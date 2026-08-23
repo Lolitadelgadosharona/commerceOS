@@ -21,6 +21,7 @@ SourceType = Literal[
     "product_risk",
     "market_signal",
     "growth_conversation_analysis",
+    "growth_customer_feedback",
 ]
 
 
