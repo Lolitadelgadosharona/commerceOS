@@ -23,12 +23,13 @@ from commerce_os.intelligence.business_signal_models import BusinessDemandSignal
 from commerce_os.intelligence.opportunity_models import MarketOpportunity
 from commerce_os.operations.models import SalesOpportunity
 from commerce_os.shared.database import get_session
+from commerce_os.shared.outbox import OutboxEvent, OutboxStatus
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from apps.api.main import app
-from apps.worker.main import execute_growth_business_research
+from apps.worker.main import execute_growth_business_research, process_next_growth_job
 from tests.test_ai_research_operationalization import foundation
 
 AI_RESPONSE = {
@@ -183,6 +184,47 @@ def test_governed_business_research_and_intelligence_bridge(db_session: Session)
         db_session.scalar(select(func.count()).select_from(SalesOpportunity))
         == before["sales_opportunities"]
     )
+
+
+def test_growth_research_creates_durable_job_and_worker_consumes_it(
+    db_session: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    entities, service, _, candidate, *_ = discovery_foundation(db_session, "growth-worker")
+    organization, user, _, provider, capability, _ = entities
+    provider.provider_identity = "deterministic_test"
+    provider.runtime_configuration = {"test_response": AI_RESPONSE}
+    db_session.commit()
+    run = service.create_research_run(
+        candidate,
+        BusinessResearchStart(organization_id=organization.id, capability_id=capability.id),
+        user.id,
+    )
+    job = db_session.scalar(select(OutboxEvent).where(OutboxEvent.correlation_id == run.id))
+    assert job is not None and job.status == OutboxStatus.PENDING
+    assert process_next_growth_job(db_session) is True
+    db_session.refresh(run)
+    db_session.refresh(job)
+    assert run.status == "completed"
+    assert job.status == OutboxStatus.PUBLISHED
+    assert job.attempts == 1
+    assert process_next_growth_job(db_session) is False
+
+
+def test_growth_worker_failure_is_visible_and_bounded(db_session: Session) -> None:
+    entities, service, _, candidate, *_ = discovery_foundation(db_session, "growth-worker-fail")
+    organization, user, worker, _, capability, _ = entities
+    worker.status = "disabled"
+    db_session.commit()
+    run = service.create_research_run(
+        candidate,
+        BusinessResearchStart(organization_id=organization.id, capability_id=capability.id),
+        user.id,
+    )
+    assert process_next_growth_job(db_session) is True
+    job = db_session.scalar(select(OutboxEvent).where(OutboxEvent.correlation_id == run.id))
+    assert job is not None and job.status == OutboxStatus.FAILED
+    assert job.attempts == 1
+    assert "service identity" in (job.last_error or "")
 
 
 def test_tenant_and_authentication_boundaries(db_session: Session) -> None:

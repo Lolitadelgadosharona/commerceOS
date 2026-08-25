@@ -82,6 +82,17 @@ createServer((request, response) => {
   if (url.pathname === "/api/v1/opportunity-scores") return json(200,scenario === "empty"?[]:[marketScore]);
   if (url.pathname === "/api/v1/opportunity-risks") return json(200,scenario === "empty"?[]:[marketRisk]);
   if (url.pathname === "/api/v1/approvals" && request.method === "GET") return json(200,scenario === "empty"?[]:[approval()]);
+  const growthListRoutes = new Set([
+    "/api/v1/revenue-experiments", "/api/v1/prospect-candidates", "/api/v1/growth-prospects",
+    "/api/v1/revenue-observations", "/api/v1/cost-observations", "/api/v1/contribution-profit",
+    "/api/v1/improvement-recommendations", "/api/v1/prospect-experiment-links",
+    "/api/v1/growth-prospect-evidence", "/api/v1/prospect-research-evidence", "/api/v1/ranked-prospects",
+    "/api/v1/growth-business-research-runs", "/api/v1/growth-opportunity-analyses", "/api/v1/growth-diagnoses", "/api/v1/growth-gifts",
+    "/api/v1/growth-outreach-drafts", "/api/v1/outreach-tracking-events", "/api/v1/revenue-offers",
+    "/api/v1/ai/model-capabilities",
+  ]);
+  if (growthListRoutes.has(url.pathname) && request.method === "GET") return json(200,[]);
+  if (url.pathname === "/api/v1/growthos-dashboard") return json(200,{prospects_discovered:0,qualified_prospects:0,opportunities_found:0,gifts_created:0,outreach_drafts:0,replies:0,customers:0,research_runs:0,pending_human_review:0,active_revenue_experiments:0});
   if (url.pathname === "/api/v1/decision-queue") return json(200,scenario === "empty"?[]:[decision]);
   if (url.pathname === `/api/v1/approvals/${approvalId}/decision` && request.method === "POST") { approvalStatus="approved"; return json(200,approval()); }
   response.writeHead(404).end();

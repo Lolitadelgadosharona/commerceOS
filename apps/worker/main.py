@@ -6,6 +6,7 @@ import json
 import logging
 import signal
 import time
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from commerce_os.ai_runtime.adapters import ProviderAdapter
@@ -30,6 +31,7 @@ from commerce_os.decision.listing_geo_intelligence_services import (
 from commerce_os.decision.listing_geo_intelligence_services import (
     TEMPLATES as LISTING_GEO_TEMPLATES,
 )
+from commerce_os.governance.models import PrincipalType, User, UserStatus
 from commerce_os.growth.discovery_models import (
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
@@ -57,6 +59,8 @@ from commerce_os.intelligence.research_services import (
     scoped_research,
 )
 from commerce_os.shared.config import get_settings
+from commerce_os.shared.database import SessionLocal
+from commerce_os.shared.outbox import OutboxEvent, OutboxStatus
 from redis import Redis
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -65,6 +69,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 running = True
 WORKER_PRINCIPAL = "commerce-os-worker"
+GROWTH_RESEARCH_EVENT = "growth.business_research_requested"
+MAX_JOB_ATTEMPTS = 3
 
 
 def execute_ai_request(
@@ -464,6 +470,81 @@ def stop_worker(_signum: int, _frame: object) -> None:
     running = False
 
 
+def consume_growth_job(session: Session, event: OutboxEvent) -> None:
+    """Execute one durable, organization-scoped Growth research job."""
+    if event.event_type != GROWTH_RESEARCH_EVENT:
+        raise ValueError("Unsupported worker event type.")
+    run_id = UUID(str(event.payload["run_id"]))
+    run = scoped_growth_discovery(session, GrowthBusinessResearchRun, run_id, event.organization_id)
+    if run.status in {"completed", "failed", "cancelled"}:
+        return
+    if run.status != "queued":
+        raise ValueError(f"Growth research run is not executable from {run.status}.")
+    worker = session.scalar(
+        select(User)
+        .where(
+            User.organization_id == event.organization_id,
+            User.principal_type == PrincipalType.SERVICE,
+            User.status == UserStatus.ACTIVE,
+        )
+        .order_by(User.created_at)
+        .limit(1)
+    )
+    if worker is None:
+        raise ValueError("No active service identity is configured for this organization.")
+    execute_growth_business_research(
+        session,
+        run_id=run.id,
+        organization_id=event.organization_id,
+        service_actor_id=worker.id,
+    )
+
+
+def process_next_growth_job(session: Session) -> bool:
+    """Claim and process one durable job; retries remain visible and bounded."""
+    now = datetime.now(UTC)
+    event = session.scalar(
+        select(OutboxEvent)
+        .where(
+            OutboxEvent.event_type == GROWTH_RESEARCH_EVENT,
+            OutboxEvent.status.in_(
+                [OutboxStatus.PENDING, OutboxStatus.FAILED, OutboxStatus.PROCESSING]
+            ),
+            OutboxEvent.available_at <= now,
+            OutboxEvent.attempts < MAX_JOB_ATTEMPTS,
+        )
+        .order_by(OutboxEvent.occurred_at)
+        .with_for_update(skip_locked=True)
+        .limit(1)
+    )
+    if event is None:
+        return False
+    event_id = event.id
+    event.status = OutboxStatus.PROCESSING
+    event.attempts += 1
+    event.available_at = now + timedelta(minutes=5)
+    session.commit()
+    try:
+        consume_growth_job(session, event)
+        event = session.get(OutboxEvent, event_id)
+        if event is None:
+            raise ValueError("Claimed Growth job disappeared.")
+        event.status = OutboxStatus.PUBLISHED
+        event.published_at = datetime.now(UTC)
+        event.last_error = None
+        session.commit()
+    except Exception as exc:
+        session.rollback()
+        event = session.get(OutboxEvent, event_id)
+        if event is not None:
+            event.status = OutboxStatus.FAILED
+            event.last_error = str(exc)[:2000]
+            event.available_at = datetime.now(UTC) + timedelta(seconds=min(60, 2**event.attempts))
+            session.commit()
+        logger.exception("Growth research job failed; id=%s", event.id if event else "unknown")
+    return True
+
+
 def main() -> None:
     settings = get_settings()
     client = Redis.from_url(settings.redis_url, decode_responses=True)
@@ -475,7 +556,10 @@ def main() -> None:
     signal.signal(signal.SIGTERM, stop_worker)
     signal.signal(signal.SIGINT, stop_worker)
     while running:
-        time.sleep(1)
+        with SessionLocal() as session:
+            processed = process_next_growth_job(session)
+        if not processed:
+            time.sleep(1)
 
 
 if __name__ == "__main__":

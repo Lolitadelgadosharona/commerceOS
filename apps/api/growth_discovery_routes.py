@@ -35,6 +35,7 @@ from commerce_os.growth.discovery_schemas import (
     GoogleBusinessResultRead,
     InstagramEvidenceCreate,
     InstagramEvidenceRead,
+    ManualProspectImport,
     OperatorRevenueDashboard,
     ProspectMemoryEventCreate,
     ProspectMemoryEventRead,
@@ -166,6 +167,13 @@ def cancel_run(
 @router.get("/prospect-candidates", response_model=list[CandidateRead])
 def list_candidates(organization_id: UUID, session: SessionDependency) -> list[ProspectCandidate]:
     return _list(session, ProspectCandidate, organization_id)
+
+
+@router.post("/growth-prospect-imports", response_model=CandidateRead, status_code=201)
+def import_manual_prospect(
+    payload: ManualProspectImport, request: Request, session: SessionDependency
+) -> ProspectCandidate:
+    return GrowthDiscoveryService(session).import_manual_prospect(payload, actor_id(request))
 
 
 @router.post("/google-business-results", response_model=GoogleBusinessResultRead, status_code=201)

@@ -33,6 +33,7 @@ from commerce_os.growth.discovery_schemas import (
     DiscoverySourceCreate,
     GoogleBusinessResultCreate,
     InstagramEvidenceCreate,
+    ManualProspectImport,
     OperatorRevenueDashboard,
     ProspectMemoryEventCreate,
     ProspectPipelineRead,
@@ -44,7 +45,9 @@ from commerce_os.growth.discovery_schemas import (
 from commerce_os.growth.errors import GrowthError
 from commerce_os.shared.audit import record_audit_event
 from commerce_os.shared.database import Base
+from commerce_os.shared.events import BusinessEventEnvelope, EventActor
 from commerce_os.shared.models import utc_now
+from commerce_os.shared.outbox import add_to_outbox
 
 EntityT = TypeVar("EntityT", bound=Base)
 DISCOVERY_TRANSITIONS = {
@@ -109,6 +112,86 @@ class GrowthDiscoveryService:
         return self._save(
             ProspectDiscoverySource(**values), actor_id, "growthos.discovery_source.created"
         )
+
+    def import_manual_prospect(
+        self, payload: ManualProspectImport, actor_id: UUID
+    ) -> ProspectCandidate:
+        """Compose the existing source/run/candidate/evidence workflow for founder import."""
+        source = self.session.scalar(
+            select(ProspectDiscoverySource)
+            .where(
+                ProspectDiscoverySource.organization_id == payload.organization_id,
+                ProspectDiscoverySource.source_type == "manual",
+                ProspectDiscoverySource.status == "active",
+            )
+            .order_by(ProspectDiscoverySource.created_at)
+            .limit(1)
+        )
+        if source is None:
+            source = self.create_source(
+                DiscoverySourceCreate(
+                    organization_id=payload.organization_id,
+                    source_type="manual",
+                    source_name="Founder controlled import",
+                    capability="prospect_evidence_import",
+                    metadata={"external_execution": False},
+                    adapter_key="manual",
+                    collection_mode="controlled_import",
+                ),
+                actor_id,
+            )
+        run = self.create_run(
+            DiscoveryRunCreate(
+                organization_id=payload.organization_id,
+                source_id=source.id,
+                query=payload.business_name,
+                target_industry=payload.category,
+                target_location=payload.location,
+                query_criteria={"mode": "founder_controlled_import"},
+            ),
+            actor_id,
+        )
+        run = self.transition_run(run, "running", actor_id)
+        candidate = self.create_candidate(
+            CandidateCreate(
+                organization_id=payload.organization_id,
+                discovery_run_id=run.id,
+                business_name=payload.business_name,
+                website=payload.website,
+                location=payload.location,
+                category=payload.category,
+                source_reference=payload.source_reference,
+                confidence=payload.confidence,
+            ),
+            actor_id,
+        )
+        self.create_evidence(
+            ResearchEvidenceCreate(
+                organization_id=payload.organization_id,
+                candidate_id=candidate.id,
+                evidence_type=payload.evidence_type,
+                source_url=payload.source_reference,
+                observation=payload.observation,
+                confidence=payload.confidence,
+                collected_at=payload.collected_at,
+            ),
+            actor_id,
+        )
+        qualification = QualificationInputs(
+            organization_id=payload.organization_id,
+            pain_signal=payload.pain_signal,
+            purchase_probability=payload.purchase_probability,
+            accessibility=payload.accessibility,
+            quick_win_potential=payload.quick_win_potential,
+        )
+        if any(
+            value is not None
+            for value in qualification.model_dump(exclude={"organization_id"}).values()
+        ):
+            self.qualify(candidate, qualification, actor_id)
+        self.transition_run(run, "completed", actor_id)
+        self.session.refresh(candidate)
+        return candidate
 
     def create_run(self, payload: DiscoveryRunCreate, actor_id: UUID) -> ProspectDiscoveryRun:
         source = scoped_growth_discovery(
@@ -531,20 +614,35 @@ class GrowthDiscoveryService:
             raise GrowthError("Business research requires traceable candidate evidence.")
         candidate.status = "researching"
         self.session.add(candidate)
-        return self._save(
-            GrowthBusinessResearchRun(
+        run = GrowthBusinessResearchRun(
+            organization_id=payload.organization_id,
+            candidate_id=candidate.id,
+            status="queued",
+            capability_id=payload.capability_id,
+            prompt_version_id=payload.prompt_version_id,
+            ai_request_id=None,
+            created_by=actor_id,
+            started_at=None,
+            completed_at=None,
+            failure_reason=None,
+            methodology_version="growth-business-research-v1",
+        )
+        self.session.add(run)
+        self.session.flush()
+        add_to_outbox(
+            self.session,
+            BusinessEventEnvelope(
+                event_type="growth.business_research_requested",
+                actor=EventActor(actor_type="human", actor_id=str(actor_id)),
+                source="growth",
+                idempotency_key=f"growth-business-research:{run.id}",
+                correlation_id=run.id,
                 organization_id=payload.organization_id,
-                candidate_id=candidate.id,
-                status="queued",
-                capability_id=payload.capability_id,
-                prompt_version_id=payload.prompt_version_id,
-                ai_request_id=None,
-                created_by=actor_id,
-                started_at=None,
-                completed_at=None,
-                failure_reason=None,
-                methodology_version="growth-business-research-v1",
+                payload={"run_id": str(run.id)},
             ),
+        )
+        return self._save(
+            run,
             actor_id,
             "growthos.business_research.queued",
         )

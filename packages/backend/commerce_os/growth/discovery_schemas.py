@@ -323,6 +323,25 @@ class QualificationRead(ReadModel):
     formula_version: str
 
 
+class ManualProspectImport(BaseModel):
+    """Application-level controlled import; composes existing discovery records."""
+
+    organization_id: UUID
+    business_name: str = Field(min_length=1, max_length=250)
+    website: str | None = Field(default=None, max_length=500)
+    location: str = Field(min_length=1, max_length=250)
+    category: str = Field(min_length=1, max_length=160)
+    source_reference: str = Field(min_length=1, max_length=1000)
+    evidence_type: str = Field(min_length=1, max_length=80)
+    observation: str = Field(min_length=1, max_length=20_000)
+    confidence: float = Field(ge=0, le=1)
+    collected_at: datetime
+    pain_signal: float | None = Field(default=None, ge=0, le=100)
+    purchase_probability: float | None = Field(default=None, ge=0, le=100)
+    accessibility: float | None = Field(default=None, ge=0, le=100)
+    quick_win_potential: float | None = Field(default=None, ge=0, le=100)
+
+
 class BusinessDemandSignalRead(ReadModel):
     organization_id: UUID
     source_domain: str
