@@ -10,7 +10,7 @@ test("renders real Executive Dashboard contracts and navigable records", async (
   await expect(page.getByText("Observed revenue")).toBeVisible();
   await expect(page.getByText("$12,500")).toBeVisible();
   await expect(page.getByRole("link", { name: /Customer-backed opportunity ready/ })).toHaveAttribute("href", /\/opportunities\?signal=/);
-  await expect(page.getByRole("link", { name: /Review contribution margin risk/ })).toHaveAttribute("href", /\/decisions\?item=/);
+  await expect(page.getByRole("link", { name: /Investment decision: Seasonal pet cooling mat/ })).toHaveAttribute("href", /\/opportunities\?approval=/);
 });
 
 test("renders intentional empty states without fabricated values", async ({ page, request }) => {
@@ -27,5 +27,5 @@ test("keeps other sections usable when one backend view fails", async ({ page, r
   await page.goto("/dashboard");
   await expect(page.getByText("Section unavailable")).toBeVisible();
   await expect(page.getByText("Customer-backed opportunity ready")).toBeVisible();
-  await expect(page.getByText("Review contribution margin risk")).toBeVisible();
+  await expect(page.getByText("Investment decision: Seasonal pet cooling mat")).toBeVisible();
 });

@@ -34,7 +34,7 @@ function SignalList({ signals, empty }: { signals: OperatingSignal[]; empty: str
 function DecisionList({ decisions }: { decisions: DecisionQueueItem[] }) {
   const pending = decisions.filter((decision) => decision.status !== "closed");
   if (!pending.length) return <div className="dashboard-state compact"><strong>No pending decisions</strong><span>Human review queue is clear.</span></div>;
-  return <div className="executive-list">{pending.map((decision) => <Link className="executive-row" href={`/decisions?item=${decision.id}`} key={decision.id}><span className={`priority-mark priority-${decision.priority}`}>{decision.priority}</span><span><strong>{decision.title}</strong><small>{decision.reason}</small></span><span className="row-meta">{decision.required_action} →</span></Link>)}</div>;
+  return <div className="executive-list">{pending.map((decision) => <Link className="executive-row" href={decision.approval_request_id ? `/opportunities?approval=${decision.approval_request_id}` : `/decisions?item=${decision.id}`} key={decision.id}><span className={`priority-mark priority-${decision.priority}`}>{decision.priority}</span><span><strong>{decision.title}</strong><small>{decision.reason}</small></span><span className="row-meta">{decision.required_action} →</span></Link>)}</div>;
 }
 
 export function ExecutiveDashboard({ overview, financial, opportunities, risks, decisions }: { overview: ViewResult; financial: ViewResult; opportunities: ViewResult; risks: ViewResult; decisions: ViewResult }) {

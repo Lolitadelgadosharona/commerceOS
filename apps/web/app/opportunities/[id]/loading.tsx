@@ -1,0 +1,1 @@
+export default function OpportunityDetailLoading(){return <div className="dashboard-loading" role="status" aria-label="Loading opportunity evaluation"><div className="loading-heading"/><div className="loading-grid">{Array.from({length:4},(_,index)=><div className="loading-card" key={index}/>)}</div><span>Composing evidence, economics, risk, and governance context…</span></div>}

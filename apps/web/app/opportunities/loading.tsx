@@ -1,0 +1,1 @@
+export default function OpportunitiesLoading(){return <div className="dashboard-loading" role="status" aria-label="Loading opportunities"><div className="loading-heading"/><div className="loading-grid">{Array.from({length:4},(_,index)=><div className="loading-card" key={index}/>)}</div><span>Loading evidence-backed opportunities…</span></div>}

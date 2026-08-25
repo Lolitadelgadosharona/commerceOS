@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function OpportunityNotFound(){return <div className="configuration-state"><span aria-hidden="true">404</span><div><h2>Opportunity not found</h2><p>The identifier is invalid, the record does not exist, or it is outside the authenticated organization.</p><Link className="primary-button" href="/opportunities">Return to Opportunity workspace</Link></div></div>}
