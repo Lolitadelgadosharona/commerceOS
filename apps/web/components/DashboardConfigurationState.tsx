@@ -1,0 +1,3 @@
+export function DashboardConfigurationState({ message }: { message: string }) {
+  return <div className="executive-dashboard"><section className="executive-heading"><div><p className="eyebrow">Executive command</p><h1>Executive dashboard</h1><p>Connect a governed server session to load operational evidence.</p></div></section><section className="configuration-state"><span aria-hidden="true">OS</span><div><h2>Operational context required</h2><p>{message}</p><small>Development fallback: set COMMERCE_OS_API_TOKEN on the web server. COMMERCE_OS_ORGANIZATION_ID is optional and only verifies the authenticated organization.</small></div></section></div>;
+}

@@ -73,6 +73,8 @@ services:
       NODE_ENV: production
       API_INTERNAL_URL: http://api:8000
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      COMMERCE_OS_API_TOKEN: ${COMMERCE_OS_API_TOKEN:-}
+      COMMERCE_OS_ORGANIZATION_ID: ${COMMERCE_OS_ORGANIZATION_ID:-}
     ports:
       - "3000:3000"
     depends_on:
