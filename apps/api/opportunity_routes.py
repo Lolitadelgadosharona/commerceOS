@@ -58,6 +58,22 @@ def _get_or_raise(session: Session, model: type[ModelT], entity_id: UUID) -> Mod
     return entity
 
 
+def _get_scoped_market_opportunity(
+    session: Session, opportunity_id: UUID, organization_id: UUID
+) -> MarketOpportunity:
+    opportunity = session.scalar(
+        select(MarketOpportunity).where(
+            MarketOpportunity.id == opportunity_id,
+            MarketOpportunity.organization_id == organization_id,
+        )
+    )
+    if opportunity is None:
+        raise IntelligenceNotFoundError(
+            "The requested opportunity was not found in this organization."
+        )
+    return opportunity
+
+
 def _list_for_organization(
     session: Session, model: type[ModelT], organization_id: UUID
 ) -> list[ModelT]:
@@ -110,8 +126,10 @@ def list_opportunities(
     response_model=MarketOpportunityRead,
     tags=["opportunities"],
 )
-def get_opportunity(opportunity_id: UUID, session: SessionDependency) -> MarketOpportunity:
-    return _get_or_raise(session, MarketOpportunity, opportunity_id)
+def get_opportunity(
+    opportunity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> MarketOpportunity:
+    return _get_scoped_market_opportunity(session, opportunity_id, organization_id)
 
 
 @router.patch(
@@ -120,9 +138,12 @@ def get_opportunity(opportunity_id: UUID, session: SessionDependency) -> MarketO
     tags=["opportunities"],
 )
 def update_opportunity(
-    opportunity_id: UUID, payload: MarketOpportunityUpdate, session: SessionDependency
+    opportunity_id: UUID,
+    organization_id: UUID,
+    payload: MarketOpportunityUpdate,
+    session: SessionDependency,
 ) -> MarketOpportunity:
-    opportunity = _get_or_raise(session, MarketOpportunity, opportunity_id)
+    opportunity = _get_scoped_market_opportunity(session, opportunity_id, organization_id)
     opportunity.status = OpportunityStatus(payload.status)
     session.commit()
     session.refresh(opportunity)

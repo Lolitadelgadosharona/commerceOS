@@ -19,8 +19,10 @@ test("maps dashboard decisions into the governed opportunity context", async ({ 
 test("renders scored opportunities without merging discovery and investment records", async ({ page }) => {
   await page.goto("/opportunities");
   await expect(page.getByRole("heading", { name: "Opportunity workspace" })).toBeVisible();
-  await expect(page.getByText("Market opportunity", { exact: true })).toBeVisible();
-  await expect(page.getByText("Demand candidate", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Market opportunities" })).toBeVisible();
+  await expect(page.getByText("Governed market opportunity", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Opportunity candidates" })).toBeVisible();
+  await expect(page.getByText("Discovery candidate", { exact: true })).toBeVisible();
   await expect(page.getByText("Waiting for human decision")).toBeVisible();
   await expect(page.getByText("Marketplace validation")).toHaveCount(0);
 });
