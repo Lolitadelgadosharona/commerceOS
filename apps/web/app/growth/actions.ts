@@ -8,7 +8,7 @@ export type GrowthActionState={kind:"idle"|"success"|"error";message:string};
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const value=(form:FormData,key:string)=>String(form.get(key)??"").trim();
 const number=(form:FormData,key:string)=>{const raw=value(form,key);return raw===""?null:Number(raw)};
-const ids=(form:FormData,key:string)=>value(form,key).split(",").map(x=>x.trim()).filter(x=>UUID.test(x));
+const ids=(form:FormData,key:string)=>form.getAll(key).flatMap(raw=>String(raw).split(",")).map(x=>x.trim()).filter(x=>UUID.test(x));
 
 async function context(){const result=await resolveExecutiveContext();return result.ok?result.data:null;}
 function refresh(id?:string){revalidatePath("/growth");if(id)revalidatePath(`/growth/${id}`);}
@@ -34,6 +34,14 @@ export async function addCandidateEvidence(_:GrowthActionState,form:FormData):Pr
   const id=value(form,"candidate_id"),experimentId=value(form,"experiment_id");if(!UUID.test(id)||!value(form,"observation"))return {kind:"error",message:"Candidate and evidence are required."};
   const result=await apiPost("/api/v1/prospect-research-evidence",{organization_id:actor.organization_id,candidate_id:id,evidence_type:value(form,"evidence_type"),source_url:value(form,"source_reference")||null,observation:value(form,"observation"),confidence:Number(value(form,"confidence")||0.7),collected_at:new Date().toISOString()});
   if(!result.ok)return {kind:"error",message:result.error.message};refresh(experimentId);return {kind:"success",message:"Evidence added with provenance."};
+}
+
+export async function addProspectEvidence(_:GrowthActionState,form:FormData):Promise<GrowthActionState>{
+  const actor=await context();if(!actor)return {kind:"error",message:"A valid local founder session is required."};
+  const prospectId=value(form,"prospect_id"),experimentId=value(form,"experiment_id"),observation=value(form,"observation");
+  if(!UUID.test(prospectId)||!observation)return {kind:"error",message:"Prospect and observation are required."};
+  const result=await apiPost("/api/v1/growth-prospect-evidence",{organization_id:actor.organization_id,prospect_id:prospectId,evidence_type:value(form,"evidence_type")||"manual_observation",source_url:value(form,"source_reference")||null,observation,confidence:Number(value(form,"confidence")||0.7),collected_at:new Date().toISOString()});
+  if(!result.ok)return {kind:"error",message:result.error.message};refresh(experimentId);return {kind:"success",message:"Prospect evidence saved with source, timestamp, and confidence."};
 }
 
 export async function requestGrowthResearch(_:GrowthActionState,form:FormData):Promise<GrowthActionState>{

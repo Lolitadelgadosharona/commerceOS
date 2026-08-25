@@ -1,7 +1,8 @@
+from datetime import UTC, datetime
 from typing import Annotated, Any, TypeVar, cast
 from uuid import UUID
 
-from commerce_os.ai_runtime.models import AIRequest
+from commerce_os.ai_runtime.models import AIModelCapability, AIRequest
 from commerce_os.growth.discovery_models import (
     BusinessProfileEvidenceSnapshot,
     DiscoveryAutomationPlan,
@@ -33,6 +34,7 @@ from commerce_os.growth.discovery_schemas import (
     DiscoverySourceRead,
     GoogleBusinessResultCreate,
     GoogleBusinessResultRead,
+    GrowthOperationalReadiness,
     InstagramEvidenceCreate,
     InstagramEvidenceRead,
     ManualProspectImport,
@@ -50,15 +52,19 @@ from commerce_os.growth.discovery_schemas import (
 )
 from commerce_os.growth.discovery_services import GrowthDiscoveryService, scoped_growth_discovery
 from commerce_os.intelligence.business_signal_models import BusinessDemandSignal
+from commerce_os.shared.config import get_settings
 from commerce_os.shared.database import Base, get_session
+from commerce_os.shared.outbox import OutboxEvent, OutboxStatus
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
+from redis import Redis
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from apps.api.errors import ApiError
 from apps.api.market_connector_routes import initiating_actor
 
 router = APIRouter()
+WORKER_HEARTBEAT_KEY = "commerce_os:growth_worker:heartbeat"
 SessionDependency = Annotated[Session, Depends(get_session)]
 ModelT = TypeVar("ModelT", bound=Base)
 
@@ -78,6 +84,66 @@ def _list(session: Session, model: type[ModelT], organization_id: UUID) -> list[
             .where(mapped.organization_id == organization_id)
             .order_by(mapped.created_at.desc())
         )
+    )
+
+
+@router.get("/growth-operational-readiness", response_model=GrowthOperationalReadiness)
+def growth_operational_readiness(
+    organization_id: UUID, session: SessionDependency
+) -> GrowthOperationalReadiness:
+    """Expose safe, founder-readable local readiness without leaking configuration."""
+    ai_count = session.scalar(
+        select(func.count()).select_from(AIModelCapability).where(
+            AIModelCapability.organization_id == organization_id,
+            AIModelCapability.available.is_(True),
+        )
+    ) or 0
+    queued = session.scalar(
+        select(func.count()).select_from(OutboxEvent).where(
+            OutboxEvent.organization_id == organization_id,
+            OutboxEvent.event_type == "growth.business_research_requested",
+            OutboxEvent.status.in_([OutboxStatus.PENDING, OutboxStatus.PROCESSING]),
+        )
+    ) or 0
+    failed = session.scalar(
+        select(func.count()).select_from(OutboxEvent).where(
+            OutboxEvent.organization_id == organization_id,
+            OutboxEvent.event_type == "growth.business_research_requested",
+            OutboxEvent.status == OutboxStatus.FAILED,
+        )
+    ) or 0
+
+    worker: str = "offline"
+    try:
+        client = Redis.from_url(get_settings().redis_url, decode_responses=True)
+        heartbeat = client.get(WORKER_HEARTBEAT_KEY)
+        client.close()
+        if heartbeat:
+            heartbeat_text = heartbeat.decode() if isinstance(heartbeat, bytes) else str(heartbeat)
+            age = (datetime.now(UTC) - datetime.fromisoformat(heartbeat_text)).total_seconds()
+            worker = "ready" if age <= 20 else "degraded"
+    except Exception:  # pragma: no cover - runtime infrastructure signal
+        worker = "degraded"
+
+    guidance: list[str] = []
+    if not ai_count:
+        guidance.append("Configure a tenant-scoped AI provider to enable governed research.")
+    if worker != "ready":
+        guidance.append("Start or check the Growth worker before queueing research.")
+    if failed:
+        guidance.append("Review failed research jobs before retrying them.")
+    guidance.append("External sending is manual; no connector is configured.")
+    return GrowthOperationalReadiness(
+        organization_id=organization_id,
+        growth_os="ready" if worker == "ready" or not queued else "degraded",
+        ai="ready" if ai_count else "not_configured",
+        worker=worker,
+        database="ready",
+        manual_send_mode="active",
+        external_connectors="not_configured",
+        queued_research=queued,
+        failed_research=failed,
+        guidance=guidance,
     )
 
 

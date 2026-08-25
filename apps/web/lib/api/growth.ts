@@ -24,14 +24,15 @@ export type Profit = Entity & { product_id:string; period_id:string; currency:st
 export type Learning = Entity & { title?:string; recommendation?:string; status?:string; pattern?:string; confidence?:number; source_experiment_id?:string };
 export type Capability = Entity & { model_identity:string; capability_type:string; available:boolean };
 export type GrowthDashboard = { prospects_discovered:number; qualified_prospects:number; opportunities_found:number; gifts_created:number; outreach_drafts:number; replies:number; customers:number; research_runs:number; pending_human_review:number; active_revenue_experiments:number };
+export type GrowthReadiness = { organization_id:string; growth_os:"ready"|"degraded"; ai:"ready"|"not_configured"|"error"; worker:"ready"|"degraded"|"offline"; database:"ready"|"error"; manual_send_mode:"active"; external_connectors:"not_configured"; queued_research:number; failed_research:number; guidance:string[] };
 
 async function all<T>(path:string, organization_id:string):Promise<ApiResult<T[]>> { return apiGet<T[]>(path,{organization_id}); }
 
 export async function loadGrowthHome(organization_id:string) {
-  const [experiments,candidates,prospects,approvals,revenues,costs,profits,learning,dashboard] = await Promise.all([
-    all<RevenueExperiment>("/api/v1/revenue-experiments",organization_id), all<Candidate>("/api/v1/prospect-candidates",organization_id), all<GrowthProspect>("/api/v1/growth-prospects",organization_id), all<Approval>("/api/v1/approvals",organization_id), all<Revenue>("/api/v1/revenue-observations",organization_id), all<Cost>("/api/v1/cost-observations",organization_id), all<Profit>("/api/v1/contribution-profit",organization_id), all<Learning>("/api/v1/improvement-recommendations",organization_id), apiGet<GrowthDashboard>("/api/v1/growthos-dashboard",{organization_id}),
+  const [experiments,candidates,prospects,approvals,revenues,costs,profits,learning,dashboard,readiness] = await Promise.all([
+    all<RevenueExperiment>("/api/v1/revenue-experiments",organization_id), all<Candidate>("/api/v1/prospect-candidates",organization_id), all<GrowthProspect>("/api/v1/growth-prospects",organization_id), all<Approval>("/api/v1/approvals",organization_id), all<Revenue>("/api/v1/revenue-observations",organization_id), all<Cost>("/api/v1/cost-observations",organization_id), all<Profit>("/api/v1/contribution-profit",organization_id), all<Learning>("/api/v1/improvement-recommendations",organization_id), apiGet<GrowthDashboard>("/api/v1/growthos-dashboard",{organization_id}), apiGet<GrowthReadiness>("/api/v1/growth-operational-readiness",{organization_id}),
   ]);
-  return {experiments,candidates,prospects,approvals,revenues,costs,profits,learning,dashboard};
+  return {experiments,candidates,prospects,approvals,revenues,costs,profits,learning,dashboard,readiness};
 }
 
 export async function loadGrowthWorkspace(organization_id:string, experimentId:string) {

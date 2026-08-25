@@ -5,6 +5,9 @@ const userId = "22222222-2222-4222-8222-222222222222";
 const marketId = "77777777-7777-4777-8777-777777777777";
 const candidateId = "88888888-8888-4888-8888-888888888888";
 const approvalId = "99999999-9999-4999-8999-999999999999";
+const growthExperimentId = "20202020-2020-4020-8020-202020202020";
+const growthCandidateId = "21212121-2121-4121-8121-212121212121";
+const growthProspectId = "22222222-3333-4222-8222-222222222222";
 let scenario = "success";
 let approvalStatus = "pending";
 
@@ -20,6 +23,11 @@ const marketRisk = { ...base, id:"13131313-1313-4313-8313-131313131313", opportu
 const marketEvidence = { ...base, id:"14141414-1414-4414-8414-141414141414", opportunity_id:marketId, source_type:"customer_signal", source_reference:"customer-signal:heat-1", evidence_summary:"Owners report pet heat discomfort during summer travel.", confidence_score:.85 };
 const candidateEvidence = { ...base, id:"15151515-1515-4515-8515-151515151515", opportunity_candidate_id:candidateId, demand_signal_id:"16161616-1616-4616-8616-161616161616", evidence_type:"customer_pain", evidence_summary:"Hydration is forgotten during long journeys.", contribution:"12 observations; customer voice", confidence:.74 };
 const candidateAssessment = { ...base, id:"17171717-1717-4717-8717-171717171717", opportunity_candidate_id:candidateId, demand_strength:"medium", signal_diversity:2, market_timing:"Travel season", confidence:.74, risks:["Adoption uncertainty"], missing_information:["Marketplace validation"], assumptions:["Observed pain generalizes beyond the sample"] };
+const growthExperiment={...base,id:growthExperimentId,name:"Beauty Growth Experiment 001",description:"Validate a founder-led visibility offer.",target_segment:"Independent beauty studios",offer_type:"growth_visibility_audit",message_strategy:"Evidence first",status:"active",segment:"Beauty",target_count:6,start_date:"2026-08-25"};
+const growthCandidate={...base,id:growthCandidateId,business_name:"Rose & Brow Studio",website:"https://example.test",location:"Los Angeles",category:"Beauty",source_reference:"https://example.test",confidence:.8,status:"qualified"};
+const growthProspect={...base,id:growthProspectId,business_name:"Rose & Brow Studio",website:"https://example.test",email:null,location:"Los Angeles",industry:"Beauty",business_type:"studio",source:"manual_import",status:"qualified",source_candidate_id:growthCandidateId};
+const growthAssignment={...base,id:"23232323-2323-4323-8323-232323232323",experiment_id:growthExperimentId,prospect_id:growthProspectId,assigned_offer:"Visibility diagnosis",assigned_message:"Founder review",result_status:"pending"};
+const growthEvidence={...base,id:"24242424-2424-4424-8424-242424242424",prospect_id:growthProspectId,evidence_type:"website",source_url:"https://example.test/services",observation:"Booking action is not visible on the service page.",confidence:.85,collected_at:"2026-08-25T10:00:00Z"};
 
 const memo = { opportunity_id:marketId, organization_id:organizationId, summary:{title:marketOpportunity.title,description:marketOpportunity.description,why_now:"summer",assessment:{overall_score:72.4,explanation:"Demand evidence is credible but incomplete."},report:{status:"presented",summary:"Proceed only after policy and economics review.",risk_summary:"Platform policy evidence remains incomplete."}}, evidence:[marketEvidence], conclusions:{commercial_viability:{classification:"derived",value:{recommendation:"test",adjusted_score:68}},risk:{classification:"derived",value:{risk_level:"medium",risk_score:32}},economic_assumptions:{classification:"estimated",value:{product_cost:12,shipping_cost:5,currency:"USD"}},profit_scenarios:{classification:"estimated",value:{scenario:"base",margin:0.35}},risk_adjusted_profitability:{classification:"derived",value:{final_score:64,recommendation:"review"}}}, missing_evidence:["Customer evidence is required"], confidence:.58, recommended_decision:"hold" };
 const readiness = { opportunity_id:marketId, overall_status:"missing", blocking_reasons:["Customer evidence is required"], categories:[{category:"market_evidence",status:"ready",reason:"Available",references:[marketEvidence.id],blocking:true},{category:"customer_evidence",status:"missing",reason:"Customer evidence is required",references:[],blocking:true},{category:"economics",status:"ready",reason:"Available",references:[],blocking:true},{category:"governance",status:"ready",reason:"Available",references:[],blocking:true}] };
@@ -91,8 +99,15 @@ createServer((request, response) => {
     "/api/v1/growth-outreach-drafts", "/api/v1/outreach-tracking-events", "/api/v1/revenue-offers",
     "/api/v1/ai/model-capabilities",
   ]);
-  if (growthListRoutes.has(url.pathname) && request.method === "GET") return json(200,[]);
+  if (growthListRoutes.has(url.pathname) && request.method === "GET") {
+    if(scenario==="growth"){
+      const records={"/api/v1/revenue-experiments":[growthExperiment],"/api/v1/prospect-candidates":[growthCandidate],"/api/v1/growth-prospects":[growthProspect],"/api/v1/prospect-experiment-links":[growthAssignment],"/api/v1/growth-prospect-evidence":[growthEvidence]};
+      return json(200,records[url.pathname]??[]);
+    }
+    return json(200,[]);
+  }
   if (url.pathname === "/api/v1/growthos-dashboard") return json(200,{prospects_discovered:0,qualified_prospects:0,opportunities_found:0,gifts_created:0,outreach_drafts:0,replies:0,customers:0,research_runs:0,pending_human_review:0,active_revenue_experiments:0});
+  if (url.pathname === "/api/v1/growth-operational-readiness") return json(200,{organization_id:organizationId,growth_os:"ready",ai:"not_configured",worker:"ready",database:"ready",manual_send_mode:"active",external_connectors:"not_configured",queued_research:0,failed_research:0,guidance:["Configure a tenant-scoped AI provider to enable governed research.","External sending is manual; no connector is configured."]});
   if (url.pathname === "/api/v1/decision-queue") return json(200,scenario === "empty"?[]:[decision]);
   if (url.pathname === `/api/v1/approvals/${approvalId}/decision` && request.method === "POST") { approvalStatus="approved"; return json(200,approval()); }
   response.writeHead(404).end();

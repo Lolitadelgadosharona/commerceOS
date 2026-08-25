@@ -71,6 +71,8 @@ running = True
 WORKER_PRINCIPAL = "commerce-os-worker"
 GROWTH_RESEARCH_EVENT = "growth.business_research_requested"
 MAX_JOB_ATTEMPTS = 3
+WORKER_HEARTBEAT_KEY = "commerce_os:growth_worker:heartbeat"
+WORKER_HEARTBEAT_TTL_SECONDS = 15
 
 
 def execute_ai_request(
@@ -556,6 +558,11 @@ def main() -> None:
     signal.signal(signal.SIGTERM, stop_worker)
     signal.signal(signal.SIGINT, stop_worker)
     while running:
+        client.set(
+            WORKER_HEARTBEAT_KEY,
+            datetime.now(UTC).isoformat(),
+            ex=WORKER_HEARTBEAT_TTL_SECONDS,
+        )
         with SessionLocal() as session:
             processed = process_next_growth_job(session)
         if not processed:

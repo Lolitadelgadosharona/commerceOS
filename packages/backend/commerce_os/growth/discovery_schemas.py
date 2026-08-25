@@ -129,6 +129,19 @@ class OperatorRevenueDashboard(BaseModel):
     ai_cost_currency: str | None
 
 
+class GrowthOperationalReadiness(BaseModel):
+    organization_id: UUID
+    growth_os: Literal["ready", "degraded"]
+    ai: Literal["ready", "not_configured", "error"]
+    worker: Literal["ready", "degraded", "offline"]
+    database: Literal["ready", "error"]
+    manual_send_mode: Literal["active"]
+    external_connectors: Literal["not_configured"]
+    queued_research: int
+    failed_research: int
+    guidance: list[str]
+
+
 class DiscoveryRunCreate(BaseModel):
     organization_id: UUID
     source_id: UUID

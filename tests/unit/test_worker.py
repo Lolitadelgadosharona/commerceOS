@@ -5,6 +5,9 @@ class FakeRedis:
     def ping(self) -> bool:
         return True
 
+    def set(self, _key: str, _value: str, *, ex: int) -> bool:
+        return ex > 0
+
 
 def test_worker_reaches_ready_loop(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(worker.Redis, "from_url", lambda *_args, **_kwargs: FakeRedis())
