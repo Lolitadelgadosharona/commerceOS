@@ -35,6 +35,8 @@ from commerce_os.growth.revenue_schemas import (
     GrowthDiagnosisRead,
     GrowthGiftCreate,
     GrowthGiftRead,
+    GrowthPackagePreparationCreate,
+    GrowthPackagePreparationRead,
     GrowthRevenueV2Dashboard,
     IndustryDeliveryKnowledgeCreate,
     IndustryDeliveryKnowledgeRead,
@@ -234,6 +236,19 @@ def create_outreach(
     payload: OutreachDraftCreate, request: Request, session: SessionDependency
 ) -> GrowthOutreachDraft:
     return GrowthRevenueService(session).create_outreach(payload, actor_id(request))
+
+
+@router.post(
+    "/growth-package-preparations",
+    response_model=GrowthPackagePreparationRead,
+    status_code=201,
+)
+def prepare_growth_package(
+    payload: GrowthPackagePreparationCreate,
+    request: Request,
+    session: SessionDependency,
+) -> GrowthPackagePreparationRead:
+    return GrowthRevenueService(session).prepare_growth_package(payload, actor_id(request))
 
 
 @router.get("/growth-outreach-drafts", response_model=list[OutreachDraftRead])

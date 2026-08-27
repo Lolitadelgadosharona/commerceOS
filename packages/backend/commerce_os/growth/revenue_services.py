@@ -5,7 +5,10 @@ from uuid import UUID
 from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
 
+from commerce_os.ai_runtime.adapters import ProviderAdapter
+from commerce_os.ai_runtime.execution import AIExecutionService
 from commerce_os.ai_runtime.models import AIOutputClassification, AIRequest
+from commerce_os.ai_runtime.schemas import AIExecutionSubmit
 from commerce_os.growth.errors import GrowthError
 from commerce_os.growth.industry_intelligence_models import (
     IndustryGrowthEvidence,
@@ -30,6 +33,8 @@ from commerce_os.growth.revenue_schemas import (
     BusinessGrowthProfileCreate,
     GrowthDiagnosisCreate,
     GrowthGiftCreate,
+    GrowthPackagePreparationCreate,
+    GrowthPackagePreparationRead,
     GrowthRevenueV2Dashboard,
     IndustryDeliveryKnowledgeCreate,
     OfferRecommendationCreate,
@@ -70,6 +75,107 @@ OUTREACH_TRANSITIONS = {
     "approved": {"sent", "cancelled"},
     "sent": set(),
     "cancelled": set(),
+}
+
+GROWTH_PACKAGE_OUTPUT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "business_situation",
+        "pain_points",
+        "customer_impact",
+        "recommended_improvements",
+        "opportunity_type",
+        "recommended_offer",
+        "risks",
+        "missing_information",
+        "confidence",
+        "gift",
+        "email",
+    ],
+    "properties": {
+        "business_situation": {"type": "string"},
+        "pain_points": {"type": "array", "items": {"type": "string"}},
+        "customer_impact": {"type": "string"},
+        "recommended_improvements": {"type": "array", "items": {"type": "string"}},
+        "opportunity_type": {
+            "type": "string",
+            "enum": [
+                "website_conversion",
+                "seo",
+                "google_business",
+                "social_media",
+                "content",
+                "branding",
+                "customer_retention",
+                "reputation_management",
+                "homepage_fix",
+                "booking_experience_fix",
+                "google_profile_fix",
+                "social_content_fix",
+                "review_trust_fix",
+                "other",
+            ],
+        },
+        "recommended_offer": {"type": "string"},
+        "risks": {"type": "array", "items": {"type": "string"}},
+        "missing_information": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"type": "number"},
+        "gift": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "title",
+                "description",
+                "before_state",
+                "after_state",
+                "recommended_improvement",
+                "expected_value",
+                "customer_rationale",
+                "implementation_scope",
+                "customer_value_explanation",
+            ],
+            "properties": {
+                key: {"type": "string"}
+                for key in [
+                    "title",
+                    "description",
+                    "before_state",
+                    "after_state",
+                    "recommended_improvement",
+                    "expected_value",
+                    "customer_rationale",
+                    "implementation_scope",
+                    "customer_value_explanation",
+                ]
+            },
+        },
+        "email": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "subject",
+                "body",
+                "opening_sentence",
+                "personalized_context",
+                "problem_observation",
+                "gift_explanation",
+                "soft_cta",
+            ],
+            "properties": {
+                key: {"type": "string"}
+                for key in [
+                    "subject",
+                    "body",
+                    "opening_sentence",
+                    "personalized_context",
+                    "problem_observation",
+                    "gift_explanation",
+                    "soft_cta",
+                ]
+            },
+        },
+    },
 }
 
 
@@ -197,7 +303,7 @@ class GrowthRevenueService:
             if evidence.prospect_id != payload.prospect_id:
                 raise GrowthError("Opportunity evidence must belong to the selected prospect.")
         if payload.ai_request_id is not None:
-            self._ai_request(payload.ai_request_id, payload.organization_id, {"analysis"})
+            self._ai_request(payload.ai_request_id, payload.organization_id, {"analysis", "draft"})
         values = payload.model_dump()
         values["evidence_reference"] = [str(item) for item in payload.evidence_reference]
         return self._save(
@@ -218,7 +324,7 @@ class GrowthRevenueService:
             if evidence.prospect_id != payload.prospect_id:
                 raise GrowthError("Diagnosis evidence must belong to the selected prospect.")
         if payload.ai_request_id is not None:
-            self._ai_request(payload.ai_request_id, payload.organization_id, {"analysis"})
+            self._ai_request(payload.ai_request_id, payload.organization_id, {"analysis", "draft"})
         self._reject_unsupported_claims(
             " ".join(
                 [
@@ -347,8 +453,8 @@ class GrowthRevenueService:
         )
         if gift.prospect_id != payload.prospect_id:
             raise GrowthError("Outreach gift must belong to the selected prospect.")
-        if gift.status not in {"approved", "ready_for_delivery", "delivered"}:
-            raise GrowthError("Outreach requires an approved Growth Gift.")
+        if gift.status == "cancelled":
+            raise GrowthError("Outreach cannot be drafted from a cancelled Growth Gift.")
         message_versions = payload.message_versions or {
             "founder_friendly": payload.body,
             "consultant": payload.body,
@@ -387,6 +493,163 @@ class GrowthRevenueService:
             "growthos.outreach.created",
         )
 
+    def prepare_growth_package(
+        self,
+        payload: GrowthPackagePreparationCreate,
+        actor_id: UUID,
+        adapters: dict[str, ProviderAdapter] | None = None,
+    ) -> GrowthPackagePreparationRead:
+        prospect = scoped_revenue(
+            self.session, GrowthProspect, payload.prospect_id, payload.organization_id
+        )
+        evidence = list(
+            self.session.scalars(
+                select(GrowthProspectEvidence).where(
+                    GrowthProspectEvidence.organization_id == payload.organization_id,
+                    GrowthProspectEvidence.prospect_id == prospect.id,
+                )
+            )
+        )
+        if not evidence:
+            raise GrowthError("Growth package preparation requires traceable prospect evidence.")
+        execution = AIExecutionService(self.session, adapters)
+        request = execution.submit(
+            AIExecutionSubmit(
+                organization_id=payload.organization_id,
+                purpose="Prepare evidence-backed Growth Gift and outreach drafts",
+                context_type="growth_prospect",
+                context_reference=str(prospect.id),
+                capability_id=payload.capability_id,
+                task_type="growth_package_preparation",
+                system_instructions=(
+                    "Use only the supplied public evidence. Produce a concise advisory growth "
+                    "diagnosis, a useful before/after preview concept, and a natural founder email "
+                    "draft for human review. Cite no unsupported claims, promise no revenue, and "
+                    "keep unknown facts in missing_information. The output is draft material only; "
+                    "it cannot approve, send, publish, spend, or make a commitment."
+                ),
+                input_content=str(
+                    {
+                        "business": prospect.business_name,
+                        "industry": prospect.industry,
+                        "location": prospect.location,
+                        "website": prospect.website,
+                        "evidence": [
+                            {
+                                "id": str(item.id),
+                                "observation": item.observation,
+                                "source_url": item.source_url,
+                                "confidence": item.confidence,
+                            }
+                            for item in evidence
+                        ],
+                        "founder_feedback": payload.founder_feedback,
+                    }
+                ),
+                output_classification="draft",
+                expected_output_schema=GROWTH_PACKAGE_OUTPUT_SCHEMA,
+                runtime_configuration={"max_output_tokens": 3500},
+                provenance_context={"source_domain": "growth", "prospect_id": str(prospect.id)},
+            ),
+            actor_id,
+        )
+        request = execution.execute(request)
+        if str(request.status) != "succeeded" or request.response_content is None:
+            raise GrowthError(request.failure_reason or "Growth package preparation failed.")
+        content = request.response_content
+        confidence = float(content["confidence"])
+        evidence_ids = [item.id for item in evidence]
+        opportunity = self.create_opportunity(
+            OpportunityAnalysisCreate(
+                organization_id=payload.organization_id,
+                prospect_id=prospect.id,
+                opportunity_type=str(content["opportunity_type"]),
+                problem_statement="; ".join(str(x) for x in content["pain_points"]),
+                evidence_reference=evidence_ids,
+                customer_impact=str(content["customer_impact"]),
+                purchase_probability=None,
+                confidence=confidence,
+                recommended_offer=str(content["recommended_offer"]),
+                risks=[str(x) for x in content["risks"]],
+                missing_information=[str(x) for x in content["missing_information"]],
+                ai_request_id=request.id,
+            ),
+            actor_id,
+        )
+        diagnosis = self.create_diagnosis(
+            GrowthDiagnosisCreate(
+                organization_id=payload.organization_id,
+                prospect_id=prospect.id,
+                business_situation=str(content["business_situation"]),
+                growth_problems=[str(x) for x in content["pain_points"]],
+                evidence_references=evidence_ids,
+                customer_impact=str(content["customer_impact"]),
+                recommended_improvements=[str(x) for x in content["recommended_improvements"]],
+                confidence=confidence,
+                risks=[str(x) for x in content["risks"]],
+                ai_request_id=request.id,
+            ),
+            actor_id,
+        )
+        gift_data = cast(dict[str, Any], content["gift"])
+        gift = self.create_gift(
+            GrowthGiftCreate(
+                organization_id=payload.organization_id,
+                prospect_id=prospect.id,
+                opportunity_id=opportunity.id,
+                title=str(gift_data["title"]),
+                description=str(gift_data["description"]),
+                before_state=str(gift_data["before_state"]),
+                after_state=str(gift_data["after_state"]),
+                evidence_reference=evidence_ids,
+                observed_issue="; ".join(str(x) for x in content["pain_points"]),
+                recommended_improvement=str(gift_data["recommended_improvement"]),
+                expected_value=str(gift_data["expected_value"]),
+                preview_type="other",
+                preview_status="draft",
+                gift_type="other",
+                customer_rationale=str(gift_data["customer_rationale"]),
+                growth_diagnosis_id=diagnosis.id,
+                personalized_diagnosis=str(content["business_situation"]),
+                implementation_scope=str(gift_data["implementation_scope"]),
+                customer_value_explanation=str(gift_data["customer_value_explanation"]),
+            ),
+            actor_id,
+        )
+        email = cast(dict[str, Any], content["email"])
+        body = str(email["body"])
+        outreach = self.create_outreach(
+            OutreachDraftCreate(
+                organization_id=payload.organization_id,
+                prospect_id=prospect.id,
+                growth_gift_id=gift.id,
+                channel="email",
+                subject=str(email["subject"]),
+                body=body,
+                tone="founder_evidence_first",
+                evidence_used=evidence_ids,
+                ai_request_id=request.id,
+                industry_context=prospect.industry,
+                subject_options=[str(email["subject"])],
+                opening_sentence=str(email["opening_sentence"]),
+                personalized_context=str(email["personalized_context"]),
+                problem_observation=str(email["problem_observation"]),
+                gift_explanation=str(email["gift_explanation"]),
+                soft_cta=str(email["soft_cta"]),
+                growth_diagnosis_id=diagnosis.id,
+                message_versions={"founder_friendly": body, "consultant": body, "gift_first": body},
+            ),
+            actor_id,
+        )
+        return GrowthPackagePreparationRead(
+            ai_request_id=request.id,
+            opportunity_id=opportunity.id,
+            diagnosis_id=diagnosis.id,
+            growth_gift_id=gift.id,
+            outreach_draft_id=outreach.id,
+            revision_note="New version created from current evidence and founder feedback.",
+        )
+
     def transition_outreach(
         self, entity: GrowthOutreachDraft, status: str, actor_id: UUID, approval_id: UUID | None
     ) -> GrowthOutreachDraft:
@@ -397,6 +660,12 @@ class GrowthRevenueService:
             entity.approval_request_id = approval_id
         if status == "sent" and entity.approval_request_id is None:
             raise GrowthError("External communication requires human approval.")
+        if status == "sent":
+            gift = scoped_revenue(
+                self.session, GrowthGift, entity.growth_gift_id, entity.organization_id
+            )
+            if gift.status not in {"approved", "ready_for_delivery", "delivered", "sent"}:
+                raise GrowthError("External communication requires an approved Growth Gift.")
         entity.status = status
         return self._save(entity, actor_id, f"growthos.outreach.{status}")
 

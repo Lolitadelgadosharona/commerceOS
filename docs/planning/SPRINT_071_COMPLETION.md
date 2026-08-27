@@ -10,6 +10,8 @@ Status: Implementation complete pending Product Review.
 - Daily candidates are ranked by the existing deterministic qualification score.
 - Candidate review pages expose evidence, score factors, pain points, sources, and founder correction controls.
 - Founder approval copies discovery evidence into the activated prospect without changing the immutable source records.
+- Founder approval composes an evidence-backed Diagnosis, Opportunity, Before/After Growth Gift, and email draft through the existing governed AI Runtime.
+- Founder feedback creates a new package revision and preserves previous drafts.
 - Email delivery remains disabled until a governed email connector is configured.
 
 ## Governance boundary
@@ -18,4 +20,4 @@ AI recommendations do not approve candidates or contact businesses. Founder appr
 
 ## Remaining delivery integration
 
-The existing Growth Diagnosis, Growth Gift, Before/After, outreach draft, revision, and approval contracts are available after activation. A real one-click Send remains blocked by the absence of an email provider connection; no credentials or provider behavior are simulated.
+A real one-click Send remains blocked by the absence of an email provider connection. The UI exposes the prepared draft and approval state, but no credentials or provider behavior are simulated.

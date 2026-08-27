@@ -270,6 +270,22 @@ class OutreachDraftRead(ReadModel):
     message_versions: dict[str, str]
 
 
+class GrowthPackagePreparationCreate(BaseModel):
+    organization_id: UUID
+    prospect_id: UUID
+    capability_id: UUID
+    founder_feedback: str = Field(default="", max_length=10_000)
+
+
+class GrowthPackagePreparationRead(BaseModel):
+    ai_request_id: UUID
+    opportunity_id: UUID
+    diagnosis_id: UUID
+    growth_gift_id: UUID
+    outreach_draft_id: UUID
+    revision_note: str
+
+
 class SalesAnalysisCreate(BaseModel):
     organization_id: UUID
     prospect_id: UUID

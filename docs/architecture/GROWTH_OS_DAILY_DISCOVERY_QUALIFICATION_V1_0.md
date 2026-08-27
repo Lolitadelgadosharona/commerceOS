@@ -13,7 +13,8 @@ This foundation converts a founder-supplied business category and geography into
 5. The governed discovery output recommends four qualification inputs, pain points, a filter-match explanation, and confidence. Each recommendation must be grounded in the returned public evidence; unsupported inputs remain null.
 6. The deterministic formula withholds a score until all four inputs are present. Candidates are displayed in descending score order, and the founder can inspect or correct every input.
 7. A score of at least 70 unlocks founder approval. Approval promotes the candidate and copies immutable discovery evidence into the formal prospect evidence store.
-8. The prospect then enters the existing Growth Diagnosis, Before/After Growth Gift, approval, outreach draft, revision, and manual-send workflow.
+8. The approval composition copies evidence and uses the governed AI Runtime to prepare a versioned Diagnosis, Opportunity, Before/After Growth Gift, and email draft. Founder feedback creates a new revision without overwriting prior artifacts.
+9. Gift and outreach remain draft records. Their existing Governance approvals must complete before an external send can be recorded.
 
 ## Candidate review UI
 
@@ -36,6 +37,7 @@ The UI never describes a candidate as approved until the founder performs the ap
 - AI output is a candidate and evidence record, never an approval or execution instruction.
 - Missing facts remain unknown. The AI may recommend a qualification input only when the public evidence supports it; otherwise the value is null.
 - Growth Gift and outreach require the existing Governance workflow.
+- Draft preparation is allowed before artifact approval; sending enforces both approved Gift and approved outreach state.
 - Sending remains a founder-confirmed external action; GrowthOS only records the observed result.
 - The AI provider's web-search usage and cost controls remain active.
 

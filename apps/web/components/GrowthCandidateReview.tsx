@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { loadGrowthCandidateReview } from "../lib/api/growth";
-import { activateGrowthProspect, qualifyGrowthCandidate } from "../app/growth/actions";
+import {
+  activateGrowthProspect,
+  qualifyGrowthCandidate,
+  reviseGrowthPackage,
+} from "../app/growth/actions";
 import { GrowthActionForm } from "./GrowthActionForm";
 
 type Data = Awaited<ReturnType<typeof loadGrowthCandidateReview>>;
@@ -40,6 +44,17 @@ export function GrowthCandidateReview({
   const prospect = rows(results.prospects).find(
     (item) => item.source_candidate_id === candidate.id,
   );
+  const capability = rows(results.capabilities).find(
+    (item) => item.available && item.capability_type === "text_generation",
+  );
+  const gifts = prospect
+    ? rows(results.gifts).filter((item) => item.prospect_id === prospect.id)
+    : [];
+  const outreach = prospect
+    ? rows(results.outreach).filter((item) => item.prospect_id === prospect.id)
+    : [];
+  const gift = gifts[0];
+  const draft = outreach[0];
   const score = qualification?.score;
   const painPoints = evidence.filter(
     (item) => item.evidence_type === "observed_growth_pain",
@@ -129,6 +144,9 @@ export function GrowthCandidateReview({
           <GrowthActionForm action={activateGrowthProspect} label="Approve candidate">
             <input type="hidden" name="experiment_id" value={experiment.id} />
             <input type="hidden" name="candidate_id" value={candidate.id} />
+            {capability ? (
+              <input type="hidden" name="capability_id" value={capability.id} />
+            ) : null}
             <label>
               Public contact email (optional)
               <input name="email" type="email" />
@@ -187,11 +205,49 @@ export function GrowthCandidateReview({
             <h2>Preview, revise, then send</h2>
           </div>
         </header>
-        <p>
-          GrowthOS can prepare evidence-backed Before/After concepts and email drafts after
-          approval. Sending remains locked until a governed email account is connected and you
-          explicitly click Send.
-        </p>
+        {gift && draft ? (
+          <div className="prospect-board">
+            <article className="prospect-card">
+              <strong>{gift.title}</strong>
+              <p>{gift.description}</p>
+              <div className="research-result">
+                <strong>Before</strong>
+                <p>{gift.observed_issue || gift.personalized_diagnosis}</p>
+                <strong>After</strong>
+                <p>{gift.recommended_improvement}</p>
+              </div>
+              <span className="status-chip">Gift {gift.status}</span>
+            </article>
+            <article className="prospect-card">
+              <strong>{draft.subject}</strong>
+              <p>{draft.body}</p>
+              <span className="status-chip">Email {draft.status}</span>
+            </article>
+          </div>
+        ) : (
+          <p>
+            GrowthOS prepares the evidence-backed Before/After concept and email draft when you
+            approve the candidate. Nothing is sent during preparation.
+          </p>
+        )}
+        {prospect && capability ? (
+          <details>
+            <summary>Give feedback and create a new revision</summary>
+            <GrowthActionForm action={reviseGrowthPackage} label="Update package">
+              <input type="hidden" name="experiment_id" value={experiment.id} />
+              <input type="hidden" name="prospect_id" value={prospect.id} />
+              <input type="hidden" name="capability_id" value={capability.id} />
+              <label>
+                What should change?
+                <textarea
+                  name="founder_feedback"
+                  required
+                  placeholder="Make the gift more specific to booking visibility and soften the email opening."
+                />
+              </label>
+            </GrowthActionForm>
+          </details>
+        ) : null}
         <span className="configuration-note">
           Current local environment: email connector not configured; no message can leave the system.
         </span>

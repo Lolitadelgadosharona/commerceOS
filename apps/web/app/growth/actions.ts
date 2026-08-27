@@ -260,7 +260,8 @@ export async function qualifyGrowthCandidate(
       message: "A valid local founder session is required.",
     };
   const candidateId = value(form, "candidate_id"),
-    experimentId = value(form, "experiment_id");
+    experimentId = value(form, "experiment_id"),
+    capabilityId = value(form, "capability_id");
   if (!UUID.test(candidateId))
     return { kind: "error", message: "Candidate is required." };
   const result = await apiPost(
@@ -293,7 +294,8 @@ export async function activateGrowthProspect(
       message: "A valid local founder session is required.",
     };
   const candidateId = value(form, "candidate_id"),
-    experimentId = value(form, "experiment_id");
+    experimentId = value(form, "experiment_id"),
+    capabilityId = value(form, "capability_id");
   const promoted = await apiPost<{ id: string }>(
     `/api/v1/prospect-candidates/${candidateId}/activate`,
     {
@@ -311,10 +313,51 @@ export async function activateGrowthProspect(
     assigned_message: "Founder review required",
   });
   if (!assigned.ok) return { kind: "error", message: assigned.error.message };
+  if (UUID.test(capabilityId)) {
+    const prepared = await apiPost("/api/v1/growth-package-preparations", {
+      organization_id: actor.organization_id,
+      prospect_id: promoted.data.id,
+      capability_id: capabilityId,
+      founder_feedback: value(form, "founder_feedback"),
+    });
+    if (!prepared.ok)
+      return {
+        kind: "error",
+        message: `Candidate approved, but package preparation failed: ${prepared.error.message}`,
+      };
+  }
   refresh(experimentId);
   return {
     kind: "success",
-    message: "Qualified prospect activated and assigned to this workspace.",
+    message:
+      "Candidate approved. Evidence, Before/After Growth Gift, and outreach draft were prepared for review; nothing was sent.",
+  };
+}
+
+export async function reviseGrowthPackage(
+  _: GrowthActionState,
+  form: FormData,
+): Promise<GrowthActionState> {
+  const actor = await context();
+  if (!actor)
+    return { kind: "error", message: "A valid local founder session is required." };
+  const experimentId = value(form, "experiment_id"),
+    prospectId = value(form, "prospect_id"),
+    capabilityId = value(form, "capability_id"),
+    feedback = value(form, "founder_feedback");
+  if (!UUID.test(prospectId) || !UUID.test(capabilityId) || !feedback)
+    return { kind: "error", message: "Prospect, AI capability, and feedback are required." };
+  const result = await apiPost("/api/v1/growth-package-preparations", {
+    organization_id: actor.organization_id,
+    prospect_id: prospectId,
+    capability_id: capabilityId,
+    founder_feedback: feedback,
+  });
+  if (!result.ok) return { kind: "error", message: result.error.message };
+  refresh(experimentId);
+  return {
+    kind: "success",
+    message: "A new evidence-backed package revision was created. Prior versions were preserved.",
   };
 }
 

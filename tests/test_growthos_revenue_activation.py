@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
+from commerce_os.ai_runtime.adapters import DeterministicProviderAdapter
 from commerce_os.governance.approvals import ApprovalWorkflowService
 from commerce_os.governance.authentication import AuthenticationService
 from commerce_os.governance.models import ApprovalStatus, Permission, Role
@@ -17,9 +18,10 @@ from commerce_os.growth.activation_services import RevenueActivationService, sco
 from commerce_os.growth.discovery_models import ProspectCandidate
 from commerce_os.growth.discovery_schemas import QualificationInputs
 from commerce_os.growth.errors import GrowthError
-from commerce_os.growth.revenue_models import GrowthProspect
+from commerce_os.growth.revenue_models import GrowthGift, GrowthOutreachDraft, GrowthProspect
 from commerce_os.growth.revenue_schemas import (
     GrowthGiftCreate,
+    GrowthPackagePreparationCreate,
     OpportunityAnalysisCreate,
     OutreachDraftCreate,
     ProspectEvidenceCreate,
@@ -32,6 +34,38 @@ from tests.test_growthos_prospect_discovery import discovery_foundation
 from tests.test_growthos_revenue_engine import completed_request
 
 PASSWORD = "correct horse battery staple"
+
+PACKAGE_RESPONSE = {
+    "business_situation": "The public booking path is present but lightly explained.",
+    "pain_points": ["Booking trust information is limited."],
+    "customer_impact": "Prospective customers may hesitate before booking.",
+    "recommended_improvements": ["Add a concise trust and booking explainer."],
+    "opportunity_type": "website_conversion",
+    "recommended_offer": "Booking Trust Preview",
+    "risks": ["No conversion analytics are available."],
+    "missing_information": ["Booking conversion rate"],
+    "confidence": 0.78,
+    "gift": {
+        "title": "Booking Trust Preview",
+        "description": "A customer-safe preview based on the public booking page.",
+        "before_state": "Booking details are dispersed.",
+        "after_state": "A concise trust block explains the next step.",
+        "recommended_improvement": "Add a trust block beside the booking action.",
+        "expected_value": "Reduce uncertainty without promising results.",
+        "customer_rationale": "The preview is specific to the observed public flow.",
+        "implementation_scope": "One booking trust block.",
+        "customer_value_explanation": "Makes the next step easier to understand.",
+    },
+    "email": {
+        "subject": "A booking-page idea for your studio",
+        "body": "I noticed one specific booking-page opportunity and made a small preview.",
+        "opening_sentence": "I noticed one specific detail on your booking page.",
+        "personalized_context": "The public page has a clear booking action.",
+        "problem_observation": "Trust details are separated from that action.",
+        "gift_explanation": "I made a concise before/after preview.",
+        "soft_cta": "Would it be useful if I sent it over?",
+    },
+}
 
 
 def approved_request(
@@ -169,6 +203,27 @@ def test_revenue_experiment_and_candidate_promotion_are_controlled(db_session: S
     experiment = activation.transition_experiment(experiment, "completed", user.id)
     with pytest.raises(GrowthError, match="cannot transition"):
         activation.transition_experiment(experiment, "active", user.id)
+
+
+def test_growth_package_preparation_creates_review_only_artifacts(db_session: Session) -> None:
+    entities, _, revenue, prospect, _ = qualified_activation_foundation(
+        db_session, "package-preparation"
+    )
+    organization, user, _, provider, capability, _ = entities
+    result = revenue.prepare_growth_package(
+        GrowthPackagePreparationCreate(
+            organization_id=organization.id,
+            prospect_id=prospect.id,
+            capability_id=capability.id,
+        ),
+        user.id,
+        {provider.provider_identity: DeterministicProviderAdapter(PACKAGE_RESPONSE)},
+    )
+    gift = db_session.get(GrowthGift, result.growth_gift_id)
+    draft = db_session.get(GrowthOutreachDraft, result.outreach_draft_id)
+    assert gift is not None and gift.status == "draft"
+    assert draft is not None and draft.status == "draft"
+    assert gift.approval_request_id is None and draft.approval_request_id is None
 
 
 def test_growth_gift_outreach_and_sales_copilot_require_human_authority(
