@@ -34,6 +34,7 @@ from commerce_os.growth.discovery_schemas import (
     DiscoverySourceRead,
     GoogleBusinessResultCreate,
     GoogleBusinessResultRead,
+    GovernedWebDiscoveryCreate,
     GrowthOperationalReadiness,
     InstagramEvidenceCreate,
     InstagramEvidenceRead,
@@ -101,14 +102,18 @@ def growth_operational_readiness(
     queued = session.scalar(
         select(func.count()).select_from(OutboxEvent).where(
             OutboxEvent.organization_id == organization_id,
-            OutboxEvent.event_type == "growth.business_research_requested",
+            OutboxEvent.event_type.in_(
+                ["growth.business_research_requested", "growth.web_discovery_requested"]
+            ),
             OutboxEvent.status.in_([OutboxStatus.PENDING, OutboxStatus.PROCESSING]),
         )
     ) or 0
     failed = session.scalar(
         select(func.count()).select_from(OutboxEvent).where(
             OutboxEvent.organization_id == organization_id,
-            OutboxEvent.event_type == "growth.business_research_requested",
+            OutboxEvent.event_type.in_(
+                ["growth.business_research_requested", "growth.web_discovery_requested"]
+            ),
             OutboxEvent.status == OutboxStatus.FAILED,
         )
     ) or 0
@@ -140,7 +145,17 @@ def growth_operational_readiness(
         worker=worker,
         database="ready",
         manual_send_mode="active",
-        external_connectors="not_configured",
+        external_connectors=(
+            "governed_web_search"
+            if session.scalar(
+                select(func.count()).select_from(ProspectDiscoverySource).where(
+                    ProspectDiscoverySource.organization_id == organization_id,
+                    ProspectDiscoverySource.adapter_key == "governed_web_search",
+                    ProspectDiscoverySource.status == "active",
+                )
+            )
+            else "not_configured"
+        ),
         queued_research=queued,
         failed_research=failed,
         guidance=guidance,
@@ -159,6 +174,15 @@ def list_sources(
     organization_id: UUID, session: SessionDependency
 ) -> list[ProspectDiscoverySource]:
     return _list(session, ProspectDiscoverySource, organization_id)
+
+
+@router.post("/growth-web-discovery-runs", response_model=DiscoveryRunRead, status_code=201)
+def create_governed_web_discovery(
+    payload: GovernedWebDiscoveryCreate, request: Request, session: SessionDependency
+) -> ProspectDiscoveryRun:
+    return GrowthDiscoveryService(session).create_governed_web_discovery(
+        payload, actor_id(request)
+    )
 
 
 @router.post("/discovery-automation-plans", response_model=AutomationPlanRead, status_code=201)

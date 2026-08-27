@@ -33,14 +33,25 @@ from commerce_os.decision.listing_geo_intelligence_services import (
 )
 from commerce_os.governance.models import PrincipalType, User, UserStatus
 from commerce_os.growth.discovery_models import (
+    DiscoveryAutomationPlan,
     GrowthBusinessResearchResult,
     GrowthBusinessResearchRun,
     ProspectCandidate,
+    ProspectDiscoveryRun,
+)
+from commerce_os.growth.discovery_schemas import (
+    CandidateCreate,
+    GovernedWebDiscoveryCreate,
+    ResearchEvidenceCreate,
 )
 from commerce_os.growth.discovery_services import (
     RESEARCH_OUTPUT_SCHEMA as GROWTH_RESEARCH_OUTPUT_SCHEMA,
 )
-from commerce_os.growth.discovery_services import GrowthDiscoveryService, scoped_growth_discovery
+from commerce_os.growth.discovery_services import (
+    WEB_DISCOVERY_OUTPUT_SCHEMA,
+    GrowthDiscoveryService,
+    scoped_growth_discovery,
+)
 from commerce_os.intelligence.business_signal_schemas import BusinessDemandSignalCreate
 from commerce_os.intelligence.business_signal_services import BusinessDemandSignalService
 from commerce_os.intelligence.discovery_models import OpportunityDiscoveryRun
@@ -70,6 +81,7 @@ logger = logging.getLogger(__name__)
 running = True
 WORKER_PRINCIPAL = "commerce-os-worker"
 GROWTH_RESEARCH_EVENT = "growth.business_research_requested"
+GROWTH_WEB_DISCOVERY_EVENT = "growth.web_discovery_requested"
 MAX_JOB_ATTEMPTS = 3
 WORKER_HEARTBEAT_KEY = "commerce_os:growth_worker:heartbeat"
 WORKER_HEARTBEAT_TTL_SECONDS = 15
@@ -179,6 +191,99 @@ def execute_growth_business_research(
             service_actor_id,
         )
     return run
+
+
+def execute_growth_web_discovery(
+    session: Session,
+    *,
+    run_id: UUID,
+    organization_id: UUID,
+    service_actor_id: UUID,
+    capability_id: UUID,
+    adapters: dict[str, ProviderAdapter] | None = None,
+) -> ProspectDiscoveryRun:
+    """Discover public candidates as evidence only; never activate or contact them."""
+    growth = GrowthDiscoveryService(session)
+    run = scoped_growth_discovery(session, ProspectDiscoveryRun, run_id, organization_id)
+    if run.status != "queued":
+        raise ValueError("Only queued governed web discovery may execute.")
+    run = growth.transition_run(run, "running", service_actor_id)
+    target_count = min(10, max(1, int(run.query_criteria.get("target_count", 10))))
+    execution = AIExecutionService(session, adapters)
+    request = execution.submit(
+        AIExecutionSubmit(
+            organization_id=organization_id,
+            purpose="Governed public prospect discovery",
+            context_type="prospect_discovery_run",
+            context_reference=str(run.id),
+            capability_id=capability_id,
+            prompt_version_id=None,
+            task_type="public_prospect_discovery",
+            system_instructions=(
+                "Search only publicly accessible web sources for real businesses matching the "
+                "requested industry and geography. Return at most the requested count. Every "
+                "candidate must include a directly supporting public source URL and a concise "
+                "observed fact. Do not invent missing facts, scrape restricted pages, contact "
+                "anyone, qualify, approve, activate, create gifts, or send outreach."
+            ),
+            input_content=json.dumps(
+                {
+                    "industry": run.target_industry,
+                    "geography": run.target_location,
+                    "criteria": run.query_criteria.get("criteria", ""),
+                    "maximum_candidates": target_count,
+                },
+                sort_keys=True,
+            ),
+            output_classification="candidate",
+            expected_output_schema=WEB_DISCOVERY_OUTPUT_SCHEMA,
+            runtime_configuration={"max_output_tokens": 3500, "web_search": True},
+            provenance_context={
+                "source_domain": "growth",
+                "discovery_run_id": str(run.id),
+                "public_evidence_only": True,
+            },
+        ),
+        service_actor_id,
+    )
+    request = execution.execute(request, worker_actor_id=service_actor_id)
+    if str(request.status) != "succeeded" or request.response_content is None:
+        return growth.transition_run(
+            run,
+            "failed",
+            service_actor_id,
+            request.failure_reason or "Governed web discovery failed.",
+        )
+    for item in request.response_content.get("candidates", [])[:target_count]:
+        confidence = float(item["confidence"])
+        if not 0 <= confidence <= 1 or not str(item["source_url"]).startswith(("http://", "https://")):
+            continue
+        candidate = growth.create_candidate(
+            CandidateCreate(
+                organization_id=organization_id,
+                discovery_run_id=run.id,
+                business_name=str(item["business_name"]),
+                website=item.get("website"),
+                location=str(item["location"]),
+                category=str(item["category"]),
+                source_reference=str(item["source_url"]),
+                confidence=confidence,
+            ),
+            service_actor_id,
+        )
+        growth.create_evidence(
+            ResearchEvidenceCreate(
+                organization_id=organization_id,
+                candidate_id=candidate.id,
+                evidence_type="governed_web_search",
+                source_url=str(item["source_url"]),
+                observation=str(item["evidence"]),
+                confidence=confidence,
+                collected_at=datetime.now(UTC),
+            ),
+            service_actor_id,
+        )
+    return growth.transition_run(run, "completed", service_actor_id)
 
 
 def execute_research_run(
@@ -474,14 +579,21 @@ def stop_worker(_signum: int, _frame: object) -> None:
 
 def consume_growth_job(session: Session, event: OutboxEvent) -> None:
     """Execute one durable, organization-scoped Growth research job."""
-    if event.event_type != GROWTH_RESEARCH_EVENT:
+    if event.event_type not in {GROWTH_RESEARCH_EVENT, GROWTH_WEB_DISCOVERY_EVENT}:
         raise ValueError("Unsupported worker event type.")
     run_id = UUID(str(event.payload["run_id"]))
-    run = scoped_growth_discovery(session, GrowthBusinessResearchRun, run_id, event.organization_id)
-    if run.status in {"completed", "failed", "cancelled"}:
+    if event.event_type == GROWTH_RESEARCH_EVENT:
+        run_status = scoped_growth_discovery(
+            session, GrowthBusinessResearchRun, run_id, event.organization_id
+        ).status
+    else:
+        run_status = scoped_growth_discovery(
+            session, ProspectDiscoveryRun, run_id, event.organization_id
+        ).status
+    if run_status in {"completed", "failed", "cancelled"}:
         return
-    if run.status != "queued":
-        raise ValueError(f"Growth research run is not executable from {run.status}.")
+    if run_status != "queued":
+        raise ValueError(f"Growth job is not executable from {run_status}.")
     worker = session.scalar(
         select(User)
         .where(
@@ -494,12 +606,21 @@ def consume_growth_job(session: Session, event: OutboxEvent) -> None:
     )
     if worker is None:
         raise ValueError("No active service identity is configured for this organization.")
-    execute_growth_business_research(
-        session,
-        run_id=run.id,
-        organization_id=event.organization_id,
-        service_actor_id=worker.id,
-    )
+    if event.event_type == GROWTH_RESEARCH_EVENT:
+        execute_growth_business_research(
+            session,
+            run_id=run_id,
+            organization_id=event.organization_id,
+            service_actor_id=worker.id,
+        )
+    else:
+        execute_growth_web_discovery(
+            session,
+            run_id=run_id,
+            organization_id=event.organization_id,
+            service_actor_id=worker.id,
+            capability_id=UUID(str(event.payload["capability_id"])),
+        )
 
 
 def process_next_growth_job(session: Session) -> bool:
@@ -508,7 +629,7 @@ def process_next_growth_job(session: Session) -> bool:
     event = session.scalar(
         select(OutboxEvent)
         .where(
-            OutboxEvent.event_type == GROWTH_RESEARCH_EVENT,
+            OutboxEvent.event_type.in_([GROWTH_RESEARCH_EVENT, GROWTH_WEB_DISCOVERY_EVENT]),
             OutboxEvent.status.in_(
                 [OutboxStatus.PENDING, OutboxStatus.FAILED, OutboxStatus.PROCESSING]
             ),
@@ -547,6 +668,42 @@ def process_next_growth_job(session: Session) -> bool:
     return True
 
 
+def schedule_due_web_discovery(session: Session) -> bool:
+    """Queue one due, founder-configured daily plan; execution remains evidence-only."""
+    now = datetime.now(UTC)
+    plan = session.scalar(
+        select(DiscoveryAutomationPlan)
+        .where(
+            DiscoveryAutomationPlan.status == "active",
+            DiscoveryAutomationPlan.next_run_at.is_not(None),
+            DiscoveryAutomationPlan.next_run_at <= now,
+            DiscoveryAutomationPlan.query_criteria["mode"].as_string()
+            == "governed_web_search",
+        )
+        .order_by(DiscoveryAutomationPlan.next_run_at)
+        .limit(1)
+    )
+    if plan is None:
+        return False
+    capability_id = plan.query_criteria.get("capability_id")
+    if not capability_id:
+        plan.status = "disabled"
+        session.commit()
+        return False
+    GrowthDiscoveryService(session).create_governed_web_discovery(
+        GovernedWebDiscoveryCreate(
+            organization_id=plan.organization_id,
+            capability_id=UUID(str(capability_id)),
+            industry=plan.industry,
+            geography=plan.geography,
+            target_count=int(plan.query_criteria.get("target_count", 10)),
+            criteria=str(plan.query_criteria.get("criteria", "")),
+        ),
+        plan.created_by,
+    )
+    return True
+
+
 def main() -> None:
     settings = get_settings()
     client = Redis.from_url(settings.redis_url, decode_responses=True)
@@ -564,8 +721,9 @@ def main() -> None:
             ex=WORKER_HEARTBEAT_TTL_SECONDS,
         )
         with SessionLocal() as session:
+            scheduled = schedule_due_web_discovery(session)
             processed = process_next_growth_job(session)
-        if not processed:
+        if not processed and not scheduled:
             time.sleep(1)
 
 

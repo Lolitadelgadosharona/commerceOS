@@ -235,6 +235,7 @@ class AIExecutionService:
             output_schema=entity.expected_output_schema,
             temperature=config.get("temperature"),
             max_output_tokens=int(config.get("max_output_tokens", 1000)),
+            web_search=config.get("web_search") is True,
         )
 
     def _limit_rejection(

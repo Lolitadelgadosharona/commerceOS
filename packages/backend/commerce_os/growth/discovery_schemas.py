@@ -136,7 +136,7 @@ class GrowthOperationalReadiness(BaseModel):
     worker: Literal["ready", "degraded", "offline"]
     database: Literal["ready", "error"]
     manual_send_mode: Literal["active"]
-    external_connectors: Literal["not_configured"]
+    external_connectors: Literal["not_configured", "governed_web_search"]
     queued_research: int
     failed_research: int
     guidance: list[str]
@@ -166,6 +166,15 @@ class DiscoveryRunRead(ReadModel):
     automation_plan_id: UUID | None
     query_criteria: dict[str, Any]
     result_count: int
+
+
+class GovernedWebDiscoveryCreate(BaseModel):
+    organization_id: UUID
+    capability_id: UUID
+    industry: str = Field(min_length=1, max_length=160)
+    geography: str = Field(min_length=1, max_length=250)
+    target_count: int = Field(default=10, ge=1, le=10)
+    criteria: str = Field(default="", max_length=2_000)
 
 
 class AutomationPlanCreate(BaseModel):

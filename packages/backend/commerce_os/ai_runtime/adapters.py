@@ -16,6 +16,7 @@ class ProviderRequestContext:
     output_schema: dict[str, Any] | None
     temperature: float | None
     max_output_tokens: int
+    web_search: bool = False
 
 
 @dataclass(frozen=True)
@@ -103,6 +104,8 @@ class OpenAICompatibleAdapter:
                     "schema": context.output_schema,
                 }
             }
+        if context.web_search:
+            payload["tools"] = [{"type": "web_search"}]
         request = urllib.request.Request(
             f"{self.base_url}/v1/responses",
             data=json.dumps(payload).encode(),
@@ -131,8 +134,8 @@ class OpenAICompatibleAdapter:
                 "provider_unavailable", "Provider response was unavailable.", True
             ) from None
         try:
-            content = json.loads(body["output_text"])
-        except (KeyError, TypeError, json.JSONDecodeError):
+            content = json.loads(self._output_text(body))
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
             raise ProviderExecutionError(
                 "invalid_response", "Provider returned an invalid structured response."
             ) from None
@@ -144,3 +147,23 @@ class OpenAICompatibleAdapter:
             output_tokens=usage.get("output_tokens"),
             total_tokens=usage.get("total_tokens"),
         )
+
+    @staticmethod
+    def _output_text(body: dict[str, Any]) -> str:
+        output_text = body.get("output_text")
+        if isinstance(output_text, str):
+            return output_text
+        fragments: list[str] = []
+        for item in body.get("output") or []:
+            if not isinstance(item, dict):
+                continue
+            for content in item.get("content") or []:
+                if (
+                    isinstance(content, dict)
+                    and content.get("type") == "output_text"
+                    and isinstance(content.get("text"), str)
+                ):
+                    fragments.append(content["text"])
+        if not fragments:
+            raise ValueError("Response contains no output text.")
+        return "".join(fragments)

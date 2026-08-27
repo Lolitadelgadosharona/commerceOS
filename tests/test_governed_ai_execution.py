@@ -3,6 +3,7 @@ import os
 import pytest
 from commerce_os.ai_runtime.adapters import (
     EnvironmentCredentialResolver,
+    OpenAICompatibleAdapter,
     ProviderExecutionError,
     ProviderResponse,
 )
@@ -32,6 +33,40 @@ class FailingAdapter:
 class InvalidAdapter:
     def execute(self, _context):  # type: ignore[no-untyped-def]
         return ProviderResponse(content={"wrong": True})
+
+
+def test_openai_compatible_adapter_reads_standard_responses_output() -> None:
+    body = {
+        "output": [
+            {
+                "type": "message",
+                "content": [
+                    {
+                        "type": "output_text",
+                        "text": '{"summary":"Evidence reviewed","confidence":0.9}',
+                    }
+                ],
+            }
+        ]
+    }
+    assert OpenAICompatibleAdapter._output_text(body) == (
+        '{"summary":"Evidence reviewed","confidence":0.9}'
+    )
+
+
+def test_runtime_context_allows_explicit_governed_web_search(db_session: Session) -> None:
+    organization, user, _, capability = setup_runtime(db_session, "web-search")
+    service = AIExecutionService(db_session)
+    request = service.submit(
+        payload(
+            organization,
+            capability,
+            runtime_configuration={"max_output_tokens": 500, "web_search": True},
+        ),
+        user.id,
+    )
+    context = service._context(request)
+    assert context.web_search is True
 
 
 def setup_runtime(session: Session, slug: str, config=None):  # type: ignore[no-untyped-def]

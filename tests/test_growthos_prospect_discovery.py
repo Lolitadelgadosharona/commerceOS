@@ -11,6 +11,7 @@ from commerce_os.growth.discovery_schemas import (
     CandidateCreate,
     DiscoveryRunCreate,
     DiscoverySourceCreate,
+    GovernedWebDiscoveryCreate,
     QualificationInputs,
     ResearchEvidenceCreate,
 )
@@ -29,7 +30,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from apps.api.main import app
-from apps.worker.main import execute_growth_business_research, process_next_growth_job
+from apps.worker.main import (
+    execute_growth_business_research,
+    execute_growth_web_discovery,
+    process_next_growth_job,
+)
 from tests.test_ai_research_operationalization import foundation
 
 AI_RESPONSE = {
@@ -40,6 +45,20 @@ AI_RESPONSE = {
     "confidence": 0.8,
     "missing_information": ["Conversion analytics"],
     "risk": ["Single-site observation"],
+}
+
+WEB_DISCOVERY_RESPONSE = {
+    "candidates": [
+        {
+            "business_name": "Public Beauty Studio",
+            "website": "https://public-beauty.example",
+            "location": "Pasadena, California",
+            "category": "beauty studio",
+            "source_url": "https://public-beauty.example/about",
+            "evidence": "The public site identifies the business and its Pasadena location.",
+            "confidence": 0.86,
+        }
+    ]
 }
 
 
@@ -101,6 +120,14 @@ def test_discovery_lifecycle_duplicate_and_immutable_evidence(db_session: Sessio
     )
     duplicate = service.create_candidate(payload, entities[1].id)
     assert duplicate.id == candidate.id
+    alternate_page = payload.model_copy(
+        update={
+            "website": "https://beauty.example/book",
+            "location": "Greater London",
+            "source_reference": "https://beauty.example/book",
+        }
+    )
+    assert service.create_candidate(alternate_page, entities[1].id).id == candidate.id
     assert db_session.scalar(select(func.count()).select_from(ProspectCandidate)) == 1
     evidence.observation = "Unsupported overwrite"
     with pytest.raises(ValueError, match="immutable"):
@@ -140,6 +167,40 @@ def test_qualification_missing_inputs_and_weighted_score(db_session: Session) ->
     )
     assert complete.score == 82
     assert candidate.status == "qualified"
+
+
+def test_governed_web_discovery_creates_review_candidates_only(db_session: Session) -> None:
+    organization, user, worker, provider, capability, _ = foundation(
+        db_session, "growth-web-discovery"
+    )
+    service = GrowthDiscoveryService(db_session)
+    run = service.create_governed_web_discovery(
+        GovernedWebDiscoveryCreate(
+            organization_id=organization.id,
+            capability_id=capability.id,
+            industry="independent beauty studios",
+            geography="Pasadena, California",
+            target_count=10,
+            criteria="Active public website",
+        ),
+        user.id,
+    )
+    assert run.status == "queued"
+    run = execute_growth_web_discovery(
+        db_session,
+        run_id=run.id,
+        organization_id=organization.id,
+        service_actor_id=worker.id,
+        capability_id=capability.id,
+        adapters={
+            provider.provider_identity: DeterministicProviderAdapter(WEB_DISCOVERY_RESPONSE)
+        },
+    )
+    candidate = db_session.scalar(select(ProspectCandidate))
+    assert run.status == "completed" and run.result_count == 1
+    assert candidate is not None and candidate.status == "researching"
+    assert db_session.scalar(select(func.count()).select_from(MarketOpportunity)) == 0
+    assert db_session.scalar(select(func.count()).select_from(SalesOpportunity)) == 0
 
 
 def test_governed_business_research_and_intelligence_bridge(db_session: Session) -> None:

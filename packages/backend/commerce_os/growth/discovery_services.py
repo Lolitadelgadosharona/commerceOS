@@ -2,6 +2,7 @@ import hashlib
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any, TypeVar, cast
+from urllib.parse import urlparse
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -32,6 +33,7 @@ from commerce_os.growth.discovery_schemas import (
     DiscoveryRunCreate,
     DiscoverySourceCreate,
     GoogleBusinessResultCreate,
+    GovernedWebDiscoveryCreate,
     InstagramEvidenceCreate,
     ManualProspectImport,
     OperatorRevenueDashboard,
@@ -67,6 +69,7 @@ RESEARCH_TRANSITIONS = {
 }
 RESEARCH_OUTPUT_SCHEMA = {
     "type": "object",
+    "additionalProperties": False,
     "required": [
         "summary",
         "business_profile",
@@ -78,12 +81,60 @@ RESEARCH_OUTPUT_SCHEMA = {
     ],
     "properties": {
         "summary": {"type": "string"},
-        "business_profile": {"type": "object"},
-        "evidence_summary": {"type": "array"},
-        "potential_growth_issues": {"type": "array"},
+        "business_profile": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["description", "observed_strengths"],
+            "properties": {
+                "description": {"type": "string"},
+                "observed_strengths": {"type": "array", "items": {"type": "string"}},
+            },
+        },
+        "evidence_summary": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["evidence_id", "finding"],
+                "properties": {
+                    "evidence_id": {"type": "string"},
+                    "finding": {"type": "string"},
+                },
+            },
+        },
+        "potential_growth_issues": {"type": "array", "items": {"type": "string"}},
         "confidence": {"type": "number"},
-        "missing_information": {"type": "array"},
-        "risk": {"type": "array"},
+        "missing_information": {"type": "array", "items": {"type": "string"}},
+        "risk": {"type": "array", "items": {"type": "string"}},
+    },
+}
+
+WEB_DISCOVERY_OUTPUT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["candidates"],
+    "properties": {
+        "candidates": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": [
+                    "business_name", "website", "location", "category",
+                    "source_url", "evidence", "confidence",
+                ],
+                "properties": {
+                    "business_name": {"type": "string"},
+                    "website": {"type": ["string", "null"]},
+                    "location": {"type": "string"},
+                    "category": {"type": "string"},
+                    "source_url": {"type": "string"},
+                    "evidence": {"type": "string"},
+                    "confidence": {"type": "number"},
+                },
+            },
+        }
     },
 }
 
@@ -222,6 +273,102 @@ class GrowthDiscoveryService:
             "growthos.discovery_run.created",
         )
 
+    def create_governed_web_discovery(
+        self, payload: GovernedWebDiscoveryCreate, actor_id: UUID
+    ) -> ProspectDiscoveryRun:
+        capability = self._scoped(
+            AIModelCapability, payload.capability_id, payload.organization_id
+        )
+        if not capability.available or capability.capability_type != "text_generation":
+            raise GrowthError("Web discovery requires an available text generation capability.")
+        source = self.session.scalar(
+            select(ProspectDiscoverySource).where(
+                ProspectDiscoverySource.organization_id == payload.organization_id,
+                ProspectDiscoverySource.adapter_key == "governed_web_search",
+                ProspectDiscoverySource.status == "active",
+            )
+        )
+        if source is None:
+            source = self.create_source(
+                DiscoverySourceCreate(
+                    organization_id=payload.organization_id,
+                    source_type="website",
+                    source_name="Governed public web search",
+                    capability="prospect_discovery",
+                    metadata={"public_evidence_only": True, "max_candidates_per_run": 10},
+                    adapter_key="governed_web_search",
+                    collection_mode="controlled_connector",
+                ),
+                actor_id,
+            )
+        schedule_key = hashlib.sha256(
+            f"{payload.industry}|{payload.geography}".lower().encode()
+        ).hexdigest()[:10]
+        plan_name = f"Daily public discovery {schedule_key}"
+        plan = self.session.scalar(
+            select(DiscoveryAutomationPlan).where(
+                DiscoveryAutomationPlan.organization_id == payload.organization_id,
+                DiscoveryAutomationPlan.name == plan_name,
+            )
+        )
+        plan_criteria = {
+            "mode": "governed_web_search",
+            "target_count": payload.target_count,
+            "criteria": payload.criteria,
+            "capability_id": str(payload.capability_id),
+        }
+        if plan is None:
+            plan = self.create_automation_plan(
+                AutomationPlanCreate(
+                    organization_id=payload.organization_id,
+                    source_id=source.id,
+                    name=plan_name,
+                    industry=payload.industry,
+                    geography=payload.geography,
+                    query_criteria=plan_criteria,
+                    cadence="daily",
+                    next_run_at=None,
+                ),
+                actor_id,
+            )
+        else:
+            plan.industry = payload.industry
+            plan.geography = payload.geography
+            plan.query_criteria = plan_criteria
+            plan.status = "active"
+            self.session.add(plan)
+        run = self.create_run(
+            DiscoveryRunCreate(
+                organization_id=payload.organization_id,
+                source_id=source.id,
+                query=f"{payload.industry} businesses in {payload.geography}",
+                target_industry=payload.industry,
+                target_location=payload.geography,
+                automation_plan_id=plan.id,
+                query_criteria=plan_criteria,
+            ),
+            actor_id,
+        )
+        run = self.transition_run(run, "queued", actor_id)
+        plan.last_run_at = utc_now()
+        plan.next_run_at = plan.last_run_at + timedelta(days=1)
+        self.session.add(plan)
+        add_to_outbox(
+            self.session,
+            BusinessEventEnvelope(
+                event_type="growth.web_discovery_requested",
+                actor=EventActor(actor_type="human", actor_id=str(actor_id)),
+                source="growth",
+                idempotency_key=f"growth-web-discovery:{run.id}",
+                correlation_id=run.id,
+                organization_id=payload.organization_id,
+                payload={"run_id": str(run.id), "capability_id": str(payload.capability_id)},
+            ),
+        )
+        self.session.commit()
+        self.session.refresh(run)
+        return run
+
     def transition_run(
         self,
         run: ProspectDiscoveryRun,
@@ -240,8 +387,8 @@ class GrowthDiscoveryService:
             run.result_count = int(
                 self.session.scalar(
                     select(func.count())
-                    .select_from(GoogleBusinessDiscoveryResult)
-                    .where(GoogleBusinessDiscoveryResult.discovery_run_id == run.id)
+                    .select_from(ProspectCandidate)
+                    .where(ProspectCandidate.discovery_run_id == run.id)
                 )
                 or 0
             )
@@ -390,6 +537,19 @@ class GrowthDiscoveryService:
         )
         if existing is not None:
             return existing
+        normalized_name = payload.business_name.strip().casefold()
+        normalized_domain = self._website_domain(payload.website)
+        organization_candidates = self.session.scalars(
+            select(ProspectCandidate).where(
+                ProspectCandidate.organization_id == payload.organization_id
+            )
+        )
+        for candidate in organization_candidates:
+            same_name = candidate.business_name.strip().casefold() == normalized_name
+            candidate_domain = self._website_domain(candidate.website)
+            same_domain = bool(normalized_domain and candidate_domain == normalized_domain)
+            if same_name or same_domain:
+                return candidate
         return self._save(
             ProspectCandidate(**payload.model_dump(), duplicate_key=duplicate_key, status="new"),
             actor_id,
@@ -719,6 +879,9 @@ class GrowthDiscoveryService:
             if score >= 70:
                 candidate.status = "qualified"
                 self.session.add(candidate)
+            elif candidate.status == "qualified":
+                candidate.status = "researching"
+                self.session.add(candidate)
         explanation = (
             "Score withheld because required inputs are missing: " + ", ".join(missing)
             if missing
@@ -808,6 +971,13 @@ class GrowthDiscoveryService:
             ]
         )
         return hashlib.sha256(normalized.encode()).hexdigest()
+
+    @staticmethod
+    def _website_domain(website: str | None) -> str:
+        if not website:
+            return ""
+        parsed = urlparse(website if "://" in website else f"https://{website}")
+        return (parsed.hostname or "").casefold().removeprefix("www.")
 
     def _save(
         self, entity: EntityT, actor_id: UUID, action: str, actor_type: str = "human"
