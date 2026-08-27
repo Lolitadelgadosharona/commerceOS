@@ -121,8 +121,17 @@ WEB_DISCOVERY_OUTPUT_SCHEMA = {
                 "type": "object",
                 "additionalProperties": False,
                 "required": [
-                    "business_name", "website", "location", "category",
-                    "source_url", "evidence", "confidence",
+                    "business_name",
+                    "website",
+                    "location",
+                    "category",
+                    "source_url",
+                    "evidence",
+                    "confidence",
+                    "pain_points",
+                    "qualification",
+                    "qualification_rationale",
+                    "filter_match",
                 ],
                 "properties": {
                     "business_name": {"type": "string"},
@@ -132,6 +141,25 @@ WEB_DISCOVERY_OUTPUT_SCHEMA = {
                     "source_url": {"type": "string"},
                     "evidence": {"type": "string"},
                     "confidence": {"type": "number"},
+                    "pain_points": {"type": "array", "items": {"type": "string"}},
+                    "qualification": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": [
+                            "pain_signal",
+                            "purchase_probability",
+                            "accessibility",
+                            "quick_win_potential",
+                        ],
+                        "properties": {
+                            "pain_signal": {"type": ["number", "null"]},
+                            "purchase_probability": {"type": ["number", "null"]},
+                            "accessibility": {"type": ["number", "null"]},
+                            "quick_win_potential": {"type": ["number", "null"]},
+                        },
+                    },
+                    "qualification_rationale": {"type": "string"},
+                    "filter_match": {"type": "string"},
                 },
             },
         }
@@ -276,9 +304,7 @@ class GrowthDiscoveryService:
     def create_governed_web_discovery(
         self, payload: GovernedWebDiscoveryCreate, actor_id: UUID
     ) -> ProspectDiscoveryRun:
-        capability = self._scoped(
-            AIModelCapability, payload.capability_id, payload.organization_id
-        )
+        capability = self._scoped(AIModelCapability, payload.capability_id, payload.organization_id)
         if not capability.available or capability.capability_type != "text_generation":
             raise GrowthError("Web discovery requires an available text generation capability.")
         source = self.session.scalar(

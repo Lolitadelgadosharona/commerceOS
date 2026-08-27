@@ -25,13 +25,17 @@ from commerce_os.growth.activation_schemas import (
     RevenueExperimentCreate,
     RevenueExperimentDashboard,
 )
-from commerce_os.growth.discovery_models import ProspectCandidate
+from commerce_os.growth.discovery_models import ProspectCandidate, ProspectResearchEvidence
 from commerce_os.growth.errors import GrowthError
 from commerce_os.growth.industry_intelligence_models import (
     IndustryGrowthProfile,
     IndustryLearningSignal,
 )
-from commerce_os.growth.revenue_models import GrowthOutreachDraft, GrowthProspect
+from commerce_os.growth.revenue_models import (
+    GrowthOutreachDraft,
+    GrowthProspect,
+    GrowthProspectEvidence,
+)
 from commerce_os.shared.audit import record_audit_event
 from commerce_os.shared.database import Base
 
@@ -81,23 +85,42 @@ class RevenueActivationService:
             return existing
         if candidate.status != "qualified":
             raise GrowthError("Only qualified discovery candidates may enter revenue activation.")
-        return self._save(
-            GrowthProspect(
-                organization_id=payload.organization_id,
-                business_name=candidate.business_name,
-                website=candidate.website,
-                email=payload.email,
-                social_links=payload.social_links,
-                location=candidate.location,
-                industry=candidate.category,
-                business_type=candidate.category,
-                source="prospect_discovery",
-                status="qualified",
-                source_candidate_id=candidate.id,
-            ),
-            actor_id,
-            "growthos.candidate.promoted",
+        prospect = GrowthProspect(
+            organization_id=payload.organization_id,
+            business_name=candidate.business_name,
+            website=candidate.website,
+            email=payload.email,
+            social_links=payload.social_links,
+            location=candidate.location,
+            industry=candidate.category,
+            business_type=candidate.category,
+            source="prospect_discovery",
+            status="qualified",
+            source_candidate_id=candidate.id,
         )
+        self.session.add(prospect)
+        self.session.flush()
+        candidate_evidence = list(
+            self.session.scalars(
+                select(ProspectResearchEvidence).where(
+                    ProspectResearchEvidence.organization_id == payload.organization_id,
+                    ProspectResearchEvidence.candidate_id == candidate.id,
+                )
+            )
+        )
+        for evidence in candidate_evidence:
+            self.session.add(
+                GrowthProspectEvidence(
+                    organization_id=payload.organization_id,
+                    prospect_id=prospect.id,
+                    evidence_type=evidence.evidence_type,
+                    source_url=evidence.source_url,
+                    observation=evidence.observation,
+                    confidence=evidence.confidence,
+                    collected_at=evidence.collected_at,
+                )
+            )
+        return self._save(prospect, actor_id, "growthos.candidate.promoted")
 
     def create_experiment(
         self, payload: RevenueExperimentCreate, actor_id: UUID

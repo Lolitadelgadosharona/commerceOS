@@ -55,6 +55,17 @@ export type Qualification = Entity & {
   missing_inputs: string[];
   explanation: string;
 };
+export type RankedProspect = {
+  candidate_id: string;
+  business_name: string;
+  location: string;
+  score: number | null;
+  growth_pain: number | null;
+  purchase_probability: number | null;
+  accessibility: number | null;
+  quick_win: number | null;
+  missing_inputs: string[];
+};
 export type DiscoveryRun = Entity & {
   target_industry: string;
   target_location: string;
@@ -293,7 +304,7 @@ export async function loadGrowthWorkspace(
     all<Assignment>("/api/v1/prospect-experiment-links", organization_id),
     all<Evidence>("/api/v1/growth-prospect-evidence", organization_id),
     all<Evidence>("/api/v1/prospect-research-evidence", organization_id),
-    all<Qualification>("/api/v1/ranked-prospects", organization_id),
+    all<RankedProspect>("/api/v1/ranked-prospects", organization_id),
     all<ResearchRun>("/api/v1/growth-business-research-runs", organization_id),
     all<DiscoveryRun>("/api/v1/prospect-discovery-runs", organization_id),
     all<GrowthOpportunity>(
@@ -334,4 +345,19 @@ export async function loadGrowthWorkspace(
     researchResults: resultEntries,
     experimentId,
   };
+}
+
+export async function loadGrowthCandidateReview(
+  organization_id: string,
+  experimentId: string,
+  candidateId: string,
+) {
+  const [workspace, qualification] = await Promise.all([
+    loadGrowthWorkspace(organization_id, experimentId),
+    apiGet<Qualification | null>(
+      `/api/v1/prospect-candidates/${candidateId}/qualification`,
+      { organization_id },
+    ),
+  ]);
+  return { ...workspace, candidateQualification: qualification };
 }

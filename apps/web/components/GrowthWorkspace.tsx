@@ -36,7 +36,12 @@ export function GrowthWorkspace({ results }: { results: Data }) {
         </span>
       </div>
     );
-  const candidates = rows(results.candidates),
+  const qualifications = rows(results.qualifications),
+    candidates = [...rows(results.candidates)].sort((left, right) => {
+      const leftScore = qualifications.find((x) => x.candidate_id === left.id)?.score;
+      const rightScore = qualifications.find((x) => x.candidate_id === right.id)?.score;
+      return (rightScore ?? -1) - (leftScore ?? -1);
+    }),
     prospects = rows(results.prospects),
     assignments = rows(results.assignments).filter(
       (x) => x.experiment_id === experiment.id,
@@ -45,7 +50,6 @@ export function GrowthWorkspace({ results }: { results: Data }) {
   const activeProspects = prospects.filter((x) => prospectIds.has(x.id));
   const candidateEvidence = rows(results.candidateEvidence),
     prospectEvidence = rows(results.evidence),
-    qualifications = rows(results.qualifications),
     runs = rows(results.runs),
     discoveryRuns = rows(results.discoveryRuns),
     opportunities = rows(results.opportunities).filter((x) =>
@@ -370,25 +374,31 @@ export function GrowthWorkspace({ results }: { results: Data }) {
                       <div className="form-grid">
                         <label>
                           Growth pain (0–100)
-                          <input name="pain_signal" type="number" min="0" max="100" defaultValue={qualification?.calculation_inputs?.pain_signal ?? ""} />
+                          <input name="pain_signal" type="number" min="0" max="100" defaultValue={qualification?.growth_pain ?? ""} />
                         </label>
                         <label>
                           Purchase probability
-                          <input name="purchase_probability" type="number" min="0" max="100" defaultValue={qualification?.calculation_inputs?.purchase_probability ?? ""} />
+                          <input name="purchase_probability" type="number" min="0" max="100" defaultValue={qualification?.purchase_probability ?? ""} />
                         </label>
                         <label>
                           Accessibility
-                          <input name="accessibility" type="number" min="0" max="100" defaultValue={qualification?.calculation_inputs?.accessibility ?? ""} />
+                          <input name="accessibility" type="number" min="0" max="100" defaultValue={qualification?.accessibility ?? ""} />
                         </label>
                         <label>
                           Quick-win potential
-                          <input name="quick_win_potential" type="number" min="0" max="100" defaultValue={qualification?.calculation_inputs?.quick_win_potential ?? ""} />
+                          <input name="quick_win_potential" type="number" min="0" max="100" defaultValue={qualification?.quick_win ?? ""} />
                         </label>
                       </div>
                       <p className="configuration-note">Leave unsupported values blank. All four evidence-backed inputs are required before the deterministic score can qualify this candidate.</p>
                     </GrowthActionForm>
                   </details>
                   <div className="card-actions">
+                    <Link
+                      className="button button-secondary"
+                      href={`/growth/${experiment.id}/candidates/${item.id}`}
+                    >
+                      Review candidate
+                    </Link>
                     {capability && !run ? (
                       <GrowthActionForm
                         action={requestGrowthResearch}

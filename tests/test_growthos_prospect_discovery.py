@@ -57,6 +57,15 @@ WEB_DISCOVERY_RESPONSE = {
             "source_url": "https://public-beauty.example/about",
             "evidence": "The public site identifies the business and its Pasadena location.",
             "confidence": 0.86,
+            "pain_points": ["The booking action is not visible in the public navigation."],
+            "qualification": {
+                "pain_signal": 78,
+                "purchase_probability": 72,
+                "accessibility": 90,
+                "quick_win_potential": 84,
+            },
+            "qualification_rationale": "Public evidence supports a visible conversion gap.",
+            "filter_match": "Independent beauty studio with an active public website.",
         }
     ]
 }
@@ -192,13 +201,14 @@ def test_governed_web_discovery_creates_review_candidates_only(db_session: Sessi
         organization_id=organization.id,
         service_actor_id=worker.id,
         capability_id=capability.id,
-        adapters={
-            provider.provider_identity: DeterministicProviderAdapter(WEB_DISCOVERY_RESPONSE)
-        },
+        adapters={provider.provider_identity: DeterministicProviderAdapter(WEB_DISCOVERY_RESPONSE)},
     )
     candidate = db_session.scalar(select(ProspectCandidate))
     assert run.status == "completed" and run.result_count == 1
-    assert candidate is not None and candidate.status == "researching"
+    assert candidate is not None and candidate.status == "qualified"
+    assessment = service.ranked_prospects(organization.id)[0]
+    assert assessment.score == 79.5
+    assert assessment.missing_inputs == []
     assert db_session.scalar(select(func.count()).select_from(MarketOpportunity)) == 0
     assert db_session.scalar(select(func.count()).select_from(SalesOpportunity)) == 0
 

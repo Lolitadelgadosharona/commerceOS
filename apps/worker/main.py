@@ -42,6 +42,7 @@ from commerce_os.growth.discovery_models import (
 from commerce_os.growth.discovery_schemas import (
     CandidateCreate,
     GovernedWebDiscoveryCreate,
+    QualificationInputs,
     ResearchEvidenceCreate,
 )
 from commerce_os.growth.discovery_services import (
@@ -221,10 +222,15 @@ def execute_growth_web_discovery(
             task_type="public_prospect_discovery",
             system_instructions=(
                 "Search only publicly accessible web sources for real businesses matching the "
-                "requested industry and geography. Return at most the requested count. Every "
+                "requested industry, geography, and founder criteria. Return only candidates "
+                "worth human review, at most the requested count. Every "
                 "candidate must include a directly supporting public source URL and a concise "
-                "observed fact. Do not invent missing facts, scrape restricted pages, contact "
-                "anyone, qualify, approve, activate, create gifts, or send outreach."
+                "observed fact. Extract evidence-backed pain points and recommend four 0-100 "
+                "qualification inputs: pain signal, purchase probability, accessibility, and "
+                "quick-win potential. Use null for any input not supported by public evidence. "
+                "Explain the qualification and how the candidate matches the founder filter. "
+                "Do not invent missing facts, scrape restricted pages, contact anyone, approve, "
+                "activate, create gifts, or send outreach."
             ),
             input_content=json.dumps(
                 {
@@ -256,7 +262,9 @@ def execute_growth_web_discovery(
         )
     for item in request.response_content.get("candidates", [])[:target_count]:
         confidence = float(item["confidence"])
-        if not 0 <= confidence <= 1 or not str(item["source_url"]).startswith(("http://", "https://")):
+        if not 0 <= confidence <= 1 or not str(item["source_url"]).startswith(
+            ("http://", "https://")
+        ):
             continue
         candidate = growth.create_candidate(
             CandidateCreate(
@@ -283,6 +291,38 @@ def execute_growth_web_discovery(
             ),
             service_actor_id,
         )
+        for pain_point in item.get("pain_points", []):
+            growth.create_evidence(
+                ResearchEvidenceCreate(
+                    organization_id=organization_id,
+                    candidate_id=candidate.id,
+                    evidence_type="observed_growth_pain",
+                    source_url=str(item["source_url"]),
+                    observation=str(pain_point),
+                    confidence=confidence,
+                    collected_at=datetime.now(UTC),
+                ),
+                service_actor_id,
+            )
+        qualification = item.get("qualification", {})
+        assessment = growth.qualify(
+            candidate,
+            QualificationInputs(
+                organization_id=organization_id,
+                pain_signal=qualification.get("pain_signal"),
+                purchase_probability=qualification.get("purchase_probability"),
+                accessibility=qualification.get("accessibility"),
+                quick_win_potential=qualification.get("quick_win_potential"),
+            ),
+            service_actor_id,
+        )
+        assessment.explanation = (
+            f"{item.get('qualification_rationale', 'Qualification evidence is incomplete.')} "
+            f"Filter match: {item.get('filter_match', 'Not evaluated.')} "
+            "Scores are advisory evidence-backed recommendations; missing values remain unknown."
+        )
+        session.add(assessment)
+        session.commit()
     return growth.transition_run(run, "completed", service_actor_id)
 
 
@@ -677,8 +717,7 @@ def schedule_due_web_discovery(session: Session) -> bool:
             DiscoveryAutomationPlan.status == "active",
             DiscoveryAutomationPlan.next_run_at.is_not(None),
             DiscoveryAutomationPlan.next_run_at <= now,
-            DiscoveryAutomationPlan.query_criteria["mode"].as_string()
-            == "governed_web_search",
+            DiscoveryAutomationPlan.query_criteria["mode"].as_string() == "governed_web_search",
         )
         .order_by(DiscoveryAutomationPlan.next_run_at)
         .limit(1)

@@ -93,30 +93,45 @@ def growth_operational_readiness(
     organization_id: UUID, session: SessionDependency
 ) -> GrowthOperationalReadiness:
     """Expose safe, founder-readable local readiness without leaking configuration."""
-    ai_count = session.scalar(
-        select(func.count()).select_from(AIModelCapability).where(
-            AIModelCapability.organization_id == organization_id,
-            AIModelCapability.available.is_(True),
+    ai_count = (
+        session.scalar(
+            select(func.count())
+            .select_from(AIModelCapability)
+            .where(
+                AIModelCapability.organization_id == organization_id,
+                AIModelCapability.available.is_(True),
+            )
         )
-    ) or 0
-    queued = session.scalar(
-        select(func.count()).select_from(OutboxEvent).where(
-            OutboxEvent.organization_id == organization_id,
-            OutboxEvent.event_type.in_(
-                ["growth.business_research_requested", "growth.web_discovery_requested"]
-            ),
-            OutboxEvent.status.in_([OutboxStatus.PENDING, OutboxStatus.PROCESSING]),
+        or 0
+    )
+    queued = (
+        session.scalar(
+            select(func.count())
+            .select_from(OutboxEvent)
+            .where(
+                OutboxEvent.organization_id == organization_id,
+                OutboxEvent.event_type.in_(
+                    ["growth.business_research_requested", "growth.web_discovery_requested"]
+                ),
+                OutboxEvent.status.in_([OutboxStatus.PENDING, OutboxStatus.PROCESSING]),
+            )
         )
-    ) or 0
-    failed = session.scalar(
-        select(func.count()).select_from(OutboxEvent).where(
-            OutboxEvent.organization_id == organization_id,
-            OutboxEvent.event_type.in_(
-                ["growth.business_research_requested", "growth.web_discovery_requested"]
-            ),
-            OutboxEvent.status == OutboxStatus.FAILED,
+        or 0
+    )
+    failed = (
+        session.scalar(
+            select(func.count())
+            .select_from(OutboxEvent)
+            .where(
+                OutboxEvent.organization_id == organization_id,
+                OutboxEvent.event_type.in_(
+                    ["growth.business_research_requested", "growth.web_discovery_requested"]
+                ),
+                OutboxEvent.status == OutboxStatus.FAILED,
+            )
         )
-    ) or 0
+        or 0
+    )
 
     worker: str = "offline"
     try:
@@ -148,7 +163,9 @@ def growth_operational_readiness(
         external_connectors=(
             "governed_web_search"
             if session.scalar(
-                select(func.count()).select_from(ProspectDiscoverySource).where(
+                select(func.count())
+                .select_from(ProspectDiscoverySource)
+                .where(
                     ProspectDiscoverySource.organization_id == organization_id,
                     ProspectDiscoverySource.adapter_key == "governed_web_search",
                     ProspectDiscoverySource.status == "active",
@@ -180,9 +197,7 @@ def list_sources(
 def create_governed_web_discovery(
     payload: GovernedWebDiscoveryCreate, request: Request, session: SessionDependency
 ) -> ProspectDiscoveryRun:
-    return GrowthDiscoveryService(session).create_governed_web_discovery(
-        payload, actor_id(request)
-    )
+    return GrowthDiscoveryService(session).create_governed_web_discovery(payload, actor_id(request))
 
 
 @router.post("/discovery-automation-plans", response_model=AutomationPlanRead, status_code=201)

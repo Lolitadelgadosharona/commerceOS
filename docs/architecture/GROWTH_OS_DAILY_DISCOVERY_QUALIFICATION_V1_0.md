@@ -10,9 +10,23 @@ This foundation converts a founder-supplied business category and geography into
 2. GrowthOS creates or updates a tenant-scoped daily discovery plan and queues the first run.
 3. The worker uses the governed AI Runtime with explicit public web search enabled for that request.
 4. Each saved candidate requires a direct public source URL, observed evidence, timestamp, and confidence.
-5. The founder reviews evidence and supplies only supported qualification inputs.
-6. The deterministic formula withholds a score until all four inputs are present. A score of at least 70 unlocks activation.
-7. Activation enters the existing Growth Diagnosis, Growth Gift, approval, outreach draft, and manual-send workflow.
+5. The governed discovery output recommends four qualification inputs, pain points, a filter-match explanation, and confidence. Each recommendation must be grounded in the returned public evidence; unsupported inputs remain null.
+6. The deterministic formula withholds a score until all four inputs are present. Candidates are displayed in descending score order, and the founder can inspect or correct every input.
+7. A score of at least 70 unlocks founder approval. Approval promotes the candidate and copies immutable discovery evidence into the formal prospect evidence store.
+8. The prospect then enters the existing Growth Diagnosis, Before/After Growth Gift, approval, outreach draft, revision, and manual-send workflow.
+
+## Candidate review UI
+
+Each candidate has a tenant-scoped review route that shows:
+
+- overall score and discovery confidence;
+- the four deterministic score inputs;
+- qualification rationale and missing inputs;
+- observed pain points;
+- every source URL, observation, evidence type, and evidence confidence;
+- the founder approval boundary and downstream preparation state.
+
+The UI never describes a candidate as approved until the founder performs the approval action. It also identifies email delivery as unavailable when no governed email connector is configured.
 
 ## Boundaries
 
@@ -20,7 +34,7 @@ This foundation converts a founder-supplied business category and geography into
 - Search is limited to publicly accessible sources and must not bypass platform controls.
 - Duplicate businesses are suppressed within an organization.
 - AI output is a candidate and evidence record, never an approval or execution instruction.
-- Missing facts remain unknown. The AI does not fabricate qualification inputs.
+- Missing facts remain unknown. The AI may recommend a qualification input only when the public evidence supports it; otherwise the value is null.
 - Growth Gift and outreach require the existing Governance workflow.
 - Sending remains a founder-confirmed external action; GrowthOS only records the observed result.
 - The AI provider's web-search usage and cost controls remain active.
