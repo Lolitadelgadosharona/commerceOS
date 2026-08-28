@@ -314,17 +314,24 @@ export async function activateGrowthProspect(
   });
   if (!assigned.ok) return { kind: "error", message: assigned.error.message };
   if (UUID.test(capabilityId)) {
-    const prepared = await apiPost("/api/v1/growth-package-preparations", {
-      organization_id: actor.organization_id,
-      prospect_id: promoted.data.id,
-      capability_id: capabilityId,
-      founder_feedback: value(form, "founder_feedback"),
-    });
-    if (!prepared.ok)
+    const prepared = await apiPost(
+      "/api/v1/growth-package-preparations",
+      {
+        organization_id: actor.organization_id,
+        prospect_id: promoted.data.id,
+        capability_id: capabilityId,
+        founder_feedback: value(form, "founder_feedback"),
+      },
+      undefined,
+      120_000,
+    );
+    if (!prepared.ok) {
+      refresh(experimentId);
       return {
         kind: "error",
-        message: `Candidate approved, but package preparation failed: ${prepared.error.message}`,
+        message: `Candidate approval succeeded. Package preparation needs a retry: ${prepared.error.message}`,
       };
+    }
   }
   refresh(experimentId);
   return {
@@ -345,19 +352,26 @@ export async function reviseGrowthPackage(
     prospectId = value(form, "prospect_id"),
     capabilityId = value(form, "capability_id"),
     feedback = value(form, "founder_feedback");
-  if (!UUID.test(prospectId) || !UUID.test(capabilityId) || !feedback)
-    return { kind: "error", message: "Prospect, AI capability, and feedback are required." };
-  const result = await apiPost("/api/v1/growth-package-preparations", {
-    organization_id: actor.organization_id,
-    prospect_id: prospectId,
-    capability_id: capabilityId,
-    founder_feedback: feedback,
-  });
+  if (!UUID.test(prospectId) || !UUID.test(capabilityId))
+    return { kind: "error", message: "Prospect and AI capability are required." };
+  const result = await apiPost(
+    "/api/v1/growth-package-preparations",
+    {
+      organization_id: actor.organization_id,
+      prospect_id: prospectId,
+      capability_id: capabilityId,
+      founder_feedback: feedback,
+    },
+    undefined,
+    120_000,
+  );
   if (!result.ok) return { kind: "error", message: result.error.message };
   refresh(experimentId);
   return {
     kind: "success",
-    message: "A new evidence-backed package revision was created. Prior versions were preserved.",
+    message: feedback
+      ? "A new evidence-backed package revision was created. Prior versions were preserved."
+      : "The evidence-backed Growth Gift and outreach draft are ready for review.",
   };
 }
 

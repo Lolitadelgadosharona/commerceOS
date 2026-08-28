@@ -117,6 +117,8 @@ export type Gift = Entity & {
   prospect_id: string;
   title: string;
   description: string;
+  before_state: string;
+  after_state: string;
   status: string;
   approval_request_id: string | null;
   evidence_reference: string[];

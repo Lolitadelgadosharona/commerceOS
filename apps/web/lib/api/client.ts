@@ -16,7 +16,7 @@ function failure(kind: ApiFailure["kind"], message: string, status?: number): Ap
   return { ok: false, error: { kind, message, status } };
 }
 
-export async function apiRequest<T>(path: string, options: { method?: "GET" | "POST" | "PATCH"; query?: Record<string, string>; body?: unknown } = {}): Promise<ApiResult<T>> {
+export async function apiRequest<T>(path: string, options: { method?: "GET" | "POST" | "PATCH"; query?: Record<string, string>; body?: unknown; timeoutMs?: number } = {}): Promise<ApiResult<T>> {
   const token = apiToken();
   if (!token) {
     return failure("configuration", "A server-side Commerce OS session is required to load operational data.");
@@ -32,7 +32,7 @@ export async function apiRequest<T>(path: string, options: { method?: "GET" | "P
       method: options.method ?? "GET",
       headers: { Accept: "application/json", Authorization: `Bearer ${token}`, ...(options.body ? { "Content-Type": "application/json" } : {}) },
       body: options.body ? JSON.stringify(options.body) : undefined,
-      signal: AbortSignal.timeout(5_000),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 5_000),
     });
   } catch {
     return failure("network", "The Commerce OS API could not be reached.");
@@ -54,8 +54,8 @@ export function apiGet<T>(path: string, query?: Record<string, string>): Promise
   return apiRequest<T>(path, { query });
 }
 
-export function apiPost<T>(path: string, body: unknown, query?: Record<string, string>): Promise<ApiResult<T>> {
-  return apiRequest<T>(path, { method: "POST", body, query });
+export function apiPost<T>(path: string, body: unknown, query?: Record<string, string>, timeoutMs?: number): Promise<ApiResult<T>> {
+  return apiRequest<T>(path, { method: "POST", body, query, timeoutMs });
 }
 
 export function apiPatch<T>(path: string, body: unknown, query?: Record<string, string>): Promise<ApiResult<T>> {

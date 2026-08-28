@@ -135,11 +135,18 @@ class AIExecutionService:
         self._audit(entity, actor_id, "ai.execution.started", "service")
         self._audit(entity, actor_id, "ai.execution.provider_selected", "service")
         self.session.commit()
-        attempts = int(provider.runtime_configuration.get("max_retries", 1)) + 1
+        attempts = (
+            int(
+                entity.runtime_configuration.get(
+                    "max_retries", provider.runtime_configuration.get("max_retries", 1)
+                )
+            )
+            + 1
+        )
         started = time.monotonic()
         for attempt in range(attempts):
             try:
-                adapter = self._adapter(provider)
+                adapter = self._adapter(provider, entity)
                 response = adapter.execute(self._context(entity))
                 self._validate_schema(response.content, entity.expected_output_schema)
                 entity.status = AIRequestStatus.SUCCEEDED
@@ -213,7 +220,7 @@ class AIExecutionService:
     def scoped_request(self, request_id: UUID, organization_id: UUID) -> AIRequest:
         return cast(AIRequest, self._scoped(AIRequest, request_id, organization_id))
 
-    def _adapter(self, provider: AIProvider) -> ProviderAdapter:
+    def _adapter(self, provider: AIProvider, entity: AIRequest) -> ProviderAdapter:
         if provider.provider_identity in self.adapters:
             return self.adapters[provider.provider_identity]
         if provider.provider_identity == "deterministic_test":
@@ -223,7 +230,9 @@ class AIExecutionService:
         return OpenAICompatibleAdapter(
             base_url=provider.base_url,
             credential_reference=provider.credential_reference,
-            timeout_seconds=provider.timeout_seconds,
+            timeout_seconds=int(
+                entity.runtime_configuration.get("timeout_seconds", provider.timeout_seconds)
+            ),
         )
 
     def _context(self, entity: AIRequest) -> ProviderRequestContext:

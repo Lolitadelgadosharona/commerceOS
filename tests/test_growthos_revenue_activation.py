@@ -199,6 +199,17 @@ def test_revenue_experiment_and_candidate_promotion_are_controlled(db_session: S
         user.id,
     )
     assert link.result_status == "pending"
+    duplicate_link = activation.assign_prospect(
+        ProspectAssignmentCreate(
+            organization_id=organization.id,
+            experiment_id=experiment.id,
+            prospect_id=prospect.id,
+            assigned_offer="Homepage clarity preview",
+            assigned_message="Evidence-led founder outreach",
+        ),
+        user.id,
+    )
+    assert duplicate_link.id == link.id
     experiment = activation.transition_experiment(experiment, "active", user.id)
     experiment = activation.transition_experiment(experiment, "completed", user.id)
     with pytest.raises(GrowthError, match="cannot transition"):

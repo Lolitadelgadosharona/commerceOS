@@ -25,7 +25,12 @@ from commerce_os.growth.activation_schemas import (
     RevenueExperimentCreate,
     RevenueExperimentDashboard,
 )
-from commerce_os.growth.discovery_models import ProspectCandidate, ProspectResearchEvidence
+from commerce_os.growth.discovery_models import (
+    GrowthBusinessResearchRun,
+    ProspectCandidate,
+    ProspectQualificationAssessment,
+    ProspectResearchEvidence,
+)
 from commerce_os.growth.errors import GrowthError
 from commerce_os.growth.industry_intelligence_models import (
     IndustryGrowthProfile,
@@ -83,6 +88,32 @@ class RevenueActivationService:
         )
         if existing is not None:
             return existing
+        if candidate.status == "researching":
+            completed_research = self.session.scalar(
+                select(GrowthBusinessResearchRun)
+                .where(
+                    GrowthBusinessResearchRun.organization_id == payload.organization_id,
+                    GrowthBusinessResearchRun.candidate_id == candidate.id,
+                    GrowthBusinessResearchRun.status == "completed",
+                )
+                .order_by(GrowthBusinessResearchRun.created_at.desc())
+            )
+            latest_qualification = self.session.scalar(
+                select(ProspectQualificationAssessment)
+                .where(
+                    ProspectQualificationAssessment.organization_id == payload.organization_id,
+                    ProspectQualificationAssessment.candidate_id == candidate.id,
+                )
+                .order_by(ProspectQualificationAssessment.created_at.desc())
+            )
+            if (
+                completed_research is not None
+                and latest_qualification is not None
+                and latest_qualification.score is not None
+                and latest_qualification.score >= 70
+            ):
+                candidate.status = "qualified"
+                self.session.add(candidate)
         if candidate.status != "qualified":
             raise GrowthError("Only qualified discovery candidates may enter revenue activation.")
         prospect = GrowthProspect(
@@ -232,6 +263,15 @@ class RevenueActivationService:
             raise GrowthError("Terminal revenue experiments cannot accept prospects.")
         if prospect.status not in {"qualified", "contacted", "replied", "customer"}:
             raise GrowthError("Revenue experiments require a qualified prospect.")
+        existing = self.session.scalar(
+            select(ProspectExperimentLink).where(
+                ProspectExperimentLink.organization_id == payload.organization_id,
+                ProspectExperimentLink.experiment_id == payload.experiment_id,
+                ProspectExperimentLink.prospect_id == payload.prospect_id,
+            )
+        )
+        if existing is not None:
+            return existing
         return self._save(
             ProspectExperimentLink(**payload.model_dump(), result_status="pending"),
             actor_id,

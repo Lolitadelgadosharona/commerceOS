@@ -216,6 +216,18 @@ def test_governed_web_discovery_creates_review_candidates_only(db_session: Sessi
 def test_governed_business_research_and_intelligence_bridge(db_session: Session) -> None:
     entities, service, _, candidate, *_ = discovery_foundation(db_session, "growth-research")
     organization, user, worker, provider, capability, _ = entities
+    service.qualify(
+        candidate,
+        QualificationInputs(
+            organization_id=organization.id,
+            pain_signal=85,
+            purchase_probability=75,
+            accessibility=90,
+            quick_win_potential=90,
+        ),
+        user.id,
+    )
+    assert candidate.status == "qualified"
     run = service.create_research_run(
         candidate,
         BusinessResearchStart(
@@ -245,7 +257,9 @@ def test_governed_business_research_and_intelligence_bridge(db_session: Session)
         )
     )
     signal = db_session.scalar(select(BusinessDemandSignal))
+    db_session.refresh(candidate)
     assert run.status == "completed" and result is not None
+    assert candidate.status == "qualified"
     assert signal is not None and signal.evidence_reference
     assert (
         db_session.scalar(select(func.count()).select_from(MarketOpportunity))

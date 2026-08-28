@@ -1,3 +1,4 @@
+import json
 from collections.abc import Mapping
 from typing import Any, TypeVar, cast
 from uuid import UUID
@@ -528,7 +529,7 @@ class GrowthRevenueService:
                     "keep unknown facts in missing_information. The output is draft material only; "
                     "it cannot approve, send, publish, spend, or make a commitment."
                 ),
-                input_content=str(
+                input_content=json.dumps(
                     {
                         "business": prospect.business_name,
                         "industry": prospect.industry,
@@ -544,11 +545,16 @@ class GrowthRevenueService:
                             for item in evidence
                         ],
                         "founder_feedback": payload.founder_feedback,
-                    }
+                    },
+                    sort_keys=True,
                 ),
                 output_classification="draft",
                 expected_output_schema=GROWTH_PACKAGE_OUTPUT_SCHEMA,
-                runtime_configuration={"max_output_tokens": 3500},
+                runtime_configuration={
+                    "max_output_tokens": 2200,
+                    "timeout_seconds": 90,
+                    "max_retries": 0,
+                },
                 provenance_context={"source_domain": "growth", "prospect_id": str(prospect.id)},
             ),
             actor_id,

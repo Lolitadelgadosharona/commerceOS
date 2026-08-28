@@ -876,6 +876,7 @@ class GrowthDiscoveryService:
         self.session.flush()
         run.status = "completed"
         run.completed_at = utc_now()
+        self._restore_candidate_qualification(run)
         return self._save(run, actor_id, "growthos.business_research.completed", "service")
 
     def fail_research(
@@ -886,7 +887,28 @@ class GrowthDiscoveryService:
         run.status = "failed"
         run.failure_reason = reason
         run.completed_at = utc_now()
+        self._restore_candidate_qualification(run)
         return self._save(run, actor_id, "growthos.business_research.failed", "service")
+
+    def _restore_candidate_qualification(self, run: GrowthBusinessResearchRun) -> None:
+        """Research is evidence gathering and must not erase a qualification decision."""
+        candidate = self.session.get(ProspectCandidate, run.candidate_id)
+        if candidate is None:
+            raise GrowthError("Business research candidate was not found.", "not_found")
+        latest = self.session.scalar(
+            select(ProspectQualificationAssessment)
+            .where(
+                ProspectQualificationAssessment.organization_id == run.organization_id,
+                ProspectQualificationAssessment.candidate_id == run.candidate_id,
+            )
+            .order_by(ProspectQualificationAssessment.created_at.desc())
+        )
+        candidate.status = (
+            "qualified"
+            if latest is not None and latest.score is not None and latest.score >= 70
+            else "discovered"
+        )
+        self.session.add(candidate)
 
     def qualify(
         self, candidate: ProspectCandidate, payload: QualificationInputs, actor_id: UUID
