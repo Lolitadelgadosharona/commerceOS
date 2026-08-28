@@ -16,6 +16,7 @@ WORKDIR /app
 RUN addgroup --system commerce && adduser --system --ingroup commerce commerce
 COPY --from=build --chown=commerce:commerce /app/.next/standalone ./
 COPY --from=build --chown=commerce:commerce /app/.next/static ./.next/static
+COPY --from=build --chown=commerce:commerce /app/public ./public
 USER commerce
 EXPOSE 3000
 CMD ["node", "server.js"]

@@ -7,6 +7,7 @@ import {
 } from "../app/growth/actions";
 import { GrowthActionForm } from "./GrowthActionForm";
 import { GrowthResearchRefresh } from "./GrowthResearchRefresh";
+import { GrowthEmailDraft } from "./GrowthEmailDraft";
 
 type Data = Awaited<ReturnType<typeof loadGrowthCandidateReview>>;
 const rows = <T,>(result: { ok: boolean; data?: T[] }) =>
@@ -56,6 +57,7 @@ export function GrowthCandidateReview({
     : [];
   const gift = gifts[0];
   const draft = outreach[0];
+  const previewSrc = gift?.asset_reference || gift?.after_asset_reference || null;
   const score = qualification?.score;
   const painPoints = evidence.filter(
     (item) => item.evidence_type === "observed_growth_pain",
@@ -327,10 +329,16 @@ export function GrowthCandidateReview({
           </div>
         </header>
         {gift && draft ? (
-          <div className="candidate-package-grid">
+          <div className="candidate-package-stack">
             <article className="candidate-preview-card">
               <strong>{gift.title}</strong>
               <p>{gift.description}</p>
+              {previewSrc ? (
+                <figure className="candidate-visual-preview">
+                  <img src={previewSrc} alt={`${candidate.business_name} current experience and concept preview`} />
+                  <figcaption>Generated concept preview · evidence-backed · not live</figcaption>
+                </figure>
+              ) : <div className="candidate-preview-missing">Visual concept has not been generated for this Gift revision.</div>}
               <div className="candidate-before-after">
                 <div>
                   <span>Before</span>
@@ -343,12 +351,17 @@ export function GrowthCandidateReview({
               </div>
               <span className="status-chip">Gift {gift.status}</span>
             </article>
-            <article className="candidate-email-card">
-              <span>Email draft</span>
-              <strong>{draft.subject}</strong>
-              <p>{draft.body}</p>
-              <span className="status-chip">Email {draft.status}</span>
-            </article>
+            {previewSrc ? <GrowthEmailDraft
+              businessName={candidate.business_name}
+              recipientEmail={prospect?.email ?? null}
+              subject={draft.subject || `A booking clarity idea for ${candidate.business_name}`}
+              opening={draft.opening_sentence || `Hi ${candidate.business_name} team,`}
+              observation={draft.problem_observation || draft.body}
+              giftExplanation={draft.gift_explanation || gift.description}
+              valueHook="The preview focuses on one practical quick win. If it is useful, I can also show you how the same approach could extend into a complete booking-conversion package covering homepage messaging, trust proof, and the path from first visit to appointment."
+              softCta={draft.soft_cta || "Would you be open to a brief conversation about it?"}
+              previewSrc={previewSrc}
+            /> : null}
           </div>
         ) : (
           <p>

@@ -119,6 +119,11 @@ export type Gift = Entity & {
   description: string;
   before_state: string;
   after_state: string;
+  asset_reference: string | null;
+  before_asset_reference: string | null;
+  after_asset_reference: string | null;
+  preview_type: string;
+  preview_status: string;
   status: string;
   approval_request_id: string | null;
   evidence_reference: string[];
@@ -126,6 +131,7 @@ export type Gift = Entity & {
   recommended_improvement: string;
   expected_value: string;
   personalized_diagnosis: string;
+  implementation_scope: string;
   customer_value_explanation: string;
 };
 export type Outreach = Entity & {
@@ -137,6 +143,9 @@ export type Outreach = Entity & {
   status: string;
   approval_request_id: string | null;
   evidence_used: string[];
+  opening_sentence: string;
+  problem_observation: string;
+  gift_explanation: string;
   soft_cta: string;
 };
 export type Approval = Entity & {
