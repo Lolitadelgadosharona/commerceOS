@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { ModulePage } from "../../components/ModulePage";
-import { moduleContracts } from "../../lib/contracts";
+import { DashboardConfigurationState } from "../../components/DashboardConfigurationState";
+import { MarketIntelligenceWorkspace } from "../../components/MarketIntelligenceWorkspace";
+import { resolveExecutiveContext } from "../../lib/api/context";
+import { getMarketIntelligenceWorkspace } from "../../lib/api/commerce-intelligence";
 
 export const metadata: Metadata = { title: "Market Intelligence" };
 
-export default function MarketIntelligencePage() {
-  return <ModulePage contract={moduleContracts["market-intelligence"]} />;
+export default async function MarketIntelligencePage() {
+  const context=await resolveExecutiveContext();
+  if(!context.ok)return <DashboardConfigurationState message={context.error.message}/>;
+  return <MarketIntelligenceWorkspace {...await getMarketIntelligenceWorkspace(context.data.organization_id)}/>;
 }

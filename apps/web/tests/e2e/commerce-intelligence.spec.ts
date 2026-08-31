@@ -1,0 +1,20 @@
+import {expect,test} from "@playwright/test";
+const marketSignalId="30303030-3030-4030-8030-303030303030";
+const productId="31313131-3131-4131-8131-313131313131";
+
+test.beforeEach(async({request})=>{await request.post("http://127.0.0.1:4100/__scenario/success")});
+
+test("1 market workspace uses persisted signal contracts",async({page})=>{await page.goto("/market-intelligence");await expect(page.getByRole("heading",{name:"Market Intelligence"})).toBeVisible();await expect(page.getByText("Pet heat discomfort is rising")).toBeVisible()});
+test("2 market overview reports evidence coverage",async({page})=>{await page.goto("/market-intelligence");await expect(page.getByText("Evidence coverage")).toBeVisible();await expect(page.getByText("100%",{exact:true}).first()).toBeVisible()});
+test("3 demand records preserve approval and evidence state",async({page})=>{await page.goto("/market-intelligence");await expect(page.getByText("Pets experience heat discomfort during travel.")).toBeVisible();await expect(page.getByText(/2 evidence/)).toBeVisible()});
+test("4 market signal detail exposes traceable evidence",async({page})=>{await page.goto(`/market-intelligence/${marketSignalId}`);await expect(page.getByRole("heading",{name:"Why this signal exists"})).toBeVisible();await expect(page.getByText("research:pet-heat-2026")).toBeVisible()});
+test("5 market signal detail states non-execution boundary",async({page})=>{await page.goto(`/market-intelligence/${marketSignalId}`);await expect(page.getByRole("heading",{name:"Evidence, not a business decision"})).toBeVisible()});
+test("6 market workspace renders empty state without fake records",async({page,request})=>{await request.post("http://127.0.0.1:4100/__scenario/empty");await page.goto("/market-intelligence");await expect(page.getByText("No market signals recorded")).toBeVisible()});
+test("7 market workspace keeps core data during evidence failure",async({page,request})=>{await request.post("http://127.0.0.1:4100/__scenario/commerce-partial");await page.goto("/market-intelligence");await expect(page.getByText("Pet heat discomfort is rising")).toBeVisible();await expect(page.getByText("Section unavailable")).toBeVisible()});
+test("8 product workspace uses hypotheses rather than fake products",async({page})=>{await page.goto("/products");await expect(page.getByRole("heading",{name:"Product Intelligence"})).toBeVisible();await expect(page.getByRole("heading",{name:"Portable pet cooling mat"})).toBeVisible()});
+test("9 product list reports persisted economics and risks",async({page})=>{await page.goto("/products");await expect(page.getByText("32.82%")).toBeVisible();await expect(page.getByText("66",{exact:true})).toBeVisible()});
+test("10 product detail classifies economics as assumptions",async({page})=>{await page.goto(`/products/${productId}`);await expect(page.getByRole("heading",{name:"Contribution model"})).toBeVisible();await expect(page.getByText("ASSUMPTION",{exact:true}).first()).toBeVisible()});
+test("11 product detail traces to its source opportunity",async({page})=>{await page.goto(`/products/${productId}`);await expect(page.getByRole("link",{name:"Source opportunity →"})).toHaveAttribute("href",/opportunities\/777/)});
+test("12 product detail exposes risk and Product Truth boundary",async({page})=>{await page.goto(`/products/${productId}`);await expect(page.getByText("Cooling duration claims require evidence.")).toBeVisible();await expect(page.getByRole("heading",{name:"A hypothesis is not Product Truth"})).toBeVisible()});
+test("13 decision committee maps queue to governed evidence",async({page})=>{await page.goto("/decision-committee");await expect(page.getByRole("heading",{name:"Decision Committee"})).toBeVisible();await expect(page.getByText("Investment decision: Seasonal pet cooling mat")).toBeVisible();await expect(page.getByRole("link",{name:"Review evidence and decide →"})).toBeVisible()});
+test("14 legacy decision route reaches the new committee",async({page})=>{await page.goto("/decisions");await expect(page).toHaveURL(/decision-committee/);await expect(page.getByRole("heading",{name:"Decision Committee"})).toBeVisible()});

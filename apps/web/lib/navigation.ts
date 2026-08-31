@@ -12,6 +12,6 @@ export const navigationItems: NavigationItem[] = [
   { href: "/market-intelligence", label: "Market Intelligence", shortLabel: "MI", description: "Signals and evidence" },
   { href: "/growth", label: "Growth", shortLabel: "GR", description: "Revenue experiments" },
   { href: "/products", label: "Products", shortLabel: "PR", description: "Product truth" },
-  { href: "/decisions", label: "Decision Committee", shortLabel: "DC", description: "Governed approvals" },
+  { href: "/decision-committee", label: "Decision Committee", shortLabel: "DC", description: "Governed approvals" },
   { href: "/analytics", label: "Analytics", shortLabel: "AN", description: "Performance and learning" },
 ];

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { ModulePage } from "../../components/ModulePage";
-import { moduleContracts } from "../../lib/contracts";
+import { DashboardConfigurationState } from "../../components/DashboardConfigurationState";
+import { ProductIntelligenceWorkspace } from "../../components/ProductIntelligenceWorkspace";
+import { resolveExecutiveContext } from "../../lib/api/context";
+import { getProductWorkspace } from "../../lib/api/commerce-intelligence";
 
 export const metadata: Metadata = { title: "Products" };
 
-export default function ProductsPage() {
-  return <ModulePage contract={moduleContracts.products} />;
+export default async function ProductsPage() {
+  const context=await resolveExecutiveContext();
+  if(!context.ok)return <DashboardConfigurationState message={context.error.message}/>;
+  return <ProductIntelligenceWorkspace {...await getProductWorkspace(context.data.organization_id)}/>;
 }

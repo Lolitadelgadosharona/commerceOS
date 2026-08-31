@@ -211,5 +211,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Growth OS Founder Operability v1.0](./architecture/GROWTH_OS_FOUNDER_OPERABILITY_V1_0.md)
 - [Growth OS Daily Discovery and Qualification v1.0](./architecture/GROWTH_OS_DAILY_DISCOVERY_QUALIFICATION_V1_0.md)
 - [Sprint 069 Completion Notes](./planning/SPRINT_069_COMPLETION.md)
+- [Commerce Intelligence Control Plane v1.0](./architecture/COMMERCE_INTELLIGENCE_CONTROL_PLANE_V1_0.md)
+- [Sprint 070 Completion Notes](./planning/SPRINT_070_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

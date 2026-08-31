@@ -1,0 +1,48 @@
+import "server-only";
+import { apiGet } from "./client";
+import type { ApiResult, ReadModel } from "./types";
+
+export type MarketSource = ReadModel & { organization_id:string; name:string; platform:string; source_type:string; access_method:string; reliability_score:number; status:string };
+export type MarketSignal = ReadModel & { organization_id:string; source_id:string; region:string; category:string; signal_type:string; title:string; description:string; trend_direction:string; confidence_score:number; observed_at:string; status:string };
+export type MarketEvidence = ReadModel & { organization_id:string; signal_id:string; evidence_type:string; content_reference:string; strength_score:number; captured_at:string };
+export type MarketCluster = ReadModel & { organization_id:string; name:string; category:string; confidence:number; impact_score:number };
+export type DemandSignal = ReadModel & { organization_id:string; source_domain:string; source_reference_id:string; source_type:string; source_reference:string; collection_method:string; evidence_origin:string; confidence_basis:string; customer_segment:string; category:string; problem_statement:string; customer_language:string; frequency:number; confidence:number; evidence_count:number; status:string };
+export type DemandEvidence = ReadModel & { organization_id:string; demand_signal_id:string; source_type:string; source_id:string; source_reference:string; evidence_text:string };
+export type DemandDashboard = { organization_id:string; draft_signals:number; signals_in_review:number; approved_signals:number; source_overview:Array<{source_type:string;signal_count:number;evidence_count:number;average_confidence:number;signal_percentage:number}>; emerging_categories:Array<{category:string;signal_count:number;total_frequency:number;average_confidence:number}>; customer_pain_clusters:Array<{cluster_id:string;name:string;category:string;severity_score:number;confidence_score:number;status:string}>; emerging_demand_themes:Array<{theme_analysis_id:string;name:string;category:string;evidence_count:number;signal_diversity:number;confidence:number;evidence_strength:string}>; predictive_indicators:Array<{demand_signal_id:string;upcoming_trend:string;timeframe:string;evidence_sources:string[];confidence:number;uncertainty:string}>; emerging_customer_pains:Array<{demand_signal_id:string;category:string;customer_segment:string;problem_statement:string;frequency:number;confidence:number;evidence_count:number;source_type:string;evidence_sources:string[];source_conversation_ids:string[]}> };
+export type ProductHypothesis = ReadModel & { organization_id:string; opportunity_id:string; name:string; description:string; customer_problem:string; solution_description:string; target_customer:string; target_market:string; status:string; confidence_score:number };
+export type ProductEconomics = ReadModel & { organization_id:string; product_id:string; selling_price:string; estimated_product_cost:string; estimated_shipping_cost:string; payment_cost:string; estimated_marketing_cost:string; contribution_margin:string; margin_percentage:string; currency:string };
+export type SupplierCandidate = ReadModel & { organization_id:string; product_id:string; source_type:string; supplier_reference:string; estimated_cost:string; minimum_order_quantity:number; lead_time:string; quality_notes:string; risk_level:string };
+export type ProductRisk = ReadModel & { organization_id:string; product_id:string; risk_type:string; severity:string; description:string; status:string };
+export type ProductInvestmentScore = ReadModel & { organization_id:string; product_id:string; opportunity_score:number; margin_score:number; risk_score:number; competition_score:number; confidence_score:number; overall_score:number; formula_version:string };
+export type Product = ReadModel & { organization_id:string; name:string; description:string; category:string; brand_id:string; status:string };
+export type ProductTruth = { id:string; organization_id:string; product_id:string; version:number; summary:string; features:string[]; specifications:Record<string,unknown>; approved_claims:string[]; restricted_claims:string[]; usage_notes:string; created_by:string; approval_id:string; created_at:string; updated_at:string };
+
+function list<T>(result:ApiResult<T[]>):ApiResult<T[]> { return result.ok&&!Array.isArray(result.data)?{ok:false,error:{kind:"contract",message:"Commerce intelligence API returned an invalid list."}}:result; }
+
+export async function getMarketIntelligenceWorkspace(organizationId:string) {
+  const query={organization_id:organizationId};
+  const [sources,signals,evidence,clusters,demandSignals,demandEvidence,dashboard]=await Promise.all([
+    apiGet<MarketSource[]>("/api/v1/market-sources",query),apiGet<MarketSignal[]>("/api/v1/market-signals",query),apiGet<MarketEvidence[]>("/api/v1/market-evidence",query),apiGet<MarketCluster[]>("/api/v1/market-clusters",query),apiGet<DemandSignal[]>("/api/v1/demand-signals",query),apiGet<DemandEvidence[]>("/api/v1/demand-signal-evidence",query),apiGet<DemandDashboard>("/api/v1/demand-intelligence-dashboard",query),
+  ]);
+  return {sources:list(sources),signals:list(signals),evidence:list(evidence),clusters:list(clusters),demandSignals:list(demandSignals),demandEvidence:list(demandEvidence),dashboard};
+}
+
+export async function getMarketSignalDetail(id:string,organizationId:string) {
+  const data=await getMarketIntelligenceWorkspace(organizationId);
+  const signal=data.signals.ok?data.signals.data.find((item)=>item.id===id):undefined;
+  return {...data,signal};
+}
+
+export async function getProductWorkspace(organizationId:string) {
+  const query={organization_id:organizationId};
+  const [hypotheses,economics,suppliers,risks,scores,products,truth]=await Promise.all([
+    apiGet<ProductHypothesis[]>("/api/v1/product-hypotheses",query),apiGet<ProductEconomics[]>("/api/v1/product-economics",query),apiGet<SupplierCandidate[]>("/api/v1/supplier-candidates",query),apiGet<ProductRisk[]>("/api/v1/product-risks",query),apiGet<ProductInvestmentScore[]>("/api/v1/product-investment-scores",query),apiGet<Product[]>("/api/v1/products",query),apiGet<ProductTruth[]>("/api/v1/product-truth",query),
+  ]);
+  return {hypotheses:list(hypotheses),economics:list(economics),suppliers:list(suppliers),risks:list(risks),scores:list(scores),products:list(products),truth:list(truth)};
+}
+
+export async function getProductHypothesisDetail(id:string,organizationId:string) {
+  const workspace=await getProductWorkspace(organizationId);
+  const hypothesis=workspace.hypotheses.ok?workspace.hypotheses.data.find((item)=>item.id===id):undefined;
+  return {...workspace,hypothesis};
+}
