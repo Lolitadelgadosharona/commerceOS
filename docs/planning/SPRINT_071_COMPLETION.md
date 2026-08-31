@@ -21,3 +21,9 @@ AI recommendations do not approve candidates or contact businesses. Founder appr
 ## Remaining delivery integration
 
 A real one-click Send remains blocked by the absence of an email provider connection. The UI exposes the prepared draft and approval state, but no credentials or provider behavior are simulated.
+
+## Commerce Intelligence Provenance Increment
+
+The Commerce OS control plane now adds tenant-safe Signal-to-Opportunity and cluster membership projections, a canonical ProductHypothesis detail read, field-level ProductEconomics provenance, and a read-only Investment Committee Packet. The packet combines recorded supporting and opposing evidence, product theses, economics sources, risks, governance state, readiness, missing evidence, and deterministic decision-quality warnings. Existing GrowthOS behavior and approval semantics are unchanged.
+
+Architecture: [Intelligence Provenance and Committee Packet v1.0](../architecture/INTELLIGENCE_PROVENANCE_COMMITTEE_PACKET_V1_0.md)

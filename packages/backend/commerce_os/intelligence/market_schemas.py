@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from commerce_os.intelligence.opportunity_schemas import MarketOpportunityRead
 from commerce_os.shared.schemas import ReadModel
 
 Platform = Literal[
@@ -125,3 +126,18 @@ class OpportunityLinkRead(ReadModel):
     organization_id: UUID
     signal_id: UUID
     opportunity_id: UUID
+
+
+class SignalOpportunityProjection(BaseModel):
+    link_id: UUID
+    signal_id: UUID
+    opportunity_id: UUID
+    linked_at: datetime
+    opportunity: MarketOpportunityRead
+
+
+class ClusterSignalProjection(BaseModel):
+    membership_id: UUID
+    cluster_id: UUID
+    signal: MarketSignalRead
+    evidence: list[MarketEvidenceRead]

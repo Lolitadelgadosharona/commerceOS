@@ -12,6 +12,7 @@ from commerce_os.intelligence.market_models import (
 from commerce_os.intelligence.market_schemas import (
     ClusterMembershipCreate,
     ClusterMembershipRead,
+    ClusterSignalProjection,
     MarketClusterCreate,
     MarketClusterRead,
     MarketEvidenceCreate,
@@ -24,8 +25,10 @@ from commerce_os.intelligence.market_schemas import (
     MarketSourceUpdate,
     OpportunityLinkCreate,
     OpportunityLinkRead,
+    SignalOpportunityProjection,
 )
 from commerce_os.intelligence.market_services import MarketIntelligenceService, scoped_market
+from commerce_os.intelligence.opportunity_models import MarketOpportunity
 from commerce_os.shared.database import Base, get_session
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -133,3 +136,75 @@ def link_opportunity(
     return MarketIntelligenceService(session).link_opportunity(
         signal_id, payload.opportunity_id, payload.organization_id
     )
+
+
+@router.get(
+    "/market-signals/{signal_id}/opportunities",
+    response_model=list[SignalOpportunityProjection],
+)
+def list_signal_opportunities(
+    signal_id: UUID, organization_id: UUID, session: SessionDependency
+) -> list[SignalOpportunityProjection]:
+    scoped_market(session, MarketSignal, signal_id, organization_id)
+    statement = (
+        select(MarketSignalOpportunityLink, MarketOpportunity)
+        .join(MarketOpportunity, MarketOpportunity.id == MarketSignalOpportunityLink.opportunity_id)
+        .where(
+            MarketSignalOpportunityLink.organization_id == organization_id,
+            MarketSignalOpportunityLink.signal_id == signal_id,
+            MarketOpportunity.organization_id == organization_id,
+        )
+        .order_by(MarketSignalOpportunityLink.created_at)
+    )
+    return [
+        SignalOpportunityProjection(
+            link_id=link.id,
+            signal_id=link.signal_id,
+            opportunity_id=opportunity.id,
+            linked_at=link.created_at,
+            opportunity=opportunity,
+        )
+        for link, opportunity in session.execute(statement)
+    ]
+
+
+@router.get(
+    "/market-clusters/{cluster_id}/signals",
+    response_model=list[ClusterSignalProjection],
+)
+def list_cluster_signals(
+    cluster_id: UUID, organization_id: UUID, session: SessionDependency
+) -> list[ClusterSignalProjection]:
+    scoped_market(session, MarketSignalCluster, cluster_id, organization_id)
+    memberships = list(
+        session.scalars(
+            select(MarketSignalClusterMembership)
+            .where(
+                MarketSignalClusterMembership.organization_id == organization_id,
+                MarketSignalClusterMembership.cluster_id == cluster_id,
+            )
+            .order_by(MarketSignalClusterMembership.created_at)
+        )
+    )
+    projections: list[ClusterSignalProjection] = []
+    for membership in memberships:
+        signal = scoped_market(session, MarketSignal, membership.signal_id, organization_id)
+        evidence = list(
+            session.scalars(
+                select(MarketSignalEvidence)
+                .where(
+                    MarketSignalEvidence.organization_id == organization_id,
+                    MarketSignalEvidence.signal_id == signal.id,
+                )
+                .order_by(MarketSignalEvidence.captured_at)
+            )
+        )
+        projections.append(
+            ClusterSignalProjection(
+                membership_id=membership.id,
+                cluster_id=cluster_id,
+                signal=signal,
+                evidence=evidence,
+            )
+        )
+    return projections

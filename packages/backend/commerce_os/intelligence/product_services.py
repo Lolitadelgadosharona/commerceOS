@@ -12,6 +12,7 @@ from commerce_os.intelligence.errors import (
 from commerce_os.intelligence.opportunity_models import OpportunityScore
 from commerce_os.intelligence.opportunity_services import _get_scoped_opportunity
 from commerce_os.intelligence.product_models import (
+    ProductEconomicInputProvenance,
     ProductEconomics,
     ProductHypothesis,
     ProductInvestmentScore,
@@ -19,6 +20,7 @@ from commerce_os.intelligence.product_models import (
     SupplierCandidate,
 )
 from commerce_os.intelligence.product_schemas import (
+    ProductEconomicInputCreate,
     ProductEconomicsCreate,
     ProductHypothesisCreate,
     ProductInvestmentScoreCreate,
@@ -89,6 +91,29 @@ class ProductEconomicsService:
         self.session.commit()
         self.session.refresh(economics)
         return economics
+
+    def upsert_input(self, payload: ProductEconomicInputCreate) -> ProductEconomicInputProvenance:
+        economics = self.session.get(ProductEconomics, payload.product_economics_id)
+        if economics is None:
+            raise IntelligenceNotFoundError("Product economics record was not found.")
+        if economics.organization_id != payload.organization_id:
+            raise IntelligenceScopeError("Product economics belongs to another organization.")
+        item = self.session.scalar(
+            select(ProductEconomicInputProvenance).where(
+                ProductEconomicInputProvenance.product_economics_id == economics.id,
+                ProductEconomicInputProvenance.metric == payload.metric,
+            )
+        )
+        values = payload.model_dump()
+        if item is None:
+            item = ProductEconomicInputProvenance(**values)
+            self.session.add(item)
+        else:
+            for field, value in values.items():
+                setattr(item, field, value)
+        self.session.commit()
+        self.session.refresh(item)
+        return item
 
 
 class SupplierCandidateService:

@@ -58,6 +58,7 @@ from apps.api.growth_experiment_routes import router as growth_experiment_router
 from apps.api.growth_revenue_routes import router as growth_revenue_router
 from apps.api.industry_intelligence_routes import router as industry_intelligence_router
 from apps.api.intelligence_routes import router as intelligence_router
+from apps.api.investment_committee_routes import router as investment_committee_router
 from apps.api.launch_preparation_routes import router as launch_preparation_router
 from apps.api.learning_routes import router as learning_router
 from apps.api.listing_geo_intelligence_routes import router as listing_geo_intelligence_router
@@ -110,6 +111,7 @@ api_router.include_router(research_analyst_router, tags=["ai_research_analyst"])
 api_router.include_router(opportunity_analysis_router, tags=["opportunity_analysis"])
 api_router.include_router(opportunity_discovery_router, tags=["ai_opportunity_discovery"])
 api_router.include_router(opportunity_launch_router, tags=["opportunity_launch_orchestration"])
+api_router.include_router(investment_committee_router, tags=["investment_committee"])
 api_router.include_router(reddit_intelligence_router, tags=["reddit_intelligence"])
 api_router.include_router(customer_voice_router, tags=["customer_voice_intelligence"])
 api_router.include_router(demand_intelligence_router, tags=["demand_intelligence"])

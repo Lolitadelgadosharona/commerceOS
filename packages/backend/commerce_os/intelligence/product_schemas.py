@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
@@ -62,6 +63,66 @@ class ProductEconomicsRead(ReadModel):
     contribution_margin: Decimal
     margin_percentage: Decimal
     currency: str
+
+
+EconomicMetric = Literal[
+    "selling_price",
+    "estimated_product_cost",
+    "estimated_shipping_cost",
+    "payment_cost",
+    "estimated_marketing_cost",
+    "fulfillment_cost",
+    "platform_fee",
+    "refund_rate",
+    "dispute_rate",
+    "customer_acquisition_cost",
+    "conversion_rate",
+]
+EconomicClassification = Literal[
+    "actual", "quoted", "observed", "assumption", "forecast", "ai_inference", "unknown"
+]
+
+
+class ProductEconomicInputCreate(BaseModel):
+    organization_id: UUID
+    product_economics_id: UUID
+    metric: EconomicMetric
+    value: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=4)
+    classification: EconomicClassification
+    source: str = Field(min_length=1, max_length=250)
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    as_of: datetime | None = None
+    evidence_reference: str | None = Field(default=None, min_length=1, max_length=500)
+    notes: str | None = Field(default=None, min_length=1, max_length=5000)
+
+    @field_validator("value")
+    @classmethod
+    def validate_unknown_value(cls, value: Decimal | None, info: object) -> Decimal | None:
+        return value
+
+    @field_validator("classification")
+    @classmethod
+    def validate_classification_value(cls, classification: str, info: object) -> str:
+        data = getattr(info, "data", {})
+        value = data.get("value")
+        if classification == "unknown" and value is not None:
+            raise ValueError("UNKNOWN economic inputs must not carry a numeric value.")
+        if classification != "unknown" and value is None:
+            raise ValueError("Known economic inputs require a numeric value, including known zero.")
+        return classification
+
+
+class ProductEconomicInputRead(ReadModel):
+    organization_id: UUID
+    product_economics_id: UUID
+    metric: str
+    value: Decimal | None
+    classification: str
+    source: str
+    confidence: float | None
+    as_of: datetime | None
+    evidence_reference: str | None
+    notes: str | None
 
 
 class SupplierCandidateCreate(BaseModel):

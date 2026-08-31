@@ -1,9 +1,11 @@
+from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -90,6 +92,38 @@ class ProductEconomics(IdMixin, TimestampMixin, VersionMixin, Base):
     contribution_margin: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     margin_percentage: Mapped[Decimal] = mapped_column(Numeric(9, 4), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
+
+
+class ProductEconomicInputProvenance(IdMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "product_economic_input_provenance"
+    __table_args__ = (
+        UniqueConstraint("product_economics_id", "metric"),
+        CheckConstraint("value IS NULL OR value >= 0", name="value_nonnegative"),
+        CheckConstraint(
+            "confidence IS NULL OR confidence BETWEEN 0 AND 1",
+            name="confidence_range",
+        ),
+        CheckConstraint(
+            "(classification = 'unknown' AND value IS NULL) OR "
+            "(classification <> 'unknown' AND value IS NOT NULL)",
+            name="unknown_value_semantics",
+        ),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id"), nullable=False, index=True
+    )
+    product_economics_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("product_economics.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    metric: Mapped[str] = mapped_column(String(60), nullable=False)
+    value: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    classification: Mapped[str] = mapped_column(String(30), nullable=False)
+    source: Mapped[str] = mapped_column(String(250), nullable=False)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    evidence_reference: Mapped[str | None] = mapped_column(String(500))
+    notes: Mapped[str | None] = mapped_column(Text)
 
 
 class SupplierCandidate(IdMixin, TimestampMixin, VersionMixin, Base):

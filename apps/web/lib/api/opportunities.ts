@@ -15,6 +15,7 @@ export type DecisionQueueRecord = ReadModel & { organization_id:string; title:st
 export type InvestmentMemo = { opportunity_id:string; organization_id:string; summary:{ title?:string; description?:string; why_now?:string; assessment?:Record<string,unknown>|null; report?:Record<string,unknown>|null }; evidence:Array<Record<string,unknown>>; conclusions:Record<string,{ classification:string; value:unknown }>; missing_evidence:string[]; confidence:number; recommended_decision:string };
 export type ReadinessItem = { category:string; status:string; reason:string; references:string[]; blocking:boolean };
 export type LaunchReadiness = { opportunity_id:string; categories:ReadinessItem[]; overall_status:string; blocking_reasons:string[] };
+export type CommitteePacket = { organization_id:string; opportunity:MarketOpportunity; market_evidence:OpportunityEvidence[]; market_signals:Array<{signal:{id:string;title:string;description:string;confidence_score:number};evidence:Array<{id:string;content_reference:string;strength_score:number}>}>; source_diversity:number; product_theses:Array<{hypothesis:{id:string;name:string;solution_description:string};economics:Record<string,unknown>|null;economic_inputs:Array<{metric:string;value:string|null;classification:string;source:string;confidence:number|null;evidence_reference:string|null}>;supplier_candidates:Array<{supplier_reference:string;estimated_cost:string;risk_level:string}>;risks:Array<{risk_type:string;severity:string;description:string}>;investment_score:Record<string,unknown>|null;product_truth_relationship_status:string}>; investment_memo:InvestmentMemo; approval:ApprovalRequest|null; decision_queue:DecisionQueueRecord|null; launch_readiness:LaunchReadiness; supporting_case:string[]; opposing_case:string[]; missing_evidence:string[]; decision_quality_warnings:Array<{code:string;severity:string;message:string}>; unavailable_sections:string[] };
 
 export function isDiscoveryOpportunity(item: Opportunity): item is DiscoveryOpportunity { return "problem_statement" in item; }
 function arrayResult<T>(value: ApiResult<T[]>): ApiResult<T[]> { return value.ok && !Array.isArray(value.data) ? { ok:false,error:{kind:"contract",message:"Opportunity API returned an invalid list."} } : value; }
@@ -42,3 +43,5 @@ export async function getDiscoveryOpportunityDetail(id:string,organizationId:str
   ]);
   return {opportunity,evidence,assessment,decisions};
 }
+
+export function getCommitteePacket(id:string,organizationId:string){return apiGet<CommitteePacket>(`/api/v1/opportunities/${id}/committee-packet`,{organization_id:organizationId});}

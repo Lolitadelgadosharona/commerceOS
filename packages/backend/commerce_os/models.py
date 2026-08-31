@@ -297,6 +297,7 @@ from commerce_os.intelligence.opportunity_models import (
     ProductEvaluation,
 )
 from commerce_os.intelligence.product_models import (
+    ProductEconomicInputProvenance,  # noqa: F401
     ProductEconomics,
     ProductHypothesis,
     ProductInvestmentScore,

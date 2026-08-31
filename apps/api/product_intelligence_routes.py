@@ -3,6 +3,7 @@ from uuid import UUID
 
 from commerce_os.intelligence.errors import IntelligenceNotFoundError
 from commerce_os.intelligence.product_models import (
+    ProductEconomicInputProvenance,
     ProductEconomics,
     ProductHypothesis,
     ProductInvestmentScore,
@@ -10,6 +11,8 @@ from commerce_os.intelligence.product_models import (
     SupplierCandidate,
 )
 from commerce_os.intelligence.product_schemas import (
+    ProductEconomicInputCreate,
+    ProductEconomicInputRead,
     ProductEconomicsCreate,
     ProductEconomicsRead,
     ProductHypothesisCreate,
@@ -38,9 +41,15 @@ SessionDependency = Annotated[Session, Depends(get_session)]
 ModelT = TypeVar("ModelT", bound=Base)
 
 
-def _get(session: Session, model: type[ModelT], entity_id: UUID) -> ModelT:
+def _get(
+    session: Session, model: type[ModelT], entity_id: UUID, organization_id: UUID
+) -> ModelT:
     entity = session.get(model, entity_id)
     if entity is None:
+        raise IntelligenceNotFoundError(
+            "The requested product intelligence resource was not found."
+        )
+    if entity.organization_id != organization_id:  # type: ignore[attr-defined]
         raise IntelligenceNotFoundError(
             "The requested product intelligence resource was not found."
         )
@@ -83,8 +92,10 @@ def list_product_hypotheses(
     response_model=ProductHypothesisRead,
     tags=["product_hypotheses"],
 )
-def get_product_hypothesis(entity_id: UUID, session: SessionDependency) -> ProductHypothesis:
-    return _get(session, ProductHypothesis, entity_id)
+def get_product_hypothesis(
+    entity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProductHypothesis:
+    return _get(session, ProductHypothesis, entity_id, organization_id)
 
 
 @router.post("/product-economics", response_model=ProductEconomicsRead, tags=["product_economics"])
@@ -108,8 +119,46 @@ def list_product_economics(
     response_model=ProductEconomicsRead,
     tags=["product_economics"],
 )
-def get_product_economics(entity_id: UUID, session: SessionDependency) -> ProductEconomics:
-    return _get(session, ProductEconomics, entity_id)
+def get_product_economics(
+    entity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProductEconomics:
+    return _get(session, ProductEconomics, entity_id, organization_id)
+
+
+@router.post(
+    "/product-economic-inputs",
+    response_model=ProductEconomicInputRead,
+    status_code=201,
+    tags=["product_economics"],
+)
+def set_product_economic_input(
+    payload: ProductEconomicInputCreate, session: SessionDependency
+) -> ProductEconomicInputProvenance:
+    return ProductEconomicsService(session).upsert_input(payload)
+
+
+@router.get(
+    "/product-economic-inputs",
+    response_model=list[ProductEconomicInputRead],
+    tags=["product_economics"],
+)
+def list_product_economic_inputs(
+    organization_id: UUID,
+    session: SessionDependency,
+    product_id: UUID | None = None,
+) -> list[ProductEconomicInputProvenance]:
+    statement = select(ProductEconomicInputProvenance).where(
+        ProductEconomicInputProvenance.organization_id == organization_id
+    )
+    if product_id is not None:
+        statement = statement.join(
+            ProductEconomics,
+            ProductEconomics.id == ProductEconomicInputProvenance.product_economics_id,
+        ).where(
+            ProductEconomics.organization_id == organization_id,
+            ProductEconomics.product_id == product_id,
+        )
+    return list(session.scalars(statement.order_by(ProductEconomicInputProvenance.metric)))
 
 
 @router.post(
@@ -138,8 +187,10 @@ def list_supplier_candidates(
     response_model=SupplierCandidateRead,
     tags=["supplier_candidates"],
 )
-def get_supplier_candidate(entity_id: UUID, session: SessionDependency) -> SupplierCandidate:
-    return _get(session, SupplierCandidate, entity_id)
+def get_supplier_candidate(
+    entity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> SupplierCandidate:
+    return _get(session, SupplierCandidate, entity_id, organization_id)
 
 
 @router.post(
@@ -155,8 +206,10 @@ def list_product_risks(organization_id: UUID, session: SessionDependency) -> lis
 
 
 @router.get("/product-risks/{entity_id}", response_model=ProductRiskRead, tags=["product_risks"])
-def get_product_risk(entity_id: UUID, session: SessionDependency) -> ProductRisk:
-    return _get(session, ProductRisk, entity_id)
+def get_product_risk(
+    entity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProductRisk:
+    return _get(session, ProductRisk, entity_id, organization_id)
 
 
 @router.post(
@@ -186,5 +239,7 @@ def list_product_scores(
     response_model=ProductInvestmentScoreRead,
     tags=["product_investment_scores"],
 )
-def get_product_score(entity_id: UUID, session: SessionDependency) -> ProductInvestmentScore:
-    return _get(session, ProductInvestmentScore, entity_id)
+def get_product_score(
+    entity_id: UUID, organization_id: UUID, session: SessionDependency
+) -> ProductInvestmentScore:
+    return _get(session, ProductInvestmentScore, entity_id, organization_id)
