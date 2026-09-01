@@ -39,6 +39,7 @@ from commerce_os.build.listing_models import (
     ProductDiscoveryKnowledge,
 )
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
+from commerce_os.build.promotion_models import ProductPromotion, ProductTruthDraft
 from commerce_os.decision.cfo_models import CFOInsight
 from commerce_os.decision.channel_models import (
     ChannelCandidate,
@@ -413,6 +414,8 @@ __all__ = [
     "ProductKnowledgeItem",
     "ProductDiscoveryKnowledge",
     "ProductTruth",
+    "ProductPromotion",
+    "ProductTruthDraft",
     "ApprovalRequest",
     "AuthSession",
     "ChannelExecutionPlan",

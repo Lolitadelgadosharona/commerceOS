@@ -119,6 +119,16 @@ export function CommitteePacket({
                   No approved Product Truth yet. Relationship status:{" "}
                   {thesis.product_truth_relationship_status}.
                 </p>
+                <strong>Investment Decision</strong>
+                <p>{packet.approval?.status ?? "not requested"}</p>
+                <strong>Product Promotion Decision</strong>
+                <p>
+                  {thesis.promotion_approval?.status ?? "not requested"} ·
+                  readiness{" "}
+                  {thesis.promotion_readiness.ready ? "ready" : "blocked"} ·
+                  product{" "}
+                  {thesis.promotion?.product_id ? "created" : "not created"}
+                </p>
               </div>
             </article>
           ))

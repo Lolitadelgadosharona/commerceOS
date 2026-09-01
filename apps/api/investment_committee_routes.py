@@ -1,6 +1,8 @@
 from typing import Annotated
 from uuid import UUID
 
+from commerce_os.build.promotion_models import ProductPromotion
+from commerce_os.build.promotion_schemas import ProductPromotionRead, PromotionReadiness
 from commerce_os.governance.executive_models import DecisionQueueItem
 from commerce_os.governance.executive_schemas import DecisionQueueRead
 from commerce_os.governance.models import ApprovalRequest
@@ -44,6 +46,7 @@ from apps.api.opportunity_launch_routes import (
     compose,
     scoped_opportunity,
 )
+from apps.api.product_promotion_routes import promotion_readiness
 
 router = APIRouter()
 SessionDependency = Annotated[Session, Depends(get_session)]
@@ -62,6 +65,9 @@ class PacketProductThesis(BaseModel):
     risks: list[ProductRiskRead]
     investment_score: ProductInvestmentScoreRead | None
     product_truth_relationship_status: str
+    promotion_readiness: PromotionReadiness
+    promotion: ProductPromotionRead | None
+    promotion_approval: ApprovalRequestRead | None
 
 
 class DecisionQualityWarning(BaseModel):
@@ -154,6 +160,15 @@ def _product_theses(
                 ProductInvestmentScore.product_id == hypothesis.id,
             )
         )
+        promotion = session.scalar(
+            select(ProductPromotion).where(
+                ProductPromotion.organization_id == organization_id,
+                ProductPromotion.product_hypothesis_id == hypothesis.id,
+            )
+        )
+        promotion_approval = (
+            session.get(ApprovalRequest, promotion.approval_request_id) if promotion else None
+        )
         result.append(
             PacketProductThesis(
                 hypothesis=hypothesis,
@@ -162,7 +177,14 @@ def _product_theses(
                 supplier_candidates=suppliers,
                 risks=risks,
                 investment_score=score,
-                product_truth_relationship_status="no_canonical_relationship",
+                product_truth_relationship_status=(
+                    "promoted_product"
+                    if promotion and promotion.product_id
+                    else "no_canonical_relationship"
+                ),
+                promotion_readiness=promotion_readiness(session, hypothesis),
+                promotion=promotion,
+                promotion_approval=promotion_approval,
             )
         )
     return result
@@ -263,6 +285,22 @@ def _warnings(
                     code="supplier_cost_assumption",
                     severity="warning",
                     message="Supplier cost is supported only by an assumption.",
+                )
+            )
+        legacy = sorted(
+            metric
+            for metric, item in by_metric.items()
+            if item.classification == "legacy_unprovenanced"
+        )
+        if legacy:
+            values.append(
+                DecisionQualityWarning(
+                    code="legacy_economics_provenance",
+                    severity="warning",
+                    message=(
+                        "Economic value exists but source provenance is not established: "
+                        + ", ".join(legacy)
+                    ),
                 )
             )
         if not thesis.supplier_candidates:

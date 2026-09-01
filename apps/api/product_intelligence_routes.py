@@ -41,9 +41,7 @@ SessionDependency = Annotated[Session, Depends(get_session)]
 ModelT = TypeVar("ModelT", bound=Base)
 
 
-def _get(
-    session: Session, model: type[ModelT], entity_id: UUID, organization_id: UUID
-) -> ModelT:
+def _get(session: Session, model: type[ModelT], entity_id: UUID, organization_id: UUID) -> ModelT:
     entity = session.get(model, entity_id)
     if entity is None:
         raise IntelligenceNotFoundError(

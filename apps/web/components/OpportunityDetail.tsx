@@ -1,47 +1,560 @@
 import Link from "next/link";
 import { InvestmentDecisionPanel } from "./InvestmentDecisionPanel";
 import type { ApiResult } from "../lib/api/types";
-import type { ApprovalRequest, CandidateAssessment, CandidateEvidence, DecisionQueueRecord, DiscoveryOpportunity, InvestmentMemo, LaunchReadiness, MarketOpportunity, OpportunityEvidence, OpportunityRisk, OpportunityScore } from "../lib/api/opportunities";
+import type {
+  ApprovalRequest,
+  CandidateAssessment,
+  CandidateEvidence,
+  DecisionQueueRecord,
+  DiscoveryOpportunity,
+  InvestmentMemo,
+  LaunchReadiness,
+  MarketOpportunity,
+  OpportunityEvidence,
+  OpportunityRisk,
+  OpportunityScore,
+  OpportunityProductPromotion,
+} from "../lib/api/opportunities";
 
-function percent(value:number){return `${Math.round(value*100)}%`}
-function label(value:string){return value.replaceAll("_"," ")}
-function JsonFacts({value}:{value:unknown}) {
-  if(!value||typeof value!=="object") return <span className="unknown-value">Not available</span>;
-  const entries=Object.entries(value as Record<string,unknown>).filter(([,item])=>["string","number","boolean"].includes(typeof item));
-  if(!entries.length) return <span className="unknown-value">No scalar observations available</span>;
-  return <dl className="fact-list">{entries.slice(0,8).map(([key,item])=><div key={key}><dt>{label(key)}</dt><dd>{String(item)}</dd></div>)}</dl>;
+function percent(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+function label(value: string) {
+  return value.replaceAll("_", " ");
+}
+function JsonFacts({ value }: { value: unknown }) {
+  if (!value || typeof value !== "object")
+    return <span className="unknown-value">Not available</span>;
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    ([, item]) => ["string", "number", "boolean"].includes(typeof item),
+  );
+  if (!entries.length)
+    return (
+      <span className="unknown-value">No scalar observations available</span>
+    );
+  return (
+    <dl className="fact-list">
+      {entries.slice(0, 8).map(([key, item]) => (
+        <div key={key}>
+          <dt>{label(key)}</dt>
+          <dd>{String(item)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
-function SectionFailure({message}:{message:string}){return <div className="dashboard-state compact state-error"><strong>Section unavailable</strong><span>{message}</span></div>}
-
-export function MarketOpportunityDetail({opportunity,memo,readiness,evidence,scores,risks,approvals,decisions,currentUserId}:{opportunity:MarketOpportunity;memo:ApiResult<InvestmentMemo>;readiness:ApiResult<LaunchReadiness>;evidence:ApiResult<OpportunityEvidence[]>;scores:ApiResult<OpportunityScore[]>;risks:ApiResult<OpportunityRisk[]>;approvals:ApiResult<ApprovalRequest[]>;decisions:ApiResult<DecisionQueueRecord[]>;currentUserId:string}) {
-  const evidenceRows=evidence.ok?evidence.data.filter((row)=>row.opportunity_id===opportunity.id):[];
-  const score=scores.ok?scores.data.find((row)=>row.opportunity_id===opportunity.id):undefined;
-  const riskRows=risks.ok?risks.data.filter((row)=>row.opportunity_id===opportunity.id):[];
-  const approval=approvals.ok?approvals.data.find((row)=>row.object_type==="market_opportunity"&&row.object_id===opportunity.id&&row.requested_action==="approve_investment")??null:null;
-  const queue=approval&&decisions.ok?decisions.data.find((row)=>row.approval_request_id===approval.id):undefined;
-  const memoData=memo.ok?memo.data:null, readinessData=readiness.ok?readiness.data:null;
-  const report=memoData?.summary.report&&typeof memoData.summary.report==="object"?memoData.summary.report:null;
-  return <div className="opportunity-detail">
-    <Link className="back-link" href="/opportunities">← Opportunity workspace</Link>
-    <header className="opportunity-detail-header"><div><p className="eyebrow">Market opportunity · {opportunity.category}</p><h1>{opportunity.title}</h1><p>{opportunity.description}</p><div className="opportunity-tags"><span>{opportunity.market}</span><span>{opportunity.geography}</span><span>{label(opportunity.trigger_type)}</span><span>{opportunity.status}</span></div></div><aside><span>Evidence confidence</span><strong>{percent(opportunity.confidence_score)}</strong><small>Observed backend value</small></aside></header>
-    <section className="investment-thesis"><div><p className="section-number">01</p><h2>Investment thesis</h2></div><div className="thesis-grid"><article><span>Customer / market problem</span><p>{opportunity.description}</p></article><article><span>Why now</span><p>{opportunity.timing_window}</p></article><article><span>Committee direction</span><p>{memoData?label(memoData.recommended_decision):"Unavailable"}</p></article><article><span>Execution readiness</span><p>{readinessData?label(readinessData.overall_status):"Unavailable"}</p></article></div></section>
-    <div className="detail-two-column"><section className="detail-panel"><div className="detail-panel-heading"><div><p className="section-number">02</p><h2>Evidence ledger</h2></div><span>{evidenceRows.length} records</span></div>{!evidence.ok?<SectionFailure message={evidence.error.message}/>:!evidenceRows.length?<div className="dashboard-state compact"><strong>No linked market evidence</strong></div>:<div className="evidence-list">{evidenceRows.map((row)=><article key={row.id}><div><span>{label(row.source_type)}</span><strong>{percent(row.confidence_score)}</strong></div><p>{row.evidence_summary}</p><small>{row.source_reference} · {new Date(row.created_at).toLocaleDateString("en-US")}</small></article>)}</div>}</section>
-      <section className="detail-panel"><div className="detail-panel-heading"><div><p className="section-number">03</p><h2>Evaluation score</h2></div>{score&&<strong className="score-orbit">{Math.round(score.overall_score)}</strong>}</div>{!scores.ok?<SectionFailure message={scores.error.message}/>:score?<div className="score-grid">{[["Demand",score.demand_score],["Pain",score.pain_score],["Trend",score.trend_score],["Margin",score.margin_score],["Competition",score.competition_score],["IP risk",score.ip_risk_score],["Dispute risk",score.dispute_risk_score]].map(([name,value])=><div key={String(name)}><span>{name}</span><strong>{String(value)}</strong></div>)}</div>:<div className="dashboard-state compact"><strong>No deterministic score recorded</strong></div>}</section></div>
-    <div className="detail-two-column"><section className="detail-panel"><div className="detail-panel-heading"><div><p className="section-number">04</p><h2>Economics</h2></div><span>Backend assessments only</span></div>{!memo.ok?<SectionFailure message={memo.error.message}/>:<div className="conclusion-list">{["economic_assumptions","profit_scenarios","risk_adjusted_profitability","commercial_viability"].map((key)=>{const item=memo.data.conclusions[key];return <article key={key}><div><strong>{label(key)}</strong><span>{item?.classification??"missing"}</span></div>{item?<JsonFacts value={item.value}/>:<span className="unknown-value">Not linked</span>}</article>})}</div>}</section>
-      <section className="detail-panel risk-panel"><div className="detail-panel-heading"><div><p className="section-number">05</p><h2>What can go wrong?</h2></div><span>{riskRows.length} risks</span></div>{!risks.ok?<SectionFailure message={risks.error.message}/>:!riskRows.length?<div className="dashboard-state compact"><strong>No linked OpportunityRisk records</strong></div>:<div className="risk-list">{riskRows.map((risk)=><article key={risk.id}><span className={`priority-mark priority-${risk.severity}`}>{risk.severity}</span><div><strong>{label(risk.risk_type)}</strong><p>{risk.description}</p><small>{risk.status}</small></div></article>)}</div>}</section></div>
-    <section className="committee-panel"><div><p className="section-number">06</p><p className="eyebrow">Investment / Decision Committee</p><h2>{memoData?label(memoData.recommended_decision):"Recommendation unavailable"}</h2><p>{report&&typeof report.summary==="string"?report.summary:"The Investment Memo composes observed evidence, assessments, economics, risks, and missing information without creating approval authority."}</p></div><div><h3>Weak assumptions and missing evidence</h3>{memoData&&memoData.missing_evidence.length?<ul>{memoData.missing_evidence.map((item)=><li key={item}>{item}</li>)}</ul>:<p>No missing evidence reported by the current memo.</p>}<h3>Recorded committee report</h3>{report?<JsonFacts value={report}/>:<p>No Opportunity Report is linked.</p>}</div></section>
-    <section className="readiness-panel"><div className="detail-panel-heading"><div><p className="section-number">07</p><h2>Execution readiness</h2></div><strong>{readinessData?label(readinessData.overall_status):"unavailable"}</strong></div>{!readiness.ok?<SectionFailure message={readiness.error.message}/>:<div className="readiness-grid">{readiness.data.categories.map((item)=><article className={`readiness-${item.status}`} key={item.category}><span>{label(item.category)}</span><strong>{item.status}</strong><small>{item.reason}</small></article>)}</div>}</section>
-    {queue&&<Link className="queue-context" href={`/decision-committee?item=${queue.id}`}><span>Decision Queue</span><strong>{queue.title}</strong><small>{queue.status} · open committee context →</small></Link>}
-    <InvestmentDecisionPanel opportunityId={opportunity.id} approval={approval} currentUserId={currentUserId} recommendation={memoData?.recommended_decision??"unavailable"} readiness={readinessData?.overall_status??"unavailable"}/>
-  </div>;
+function SectionFailure({ message }: { message: string }) {
+  return (
+    <div className="dashboard-state compact state-error">
+      <strong>Section unavailable</strong>
+      <span>{message}</span>
+    </div>
+  );
 }
 
-export function DiscoveryOpportunityDetail({opportunity,evidence,assessment,decisions}:{opportunity:DiscoveryOpportunity;evidence:ApiResult<CandidateEvidence[]>;assessment:ApiResult<CandidateAssessment>;decisions:ApiResult<DecisionQueueRecord[]>}) {
-  const queue=opportunity.decision_queue_item_id&&decisions.ok?decisions.data.find((item)=>item.id===opportunity.decision_queue_item_id):undefined;
-  return <div className="opportunity-detail"><Link className="back-link" href="/opportunities">← Opportunity workspace</Link><header className="opportunity-detail-header"><div><p className="eyebrow">Demand intelligence candidate · {opportunity.category}</p><h1>{opportunity.title}</h1><p>{opportunity.opportunity_description}</p><div className="opportunity-tags"><span>{opportunity.status}</span><span>{opportunity.methodology_version}</span></div></div><aside><span>Advisory score</span><strong>{opportunity.advisory_score}</strong><small>{percent(opportunity.confidence_score)} confidence</small></aside></header>
-    <section className="investment-thesis"><div><p className="section-number">01</p><h2>Customer-backed thesis</h2></div><div className="thesis-grid"><article><span>Customer problem</span><p>{opportunity.problem_statement}</p></article><article><span>Customer segment</span><p>{opportunity.customer_segment}</p></article><article><span>Solution direction</span><p>{opportunity.solution_direction}</p></article><article><span>Market context</span><p>{opportunity.market_context}</p></article></div></section>
-    <div className="detail-two-column"><section className="detail-panel"><div className="detail-panel-heading"><div><p className="section-number">02</p><h2>Traceable evidence</h2></div></div>{!evidence.ok?<SectionFailure message={evidence.error.message}/>:<div className="evidence-list">{evidence.data.map((row)=><article key={row.id}><div><span>{label(row.evidence_type)}</span><strong>{percent(row.confidence)}</strong></div><p>{row.evidence_summary}</p><small>{row.contribution} · Demand signal {row.demand_signal_id}</small></article>)}</div>}</section><section className="detail-panel"><div className="detail-panel-heading"><div><p className="section-number">03</p><h2>Demand assessment</h2></div></div>{!assessment.ok?<SectionFailure message={assessment.error.message}/>:<><div className="score-grid"><div><span>Demand strength</span><strong>{assessment.data.demand_strength}</strong></div><div><span>Signal diversity</span><strong>{assessment.data.signal_diversity}</strong></div><div><span>Confidence</span><strong>{percent(assessment.data.confidence)}</strong></div></div><h3>Assumptions</h3><ul>{assessment.data.assumptions.map((item)=><li key={item}>{item}</li>)}</ul><h3>Missing information</h3><ul>{assessment.data.missing_information.map((item)=><li key={item}>{item}</li>)}</ul></>}</section></div>
-    <section className="boundary-panel"><p className="eyebrow">Architecture boundary</p><h2>Intelligence candidate—not an executable investment</h2><p>This record can enter human review through its existing Decision Queue relationship, but the backend does not promote it directly into the MarketOpportunity investment-review chain. No approval or execution action is presented here.</p>{queue&&<Link href={`/decision-committee?item=${queue.id}`}>Open linked Decision Queue item →</Link>}</section>
-  </div>;
+export function MarketOpportunityDetail({
+  opportunity,
+  memo,
+  readiness,
+  evidence,
+  scores,
+  risks,
+  approvals,
+  decisions,
+  productPromotions,
+  currentUserId,
+}: {
+  opportunity: MarketOpportunity;
+  memo: ApiResult<InvestmentMemo>;
+  readiness: ApiResult<LaunchReadiness>;
+  evidence: ApiResult<OpportunityEvidence[]>;
+  scores: ApiResult<OpportunityScore[]>;
+  risks: ApiResult<OpportunityRisk[]>;
+  approvals: ApiResult<ApprovalRequest[]>;
+  decisions: ApiResult<DecisionQueueRecord[]>;
+  productPromotions: OpportunityProductPromotion[];
+  currentUserId: string;
+}) {
+  const evidenceRows = evidence.ok
+    ? evidence.data.filter((row) => row.opportunity_id === opportunity.id)
+    : [];
+  const score = scores.ok
+    ? scores.data.find((row) => row.opportunity_id === opportunity.id)
+    : undefined;
+  const riskRows = risks.ok
+    ? risks.data.filter((row) => row.opportunity_id === opportunity.id)
+    : [];
+  const approval = approvals.ok
+    ? (approvals.data.find(
+        (row) =>
+          row.object_type === "market_opportunity" &&
+          row.object_id === opportunity.id &&
+          row.requested_action === "approve_investment",
+      ) ?? null)
+    : null;
+  const queue =
+    approval && decisions.ok
+      ? decisions.data.find((row) => row.approval_request_id === approval.id)
+      : undefined;
+  const memoData = memo.ok ? memo.data : null,
+    readinessData = readiness.ok ? readiness.data : null;
+  const report =
+    memoData?.summary.report && typeof memoData.summary.report === "object"
+      ? memoData.summary.report
+      : null;
+  return (
+    <div className="opportunity-detail">
+      <Link className="back-link" href="/opportunities">
+        ← Opportunity workspace
+      </Link>
+      <header className="opportunity-detail-header">
+        <div>
+          <p className="eyebrow">Market opportunity · {opportunity.category}</p>
+          <h1>{opportunity.title}</h1>
+          <p>{opportunity.description}</p>
+          <div className="opportunity-tags">
+            <span>{opportunity.market}</span>
+            <span>{opportunity.geography}</span>
+            <span>{label(opportunity.trigger_type)}</span>
+            <span>{opportunity.status}</span>
+          </div>
+        </div>
+        <aside>
+          <span>Evidence confidence</span>
+          <strong>{percent(opportunity.confidence_score)}</strong>
+          <small>Observed backend value</small>
+        </aside>
+      </header>
+      <section className="investment-thesis">
+        <div>
+          <p className="section-number">01</p>
+          <h2>Investment thesis</h2>
+        </div>
+        <div className="thesis-grid">
+          <article>
+            <span>Customer / market problem</span>
+            <p>{opportunity.description}</p>
+          </article>
+          <article>
+            <span>Why now</span>
+            <p>{opportunity.timing_window}</p>
+          </article>
+          <article>
+            <span>Committee direction</span>
+            <p>
+              {memoData ? label(memoData.recommended_decision) : "Unavailable"}
+            </p>
+          </article>
+          <article>
+            <span>Execution readiness</span>
+            <p>
+              {readinessData
+                ? label(readinessData.overall_status)
+                : "Unavailable"}
+            </p>
+          </article>
+        </div>
+      </section>
+      <div className="detail-two-column">
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">02</p>
+              <h2>Evidence ledger</h2>
+            </div>
+            <span>{evidenceRows.length} records</span>
+          </div>
+          {!evidence.ok ? (
+            <SectionFailure message={evidence.error.message} />
+          ) : !evidenceRows.length ? (
+            <div className="dashboard-state compact">
+              <strong>No linked market evidence</strong>
+            </div>
+          ) : (
+            <div className="evidence-list">
+              {evidenceRows.map((row) => (
+                <article key={row.id}>
+                  <div>
+                    <span>{label(row.source_type)}</span>
+                    <strong>{percent(row.confidence_score)}</strong>
+                  </div>
+                  <p>{row.evidence_summary}</p>
+                  <small>
+                    {row.source_reference} ·{" "}
+                    {new Date(row.created_at).toLocaleDateString("en-US")}
+                  </small>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">03</p>
+              <h2>Evaluation score</h2>
+            </div>
+            {score && (
+              <strong className="score-orbit">
+                {Math.round(score.overall_score)}
+              </strong>
+            )}
+          </div>
+          {!scores.ok ? (
+            <SectionFailure message={scores.error.message} />
+          ) : score ? (
+            <div className="score-grid">
+              {[
+                ["Demand", score.demand_score],
+                ["Pain", score.pain_score],
+                ["Trend", score.trend_score],
+                ["Margin", score.margin_score],
+                ["Competition", score.competition_score],
+                ["IP risk", score.ip_risk_score],
+                ["Dispute risk", score.dispute_risk_score],
+              ].map(([name, value]) => (
+                <div key={String(name)}>
+                  <span>{name}</span>
+                  <strong>{String(value)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="dashboard-state compact">
+              <strong>No deterministic score recorded</strong>
+            </div>
+          )}
+        </section>
+      </div>
+      <div className="detail-two-column">
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">04</p>
+              <h2>Economics</h2>
+            </div>
+            <span>Backend assessments only</span>
+          </div>
+          {!memo.ok ? (
+            <SectionFailure message={memo.error.message} />
+          ) : (
+            <div className="conclusion-list">
+              {[
+                "economic_assumptions",
+                "profit_scenarios",
+                "risk_adjusted_profitability",
+                "commercial_viability",
+              ].map((key) => {
+                const item = memo.data.conclusions[key];
+                return (
+                  <article key={key}>
+                    <div>
+                      <strong>{label(key)}</strong>
+                      <span>{item?.classification ?? "missing"}</span>
+                    </div>
+                    {item ? (
+                      <JsonFacts value={item.value} />
+                    ) : (
+                      <span className="unknown-value">Not linked</span>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+        <section className="detail-panel risk-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">05</p>
+              <h2>What can go wrong?</h2>
+            </div>
+            <span>{riskRows.length} risks</span>
+          </div>
+          {!risks.ok ? (
+            <SectionFailure message={risks.error.message} />
+          ) : !riskRows.length ? (
+            <div className="dashboard-state compact">
+              <strong>No linked OpportunityRisk records</strong>
+            </div>
+          ) : (
+            <div className="risk-list">
+              {riskRows.map((risk) => (
+                <article key={risk.id}>
+                  <span className={`priority-mark priority-${risk.severity}`}>
+                    {risk.severity}
+                  </span>
+                  <div>
+                    <strong>{label(risk.risk_type)}</strong>
+                    <p>{risk.description}</p>
+                    <small>{risk.status}</small>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+      <section className="committee-panel">
+        <div>
+          <p className="section-number">06</p>
+          <p className="eyebrow">Investment / Decision Committee</p>
+          <h2>
+            {memoData
+              ? label(memoData.recommended_decision)
+              : "Recommendation unavailable"}
+          </h2>
+          <p>
+            {report && typeof report.summary === "string"
+              ? report.summary
+              : "The Investment Memo composes observed evidence, assessments, economics, risks, and missing information without creating approval authority."}
+          </p>
+        </div>
+        <div>
+          <h3>Weak assumptions and missing evidence</h3>
+          {memoData && memoData.missing_evidence.length ? (
+            <ul>
+              {memoData.missing_evidence.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No missing evidence reported by the current memo.</p>
+          )}
+          <h3>Recorded committee report</h3>
+          {report ? (
+            <JsonFacts value={report} />
+          ) : (
+            <p>No Opportunity Report is linked.</p>
+          )}
+        </div>
+      </section>
+      <section className="readiness-panel">
+        <div className="detail-panel-heading">
+          <div>
+            <p className="section-number">07</p>
+            <h2>Execution readiness</h2>
+          </div>
+          <strong>
+            {readinessData
+              ? label(readinessData.overall_status)
+              : "unavailable"}
+          </strong>
+        </div>
+        {!readiness.ok ? (
+          <SectionFailure message={readiness.error.message} />
+        ) : (
+          <div className="readiness-grid">
+            {readiness.data.categories.map((item) => (
+              <article
+                className={`readiness-${item.status}`}
+                key={item.category}
+              >
+                <span>{label(item.category)}</span>
+                <strong>{item.status}</strong>
+                <small>{item.reason}</small>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      {queue && (
+        <Link
+          className="queue-context"
+          href={`/decision-committee?item=${queue.id}`}
+        >
+          <span>Decision Queue</span>
+          <strong>{queue.title}</strong>
+          <small>{queue.status} · open committee context →</small>
+        </Link>
+      )}
+      <InvestmentDecisionPanel
+        opportunityId={opportunity.id}
+        approval={approval}
+        currentUserId={currentUserId}
+        recommendation={memoData?.recommended_decision ?? "unavailable"}
+        readiness={readinessData?.overall_status ?? "unavailable"}
+      />
+      {approval?.status === "approved" && (
+        <section className="boundary-panel">
+          <p className="eyebrow">Separate Product Promotion Decision</p>
+          <h2>Opportunity Approved ≠ Product Created</h2>
+          {!productPromotions.length ? (
+            <p>
+              No ProductHypothesis is linked to this opportunity. Investment
+              approval does not create one automatically.
+            </p>
+          ) : (
+            <div className="thesis-grid">
+              {productPromotions.map(({ hypothesis, readiness, promotion }) => (
+                <article key={hypothesis.id}>
+                  <span>{readiness?.ready ? "READY" : "BLOCKED"}</span>
+                  <h3>{hypothesis.name}</h3>
+                  <p>
+                    Promotion: {promotion?.status ?? "not requested"} · Product:{" "}
+                    {promotion?.product_id ? "created" : "not created"}
+                  </p>
+                  <Link href={`/products/${hypothesis.id}`}>
+                    Review Product Promotion →
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+
+export function DiscoveryOpportunityDetail({
+  opportunity,
+  evidence,
+  assessment,
+  decisions,
+}: {
+  opportunity: DiscoveryOpportunity;
+  evidence: ApiResult<CandidateEvidence[]>;
+  assessment: ApiResult<CandidateAssessment>;
+  decisions: ApiResult<DecisionQueueRecord[]>;
+}) {
+  const queue =
+    opportunity.decision_queue_item_id && decisions.ok
+      ? decisions.data.find(
+          (item) => item.id === opportunity.decision_queue_item_id,
+        )
+      : undefined;
+  return (
+    <div className="opportunity-detail">
+      <Link className="back-link" href="/opportunities">
+        ← Opportunity workspace
+      </Link>
+      <header className="opportunity-detail-header">
+        <div>
+          <p className="eyebrow">
+            Demand intelligence candidate · {opportunity.category}
+          </p>
+          <h1>{opportunity.title}</h1>
+          <p>{opportunity.opportunity_description}</p>
+          <div className="opportunity-tags">
+            <span>{opportunity.status}</span>
+            <span>{opportunity.methodology_version}</span>
+          </div>
+        </div>
+        <aside>
+          <span>Advisory score</span>
+          <strong>{opportunity.advisory_score}</strong>
+          <small>{percent(opportunity.confidence_score)} confidence</small>
+        </aside>
+      </header>
+      <section className="investment-thesis">
+        <div>
+          <p className="section-number">01</p>
+          <h2>Customer-backed thesis</h2>
+        </div>
+        <div className="thesis-grid">
+          <article>
+            <span>Customer problem</span>
+            <p>{opportunity.problem_statement}</p>
+          </article>
+          <article>
+            <span>Customer segment</span>
+            <p>{opportunity.customer_segment}</p>
+          </article>
+          <article>
+            <span>Solution direction</span>
+            <p>{opportunity.solution_direction}</p>
+          </article>
+          <article>
+            <span>Market context</span>
+            <p>{opportunity.market_context}</p>
+          </article>
+        </div>
+      </section>
+      <div className="detail-two-column">
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">02</p>
+              <h2>Traceable evidence</h2>
+            </div>
+          </div>
+          {!evidence.ok ? (
+            <SectionFailure message={evidence.error.message} />
+          ) : (
+            <div className="evidence-list">
+              {evidence.data.map((row) => (
+                <article key={row.id}>
+                  <div>
+                    <span>{label(row.evidence_type)}</span>
+                    <strong>{percent(row.confidence)}</strong>
+                  </div>
+                  <p>{row.evidence_summary}</p>
+                  <small>
+                    {row.contribution} · Demand signal {row.demand_signal_id}
+                  </small>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <div>
+              <p className="section-number">03</p>
+              <h2>Demand assessment</h2>
+            </div>
+          </div>
+          {!assessment.ok ? (
+            <SectionFailure message={assessment.error.message} />
+          ) : (
+            <>
+              <div className="score-grid">
+                <div>
+                  <span>Demand strength</span>
+                  <strong>{assessment.data.demand_strength}</strong>
+                </div>
+                <div>
+                  <span>Signal diversity</span>
+                  <strong>{assessment.data.signal_diversity}</strong>
+                </div>
+                <div>
+                  <span>Confidence</span>
+                  <strong>{percent(assessment.data.confidence)}</strong>
+                </div>
+              </div>
+              <h3>Assumptions</h3>
+              <ul>
+                {assessment.data.assumptions.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <h3>Missing information</h3>
+              <ul>
+                {assessment.data.missing_information.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      </div>
+      <section className="boundary-panel">
+        <p className="eyebrow">Architecture boundary</p>
+        <h2>Intelligence candidate—not an executable investment</h2>
+        <p>
+          This record can enter human review through its existing Decision Queue
+          relationship, but the backend does not promote it directly into the
+          MarketOpportunity investment-review chain. No approval or execution
+          action is presented here.
+        </p>
+        {queue && (
+          <Link href={`/decision-committee?item=${queue.id}`}>
+            Open linked Decision Queue item →
+          </Link>
+        )}
+      </section>
+    </div>
+  );
 }

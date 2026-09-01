@@ -215,5 +215,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 070 Completion Notes](./planning/SPRINT_070_COMPLETION.md)
 - [Intelligence Provenance and Committee Packet v1.0](./architecture/INTELLIGENCE_PROVENANCE_COMMITTEE_PACKET_V1_0.md)
 - [Sprint 071 Completion Notes](./planning/SPRINT_071_COMPLETION.md)
+- [Governed Product Promotion and Product Truth v1.0](./architecture/GOVERNED_PRODUCT_PROMOTION_PRODUCT_TRUTH_V1_0.md)
+- [Sprint 072 Completion Notes](./planning/SPRINT_072_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

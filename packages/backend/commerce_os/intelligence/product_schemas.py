@@ -79,7 +79,14 @@ EconomicMetric = Literal[
     "conversion_rate",
 ]
 EconomicClassification = Literal[
-    "actual", "quoted", "observed", "assumption", "forecast", "ai_inference", "unknown"
+    "actual",
+    "quoted",
+    "observed",
+    "assumption",
+    "forecast",
+    "ai_inference",
+    "legacy_unprovenanced",
+    "unknown",
 ]
 
 
