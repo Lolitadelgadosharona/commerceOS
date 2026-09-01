@@ -27,6 +27,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Product Intelligence Foundation v1.0](./architecture/PRODUCT_INTELLIGENCE_FOUNDATION_V1_0.md) | Product hypotheses, economics, supplier references, risks, and deterministic investment scoring |
 | [Product Truth Foundation v1.0](./architecture/PRODUCT_TRUTH_FOUNDATION_V1_0.md) | Authoritative products, approved truth versions, product knowledge, and brand claim guardrails |
 | [Supplier Intelligence Foundation v1.0](./architecture/SUPPLIER_INTELLIGENCE_FOUNDATION_V1_0.md) | Supplier evaluation profiles, deterministic scoring, risks, matches, and advisory decisions |
+| [Governed Supplier Intelligence v1.0](./architecture/GOVERNED_SUPPLIER_INTELLIGENCE_V1_0.md) | Product Truth-linked evidence, quotes, qualification, governed selection, and supply readiness |
 | [Listing Intelligence and GEO Foundation v1.0](./architecture/LISTING_INTELLIGENCE_GEO_FOUNDATION_V1_0.md) | Product-grounded strategy, question maps, discovery knowledge, briefs, and evidence |
 | [Creative Strategy Foundation v1.0](./architecture/CREATIVE_STRATEGY_FOUNDATION_V1_0.md) | Creative strategy, hypotheses, briefs, channel fit, and experiment observations |
 | [Channel Strategy and Conversion Path Foundation v1.0](./architecture/CHANNEL_STRATEGY_CONVERSION_FOUNDATION_V1_0.md) | Evidence-led channel recommendations, deterministic scoring, B2C/B2B paths, and authority boundaries |
@@ -217,5 +218,6 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 071 Completion Notes](./planning/SPRINT_071_COMPLETION.md)
 - [Governed Product Promotion and Product Truth v1.0](./architecture/GOVERNED_PRODUCT_PROMOTION_PRODUCT_TRUTH_V1_0.md)
 - [Sprint 072 Completion Notes](./planning/SPRINT_072_COMPLETION.md)
+- [Sprint 073 Completion Notes](./planning/SPRINT_073_COMPLETION.md)
 
 The architecture and governance documents remain controlling contracts. Sprint completion notes distinguish implemented foundations from production activation.

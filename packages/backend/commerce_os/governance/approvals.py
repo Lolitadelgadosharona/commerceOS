@@ -31,6 +31,7 @@ class ApprovalWorkflowService:
         object_id: UUID,
         requested_action: str,
         reason: str,
+        commit: bool = True,
     ) -> ApprovalRequest:
         requester = self.session.get(User, requester_id)
         if (
@@ -60,8 +61,9 @@ class ApprovalWorkflowService:
             entity_id=approval.id,
             metadata={"requested_action": requested_action},
         )
-        self.session.commit()
-        self.session.refresh(approval)
+        if commit:
+            self.session.commit()
+            self.session.refresh(approval)
         return approval
 
     def decide(

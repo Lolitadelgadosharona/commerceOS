@@ -2,6 +2,7 @@ import "server-only";
 import { apiGet } from "./client";
 import type { ApiResult, ReadModel } from "./types";
 import type { ApprovalRequest } from "./opportunities";
+import type { SupplierComparison, SupplyReadiness } from "./suppliers";
 
 export type MarketSource = ReadModel & {
   organization_id: string;
@@ -410,9 +411,11 @@ export async function getProductHypothesisDetail(
   ]);
   let origin = null,
     drafts = null,
-    comparison = null;
+    comparison = null,
+    supplierComparison = null,
+    supplyReadiness = null;
   if (promotion.ok && promotion.data?.product_id) {
-    [origin, drafts, comparison] = await Promise.all([
+    [origin, drafts, comparison, supplierComparison, supplyReadiness] = await Promise.all([
       apiGet<{
         product: Product;
         promotion: ProductPromotion;
@@ -424,6 +427,14 @@ export async function getProductHypothesisDetail(
       ),
       apiGet<TruthComparison>(
         `/api/v1/products/${promotion.data.product_id}/truth-comparison`,
+        query,
+      ),
+      apiGet<SupplierComparison>(
+        `/api/v1/products/${promotion.data.product_id}/supplier-comparison`,
+        query,
+      ),
+      apiGet<SupplyReadiness>(
+        `/api/v1/products/${promotion.data.product_id}/supply-readiness`,
         query,
       ),
     ]);
@@ -439,5 +450,7 @@ export async function getProductHypothesisDetail(
     origin,
     drafts,
     comparison,
+    supplierComparison,
+    supplyReadiness,
   };
 }

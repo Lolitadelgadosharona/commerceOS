@@ -371,6 +371,86 @@ const productSupplier = {
   quality_notes: "Material testing is still required.",
   risk_level: "medium",
 };
+const canonicalSupplierId = "63636363-6363-4363-8363-636363636363";
+const canonicalSupplier = {
+  ...base,
+  id: canonicalSupplierId,
+  name: "Atlantic Care Manufacturing",
+  source_type: "manufacturer",
+  country: "Portugal",
+  capabilities: ["Cooling textiles", "Private label packaging"],
+  certifications: ["ISO 9001"],
+  status: "evaluating",
+};
+const canonicalSupplierMatch = {
+  ...base,
+  id: "54545454-5454-4454-8454-545454545454",
+  product_id: productRecordId,
+  supplier_id: canonicalSupplierId,
+  match_score: 84,
+  recommended: true,
+  reason: "Material capability fits current Product Truth.",
+};
+const canonicalSupplierQuote = {
+  ...base,
+  id: "55555555-5555-4555-8555-555555555555",
+  supplier_id: canonicalSupplierId,
+  product_id: productRecordId,
+  currency: "USD",
+  unit_price: "11.5000",
+  minimum_order_quantity: 100,
+  price_tiers: [],
+  sample_cost: "25.0000",
+  tooling_cost: null,
+  packaging_cost: "0.0000",
+  incoterm: "EXW",
+  payment_terms: "30% deposit; 70% before shipment",
+  lead_time: "30 days",
+  quote_date: "2026-08-30",
+  valid_until: "2026-09-30",
+  classification: "quoted",
+  source: "supplier quotation",
+  confidence: 0.86,
+  evidence_reference: "quote:atlantic-1",
+  notes: null,
+};
+const canonicalSupplierEvidence = {
+  ...base,
+  id: "56565656-5656-4656-8656-565656565656",
+  supplier_id: canonicalSupplierId,
+  field_name: "production_capacity",
+  value: "5000 units / month",
+  classification: "supplier_claimed",
+  source: "supplier questionnaire",
+  confidence: 0.68,
+  as_of: "2026-08-30T12:00:00Z",
+  evidence_reference: "questionnaire:atlantic-1",
+  notes: "Verification required before purchase planning.",
+};
+const canonicalQualification = {
+  organization_id: organizationId,
+  supplier_id: canonicalSupplierId,
+  product_id: productRecordId,
+  ready: true,
+  next_action: "Verify compliance evidence against current Product Truth.",
+  readiness: [{ code: "unknown_compliance", severity: "warning", status: "unknown", message: "Verify compliance evidence.", references: [] }],
+  dimensions: [
+    { dimension: "product_fit", status: "pass", evidence: [canonicalSupplierMatch.id], confidence: 0.84, gaps: [], risk: null },
+    { dimension: "commercial_fit", status: "pass", evidence: [canonicalSupplierQuote.id], confidence: 1, gaps: [], risk: null },
+    { dimension: "compliance", status: "unknown", evidence: [], confidence: null, gaps: ["Verify compliance evidence against current Product Truth."], risk: null },
+  ],
+};
+const canonicalSupplierDetail = {
+  supplier: canonicalSupplier,
+  products: [canonicalSupplierMatch],
+  evidence: [canonicalSupplierEvidence],
+  quotes: [canonicalSupplierQuote],
+  evaluations: [],
+  risks: [],
+  approved_relationships: [],
+  qualifications: [canonicalQualification],
+  next_action: canonicalQualification.next_action,
+};
 const productRisk = {
   ...base,
   id: "39393939-3939-4939-8939-393939393939",
@@ -1041,6 +1121,25 @@ createServer((request, response) => {
         "risks",
       ],
     });
+  if (url.pathname === `/api/v1/products/${productRecordId}/supplier-comparison`)
+    return json(200, {
+      organization_id: organizationId,
+      product_id: productRecordId,
+      rows: [{ supplier: canonicalSupplier, match: canonicalSupplierMatch, evaluation: null, quote: canonicalSupplierQuote, risks: [], qualification: canonicalQualification }],
+    });
+  if (url.pathname === `/api/v1/products/${productRecordId}/supply-readiness`)
+    return json(200, {
+      organization_id: organizationId,
+      product_id: productRecordId,
+      ready: false,
+      approved_suppliers: [],
+      items: [
+        { code: "governed_product_origin", severity: "blocker", status: "ready", message: "Governed Product promotion origin is recorded.", references: [] },
+        { code: "product_truth", severity: "blocker", status: "blocked", message: "Approved Product Truth is required.", references: [] },
+        { code: "approved_supplier", severity: "blocker", status: "blocked", message: "A qualified supplier must be approved for this Product.", references: [] },
+      ],
+      next_action: "Approved Product Truth is required.",
+    });
   const commerceLists = {
     "/api/v1/market-sources": [marketSource],
     "/api/v1/market-signals": [marketSignal],
@@ -1056,6 +1155,11 @@ createServer((request, response) => {
     "/api/v1/product-investment-scores": [productScore],
     "/api/v1/products": productCreated ? [productRecord] : [],
     "/api/v1/product-truth": [],
+    "/api/v1/suppliers": [canonicalSupplier],
+    "/api/v1/product-supplier-matches": [canonicalSupplierMatch],
+    "/api/v1/supplier-quotes": [canonicalSupplierQuote],
+    "/api/v1/supplier-evidence": [canonicalSupplierEvidence],
+    "/api/v1/approved-product-suppliers": [],
   };
   if (url.pathname in commerceLists && request.method === "GET") {
     if (
@@ -1078,6 +1182,10 @@ createServer((request, response) => {
           }
         : demandDashboard,
     );
+  if (url.pathname === `/api/v1/suppliers/${canonicalSupplierId}/intelligence`)
+    return json(200, canonicalSupplierDetail);
+  if (url.pathname === `/api/v1/suppliers/${canonicalSupplierId}/selection-request` && request.method === "POST")
+    return json(201, { ...base, product_id: productRecordId, supplier_id: canonicalSupplierId, source_candidate_id: null, approval_request_id: promotionApprovalId, role: "primary", status: "pending", approved_by: null, approved_at: null });
   if (
     url.pathname === `/api/v1/approvals/${approvalId}/decision` &&
     request.method === "POST"

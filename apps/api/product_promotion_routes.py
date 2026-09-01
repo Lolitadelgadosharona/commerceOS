@@ -295,7 +295,16 @@ def request_promotion(
     request: Request,
     session: SessionDependency,
 ) -> ProductPromotion:
-    hypothesis = scoped_hypothesis(session, hypothesis_id, payload.organization_id)
+    hypothesis = session.scalar(
+        select(ProductHypothesis)
+        .where(
+            ProductHypothesis.id == hypothesis_id,
+            ProductHypothesis.organization_id == payload.organization_id,
+        )
+        .with_for_update()
+    )
+    if hypothesis is None:
+        raise ApiError(404, "not_found", "Product Hypothesis was not found.")
     existing = session.scalar(
         select(ProductPromotion).where(
             ProductPromotion.organization_id == payload.organization_id,
@@ -323,6 +332,7 @@ def request_promotion(
         object_id=hypothesis.id,
         requested_action="product.promote",
         reason=payload.reason,
+        commit=False,
     )
     promotion = ProductPromotion(
         organization_id=payload.organization_id,

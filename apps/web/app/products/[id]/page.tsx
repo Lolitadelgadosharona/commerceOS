@@ -46,6 +46,8 @@ export default async function ProductPage({
       approvals={detail.approvals.data}
       drafts={detail.drafts?.ok ? detail.drafts.data : []}
       comparison={detail.comparison?.ok ? detail.comparison.data : null}
+      supplierComparison={detail.supplierComparison?.ok ? detail.supplierComparison.data : null}
+      supplyReadiness={detail.supplyReadiness?.ok ? detail.supplyReadiness.data : null}
     />
   );
 }

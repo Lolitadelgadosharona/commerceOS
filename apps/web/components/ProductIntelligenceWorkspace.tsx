@@ -16,6 +16,7 @@ import type {
   TruthComparison,
 } from "../lib/api/commerce-intelligence";
 import type { ApprovalRequest } from "../lib/api/opportunities";
+import type { SupplierComparison, SupplyReadiness } from "../lib/api/suppliers";
 import { ProductLifecyclePanel } from "./ProductLifecyclePanel";
 
 const pct = (value: number) => `${Math.round(value * 100)}%`;
@@ -212,6 +213,7 @@ export function ProductIntelligenceWorkspace({
                     ? "Product Truth recorded"
                     : "Truth not recorded"}
                 </b>
+                <Link href="/suppliers">Review supply readiness →</Link>
               </article>
             ))}
           </div>
@@ -234,6 +236,8 @@ export function ProductHypothesisDetail({
   approvals,
   drafts,
   comparison,
+  supplierComparison,
+  supplyReadiness,
 }: {
   hypothesis: ProductHypothesis;
   economics: ApiResult<ProductEconomics[]>;
@@ -247,6 +251,8 @@ export function ProductHypothesisDetail({
   approvals: ApprovalRequest[];
   drafts: ProductTruthDraft[];
   comparison: TruthComparison | null;
+  supplierComparison: SupplierComparison | null;
+  supplyReadiness: SupplyReadiness | null;
 }) {
   const economic = economics.ok
     ? economics.data.find((item) => item.product_id === hypothesis.id)
@@ -458,7 +464,31 @@ export function ProductHypothesisDetail({
         approvals={approvals}
         drafts={drafts}
         comparison={comparison}
+        supplyReadiness={supplyReadiness}
       />
+      {promotion?.product_id && (
+        <section className="commerce-panel">
+          <header>
+            <div><p className="eyebrow">Product Truth → can someone supply it?</p><h2>Supply Readiness</h2></div>
+            <span>{supplyReadiness?.ready ? "SUPPLY READY" : "BLOCKED / UNKNOWN"}</span>
+          </header>
+          <div className="supply-readiness-layout">
+            <div className="readiness-list">
+              {(supplyReadiness?.items ?? []).map((item) => (
+                <article key={item.code} className={`readiness-${item.severity}`}>
+                  <span>{label(item.code)}</span><strong>{item.status}</strong><p>{item.message}</p>
+                </article>
+              ))}
+            </div>
+            <div className="supply-comparison-summary">
+              <span>Canonical supplier matches</span>
+              <strong>{supplierComparison?.rows.length ?? 0}</strong>
+              <p>{supplyReadiness?.next_action ?? "Supply readiness projection is unavailable."}</p>
+              <Link href="/suppliers">Open Supplier Intelligence →</Link>
+            </div>
+          </div>
+        </section>
+      )}
       <section className="boundary-panel">
         <p className="eyebrow">Product Truth comparison</p>
         <h2>

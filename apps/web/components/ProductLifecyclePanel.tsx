@@ -10,6 +10,7 @@ import {
   type ProductActionState,
 } from "../app/products/actions";
 import type { ApprovalRequest } from "../lib/api/opportunities";
+import type { SupplyReadiness } from "../lib/api/suppliers";
 import type {
   ProductPromotion,
   ProductTruthDraft,
@@ -35,6 +36,7 @@ export function ProductLifecyclePanel({
   approvals,
   drafts,
   comparison,
+  supplyReadiness,
 }: {
   hypothesisId: string;
   readiness: PromotionReadiness;
@@ -43,6 +45,7 @@ export function ProductLifecyclePanel({
   approvals: ApprovalRequest[];
   drafts: ProductTruthDraft[];
   comparison: TruthComparison | null;
+  supplyReadiness: SupplyReadiness | null;
 }) {
   const [requestState, requestAction, requestPending] = useActionState(
     requestProductPromotion,
@@ -101,7 +104,21 @@ export function ProductLifecyclePanel({
           ? "DRAFT"
           : "NOT STARTED",
     },
-    { name: "Supplier Readiness", state: "NOT STARTED" },
+    {
+      name: "Supplier Intelligence",
+      state: promotion?.product_id ? "IN PROGRESS" : "NOT STARTED",
+    },
+    {
+      name: "Supplier Qualification",
+      state: supplyReadiness?.approved_suppliers.length
+        ? "APPROVED"
+        : "BLOCKED / UNKNOWN",
+    },
+    {
+      name: "Supply Ready",
+      state: supplyReadiness?.ready ? "READY" : "BLOCKED / UNKNOWN",
+    },
+    { name: "Build Ready", state: "NOT STARTED" },
     { name: "Listing Readiness", state: "NOT STARTED" },
     { name: "Commerce Readiness", state: "NOT STARTED" },
   ];
