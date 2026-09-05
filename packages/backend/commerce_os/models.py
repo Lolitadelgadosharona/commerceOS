@@ -31,6 +31,12 @@ from commerce_os.build.creative_production_models import (
     CreativeProductionRequest,
     CreativeProductionWork,
 )
+from commerce_os.build.listing_governance_models import (  # noqa: F401
+    ListingClaim,
+    ListingClaimEvidence,
+    ListingFAQ,
+    ListingVersion,
+)
 from commerce_os.build.listing_models import (
     ContentBrief,
     CustomerQuestion,

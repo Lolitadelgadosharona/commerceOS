@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 059 Revenue Experiment Execution Layer
+Status: Sprint 075 Governed Listing Intelligence
 
 ## Governing documents
 
@@ -29,6 +29,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Supplier Intelligence Foundation v1.0](./architecture/SUPPLIER_INTELLIGENCE_FOUNDATION_V1_0.md) | Supplier evaluation profiles, deterministic scoring, risks, matches, and advisory decisions |
 | [Governed Supplier Intelligence v1.0](./architecture/GOVERNED_SUPPLIER_INTELLIGENCE_V1_0.md) | Product Truth-linked evidence, quotes, qualification, governed selection, and supply readiness |
 | [Governed Build Readiness v1.0](./architecture/GOVERNED_BUILD_READINESS_V1_0.md) | Supplier validation, typed requirements, Build Package composition, and deterministic Build Readiness |
+| [Governed Listing Intelligence v1.0](./architecture/GOVERNED_LISTING_INTELLIGENCE_V1_0.md) | Versioned Listing Truth, claim evidence and policy, deterministic readiness, governed approval, and read-only channel projection |
 | [Listing Intelligence and GEO Foundation v1.0](./architecture/LISTING_INTELLIGENCE_GEO_FOUNDATION_V1_0.md) | Product-grounded strategy, question maps, discovery knowledge, briefs, and evidence |
 | [Creative Strategy Foundation v1.0](./architecture/CREATIVE_STRATEGY_FOUNDATION_V1_0.md) | Creative strategy, hypotheses, briefs, channel fit, and experiment observations |
 | [Channel Strategy and Conversion Path Foundation v1.0](./architecture/CHANNEL_STRATEGY_CONVERSION_FOUNDATION_V1_0.md) | Evidence-led channel recommendations, deterministic scoring, B2C/B2B paths, and authority boundaries |

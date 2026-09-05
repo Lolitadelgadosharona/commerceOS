@@ -14,6 +14,7 @@ export const navigationItems: NavigationItem[] = [
   { href: "/products", label: "Products", shortLabel: "PR", description: "Product truth" },
   { href: "/suppliers", label: "Suppliers", shortLabel: "SU", description: "Supply readiness" },
   { href: "/build", label: "Build", shortLabel: "BU", description: "Build readiness" },
+  { href: "/listings", label: "Listings", shortLabel: "LI", description: "Claim-safe listing truth" },
   { href: "/decision-committee", label: "Decision Committee", shortLabel: "DC", description: "Governed approvals" },
   { href: "/analytics", label: "Analytics", shortLabel: "AN", description: "Performance and learning" },
 ];

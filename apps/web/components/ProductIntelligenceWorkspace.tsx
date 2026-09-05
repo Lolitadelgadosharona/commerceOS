@@ -496,6 +496,20 @@ export function ProductHypothesisDetail({
       {promotion?.product_id && (
         <section className="commerce-panel">
           <header>
+            <div><p className="eyebrow">Build Ready → claim-safe commercial truth</p><h2>Listing Readiness</h2></div>
+            <span>GOVERNED SEPARATELY</span>
+          </header>
+          <div className="supply-comparison-summary">
+            <span>Product lifecycle</span>
+            <strong>Listing</strong>
+            <p>Review the current Listing version, claim blockers, Product Truth freshness, and deterministic next action.</p>
+            <Link href={`/listings/${promotion.product_id}`}>Open Listing Intelligence →</Link>
+          </div>
+        </section>
+      )}
+      {promotion?.product_id && (
+        <section className="commerce-panel">
+          <header>
             <div><p className="eyebrow">Supply Ready → governed commercialization preparation</p><h2>Build Readiness</h2></div>
             <span>{buildPackage?.status?.toUpperCase() ?? "UNKNOWN"}</span>
           </header>

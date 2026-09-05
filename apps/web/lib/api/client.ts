@@ -16,7 +16,7 @@ function failure(kind: ApiFailure["kind"], message: string, status?: number): Ap
   return { ok: false, error: { kind, message, status } };
 }
 
-export async function apiRequest<T>(path: string, options: { method?: "GET" | "POST" | "PATCH"; query?: Record<string, string>; body?: unknown; timeoutMs?: number } = {}): Promise<ApiResult<T>> {
+export async function apiRequest<T>(path: string, options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; query?: Record<string, string>; body?: unknown; timeoutMs?: number } = {}): Promise<ApiResult<T>> {
   const token = apiToken();
   if (!token) {
     return failure("configuration", "A server-side Commerce OS session is required to load operational data.");

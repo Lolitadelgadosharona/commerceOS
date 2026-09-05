@@ -553,6 +553,72 @@ const buildPackage = () => ({
   origin_opportunity_id: marketId,
   origin_hypothesis_id: productHypothesisId,
 });
+const listingVersion = {
+  ...base,
+  id: "75757575-7575-4575-8575-757575757575",
+  product_id: productRecordId,
+  product_truth_id: "67676767-6767-4767-8767-676767676767",
+  product_truth_version: 1,
+  listing_version: 1,
+  status: "draft",
+  title: "Portable cooling mat",
+  subtitle: "Evidence-backed comfort for summer travel",
+  summary: "A reusable cooling surface for traveling pets.",
+  description: "A portable cooling mat based on approved Product Truth.",
+  customer_problem: "Owners report recurring pet heat discomfort during summer travel.",
+  solution: "A portable reusable cooling surface.",
+  features: ["Cooling textile", "Reusable"],
+  benefits: ["Supports a more comfortable travel setup"],
+  specifications: { material: "cooling textile", dimensions: "60 × 40 cm" },
+  use_cases: ["Summer travel"],
+  whats_included: ["Cooling mat"],
+  warnings: ["Use only as directed"],
+  care_usage: "Follow approved care instructions.",
+  shipping_facts: null,
+  return_facts: null,
+  risk_reversal: null,
+  seo_title: "Portable pet cooling mat",
+  meta_description: "Evidence-backed reusable cooling mat for pet travel.",
+  slug_suggestion: "portable-pet-cooling-mat",
+  primary_topic: "pet cooling mat",
+  secondary_topics: ["summer pet travel"],
+  structured_attributes: { material: "cooling textile", dimensions: "60 × 40 cm" },
+  commercial_price: "39.00",
+  currency: "USD",
+  price_status: "approved",
+  change_reason: "Initial governed draft",
+  approval_request_id: null,
+  created_by: userId,
+  approved_by: null,
+  approved_at: null,
+};
+const listingPackage = {
+  organization_id: organizationId,
+  product_id: productRecordId,
+  product_name: "Portable cooling mat",
+  product_truth_id: listingVersion.product_truth_id,
+  product_truth_version: 1,
+  listing: listingVersion,
+  allowed_facts: [
+    { fact: "Cooling textile", source: "ProductTruth v1", evidence: [listingVersion.product_truth_id], can_use: true, restrictions: [], notes: "Approved Product Truth feature." },
+    { fact: "Guaranteed all-day cooling", source: "ProductTruth v1", evidence: [listingVersion.product_truth_id], can_use: false, restrictions: ["restricted_claim"], notes: "Must not be used." },
+  ],
+  claim_review: [
+    { id: "76767676-7676-4676-8676-767676767676", claim: "Cooling textile", claim_type: "product_fact", support_status: "supported", sources: [`product_truth:${listingVersion.product_truth_id}`], risk_level: "standard", policy_requirement: null, human_review_needed: false, blocking: false },
+    { id: "77777777-8888-4777-8777-777777777777", claim: "Clinically proven", claim_type: "health_or_safety", support_status: "unknown", sources: [], risk_level: "high", policy_requirement: "Explicit policy and strong evidence required.", human_review_needed: true, blocking: true },
+  ],
+  faqs: [{ ...base, id: "78787878-7878-4878-8878-787878787878", listing_version_id: listingVersion.id, question: "How should I care for it?", answer: "Follow approved care instructions.", answer_status: "supported_answer", evidence_reference: listingVersion.product_truth_id }],
+  blockers: [{ code: "claim_unknown", severity: "blocker", message: "Claim is unknown: Clinically proven", references: ["77777777-8888-4777-8777-777777777777"] }],
+  warnings: [{ code: "shipping_policy", severity: "warning", message: "Shipping policy is not yet recorded.", references: [] }],
+  status: "not_ready",
+  product_truth_fresh: true,
+  build_status: "conditional",
+  structured_data_ready: true,
+  next_action: "Remove or support the unknown claim.",
+  origin_opportunity_id: marketId,
+  origin_hypothesis_id: productHypothesisId,
+};
+const shopifyProjection = { status: "draft_concept", external_id: null, title: listingVersion.title, description: listingVersion.description, product_type: "pet", vendor: "Commerce OS", price: "39.00", currency: "USD", seo_title: listingVersion.seo_title, seo_description: listingVersion.meta_description, metafield_candidates: listingVersion.structured_attributes, missing_fields: ["shipping"], publication_authorized: false };
 const promotionReadiness = {
   organization_id: organizationId,
   product_hypothesis_id: productHypothesisId,
@@ -1197,6 +1263,12 @@ createServer((request, response) => {
     });
   if (url.pathname === "/api/v1/build-packages" && request.method === "GET")
     return json(200, scenario === "empty" ? [] : [buildPackage()]);
+  if (url.pathname === "/api/v1/listing-packages" && request.method === "GET")
+    return json(200, scenario === "empty" ? [] : [listingPackage]);
+  if (url.pathname === `/api/v1/products/${productRecordId}/listing-package` && request.method === "GET")
+    return json(200, listingPackage);
+  if (url.pathname === `/api/v1/products/${productRecordId}/shopify-readiness` && request.method === "GET")
+    return json(200, shopifyProjection);
   if (url.pathname === `/api/v1/products/${productRecordId}/build-package` && request.method === "GET")
     return json(200, buildPackage());
   if (url.pathname === `/api/v1/suppliers/${canonicalSupplierId}/approve-for-product` && request.method === "POST") {

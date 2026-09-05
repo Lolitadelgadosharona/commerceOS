@@ -208,3 +208,22 @@ button { font:inherit; }
 
 /* Sprint 074 · governed build readiness */
 .build-relationship,.build-candidate{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:18px;padding:18px 20px;border-bottom:1px solid var(--line)}.build-inline-action{display:grid;gap:10px}.build-inline-action label{display:grid;gap:6px;color:var(--muted);font-size:12px}.build-inline-action input{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.build-inline-action small{color:var(--muted)}@media(max-width:800px){.build-relationship,.build-candidate{grid-template-columns:1fr}}
+/* Sprint 075 governed Listing Intelligence */
+.listing-content-row {
+  border-top: 1px solid var(--line);
+  padding: 0.9rem 0;
+}
+
+.listing-content-row span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.listing-content-row p {
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0.35rem 0 0;
+}
