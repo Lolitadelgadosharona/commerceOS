@@ -17,6 +17,7 @@ import type {
 } from "../lib/api/commerce-intelligence";
 import type { ApprovalRequest } from "../lib/api/opportunities";
 import type { SupplierComparison, SupplyReadiness } from "../lib/api/suppliers";
+import type { BuildPackage } from "../lib/api/build-readiness";
 import { ProductLifecyclePanel } from "./ProductLifecyclePanel";
 
 const pct = (value: number) => `${Math.round(value * 100)}%`;
@@ -238,6 +239,7 @@ export function ProductHypothesisDetail({
   comparison,
   supplierComparison,
   supplyReadiness,
+  buildPackage,
 }: {
   hypothesis: ProductHypothesis;
   economics: ApiResult<ProductEconomics[]>;
@@ -253,6 +255,7 @@ export function ProductHypothesisDetail({
   comparison: TruthComparison | null;
   supplierComparison: SupplierComparison | null;
   supplyReadiness: SupplyReadiness | null;
+  buildPackage: BuildPackage | null;
 }) {
   const economic = economics.ok
     ? economics.data.find((item) => item.product_id === hypothesis.id)
@@ -465,6 +468,7 @@ export function ProductHypothesisDetail({
         drafts={drafts}
         comparison={comparison}
         supplyReadiness={supplyReadiness}
+        buildPackage={buildPackage}
       />
       {promotion?.product_id && (
         <section className="commerce-panel">
@@ -486,6 +490,21 @@ export function ProductHypothesisDetail({
               <p>{supplyReadiness?.next_action ?? "Supply readiness projection is unavailable."}</p>
               <Link href="/suppliers">Open Supplier Intelligence →</Link>
             </div>
+          </div>
+        </section>
+      )}
+      {promotion?.product_id && (
+        <section className="commerce-panel">
+          <header>
+            <div><p className="eyebrow">Supply Ready → governed commercialization preparation</p><h2>Build Readiness</h2></div>
+            <span>{buildPackage?.status?.toUpperCase() ?? "UNKNOWN"}</span>
+          </header>
+          <div className="supply-readiness-layout">
+            <div className="readiness-list">
+              {(buildPackage?.blockers ?? []).map((item) => <article className="readiness-blocker" key={item.code}><span>BLOCKER</span><strong>{label(item.code)}</strong><p>{item.message}</p></article>)}
+              {(buildPackage?.warnings ?? []).map((item) => <article className="readiness-warning" key={item.code}><span>WARNING</span><strong>{label(item.code)}</strong><p>{item.message}</p></article>)}
+            </div>
+            <div className="supply-comparison-summary"><span>Samples / validations</span><strong>{buildPackage ? `${buildPackage.samples.length} / ${buildPackage.validations.length}` : "—"}</strong><p>{buildPackage?.next_action ?? "Build Package is unavailable."}</p><Link href={`/build/${promotion.product_id}`}>Open Build Package →</Link></div>
           </div>
         </section>
       )}

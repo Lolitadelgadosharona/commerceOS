@@ -27,6 +27,7 @@ from fastapi import APIRouter, Depends
 from apps.api.ai_runtime_routes import router as ai_runtime_router
 from apps.api.auth_routes import router as auth_router
 from apps.api.authorization import enforce_authorization
+from apps.api.build_readiness_routes import router as build_readiness_router
 from apps.api.channel_execution_routes import router as channel_execution_router
 from apps.api.channel_strategy_routes import router as channel_strategy_router
 from apps.api.commercial_risk_routes import router as commercial_risk_router
@@ -87,6 +88,7 @@ from apps.api.supplier_intelligence_routes import router as supplier_intelligenc
 api_router = APIRouter(prefix="/api/v1", dependencies=[Depends(enforce_authorization)])
 api_router.include_router(ai_runtime_router, tags=["ai-runtime"])
 api_router.include_router(auth_router, tags=["authentication"])
+api_router.include_router(build_readiness_router, tags=["build_readiness"])
 api_router.include_router(governance_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(opportunity_router)

@@ -3,12 +3,13 @@ from typing import Annotated, TypeVar
 from uuid import UUID
 
 from commerce_os.build.models import Product
+from commerce_os.build.promotion_models import ProductPromotion
 from commerce_os.governance.approvals import ApprovalWorkflowService
 from commerce_os.governance.audit import AuditService
 from commerce_os.governance.executive_models import DecisionQueueItem
 from commerce_os.governance.models import ApprovalRequest, ApprovalStatus, PrincipalType, User
 from commerce_os.intelligence.errors import IntelligenceNotFoundError
-from commerce_os.intelligence.product_models import ProductEconomicInputProvenance
+from commerce_os.intelligence.product_models import ProductEconomicInputProvenance, ProductEconomics
 from commerce_os.intelligence.product_schemas import (
     ProductEconomicInputCreate,
     ProductEconomicInputRead,
@@ -273,10 +274,27 @@ def link_quote_to_economics(
     quote = _scoped(session, SupplierQuote, quote_id, payload.organization_id)
     if quote.unit_price is None:
         raise ApiError(409, "quote_price_unknown", "A numeric quoted unit price is required.")
+    economics = _scoped(
+        session, ProductEconomics, payload.product_economics_id, payload.organization_id
+    )
+    promotion = session.scalar(
+        select(ProductPromotion).where(
+            ProductPromotion.organization_id == payload.organization_id,
+            ProductPromotion.product_id == quote.product_id,
+            ProductPromotion.product_hypothesis_id == economics.product_id,
+        )
+    )
+    if promotion is None:
+        raise ApiError(
+            409,
+            "quote_product_mismatch",
+            "Supplier quote and Product Economics do not share the governed Product origin.",
+        )
     return ProductEconomicsService(session).upsert_input(
         ProductEconomicInputCreate(
             organization_id=payload.organization_id,
             product_economics_id=payload.product_economics_id,
+            supplier_quote_id=quote.id,
             metric="estimated_product_cost",
             value=quote.unit_price,
             classification="quoted",

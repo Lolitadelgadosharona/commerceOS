@@ -28,6 +28,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Product Truth Foundation v1.0](./architecture/PRODUCT_TRUTH_FOUNDATION_V1_0.md) | Authoritative products, approved truth versions, product knowledge, and brand claim guardrails |
 | [Supplier Intelligence Foundation v1.0](./architecture/SUPPLIER_INTELLIGENCE_FOUNDATION_V1_0.md) | Supplier evaluation profiles, deterministic scoring, risks, matches, and advisory decisions |
 | [Governed Supplier Intelligence v1.0](./architecture/GOVERNED_SUPPLIER_INTELLIGENCE_V1_0.md) | Product Truth-linked evidence, quotes, qualification, governed selection, and supply readiness |
+| [Governed Build Readiness v1.0](./architecture/GOVERNED_BUILD_READINESS_V1_0.md) | Supplier validation, typed requirements, Build Package composition, and deterministic Build Readiness |
 | [Listing Intelligence and GEO Foundation v1.0](./architecture/LISTING_INTELLIGENCE_GEO_FOUNDATION_V1_0.md) | Product-grounded strategy, question maps, discovery knowledge, briefs, and evidence |
 | [Creative Strategy Foundation v1.0](./architecture/CREATIVE_STRATEGY_FOUNDATION_V1_0.md) | Creative strategy, hypotheses, briefs, channel fit, and experiment observations |
 | [Channel Strategy and Conversion Path Foundation v1.0](./architecture/CHANNEL_STRATEGY_CONVERSION_FOUNDATION_V1_0.md) | Evidence-led channel recommendations, deterministic scoring, B2C/B2B paths, and authority boundaries |
@@ -128,6 +129,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 042 Completion Notes](./planning/SPRINT_042_COMPLETION.md) | Closed-loop observations, hypotheses, conclusions, recommendations, priority, queue review, and projections |
 | [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md) | Governed provider execution, controls, provenance, structured output, and Research composition |
 | [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md) | Operational Research Runs, templates, evidence grounding, worker execution, results, and review |
+| [Sprint 074 Completion Notes](./planning/SPRINT_074_COMPLETION.md) | Governed supplier validation, Product Build Package, canonical Build Readiness, and UI evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence
@@ -178,6 +180,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 - [Sprint 040 Completion Notes](./planning/SPRINT_040_COMPLETION.md)
 - [Sprint 041 Completion Notes](./planning/SPRINT_041_COMPLETION.md)
 - [Sprint 042 Completion Notes](./planning/SPRINT_042_COMPLETION.md)
+- [Sprint 074 Completion Notes](./planning/SPRINT_074_COMPLETION.md)
 - [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md)
 - [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md)
 - [Sprint 045 Completion Notes](./planning/SPRINT_045_COMPLETION.md)

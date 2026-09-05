@@ -48,6 +48,7 @@ export default async function ProductPage({
       comparison={detail.comparison?.ok ? detail.comparison.data : null}
       supplierComparison={detail.supplierComparison?.ok ? detail.supplierComparison.data : null}
       supplyReadiness={detail.supplyReadiness?.ok ? detail.supplyReadiness.data : null}
+      buildPackage={detail.buildPackage?.ok ? detail.buildPackage.data : null}
     />
   );
 }

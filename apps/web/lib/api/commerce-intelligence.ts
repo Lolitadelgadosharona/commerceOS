@@ -3,6 +3,7 @@ import { apiGet } from "./client";
 import type { ApiResult, ReadModel } from "./types";
 import type { ApprovalRequest } from "./opportunities";
 import type { SupplierComparison, SupplyReadiness } from "./suppliers";
+import type { BuildPackage } from "./build-readiness";
 
 export type MarketSource = ReadModel & {
   organization_id: string;
@@ -165,6 +166,7 @@ export type ProductEconomics = ReadModel & {
 export type ProductEconomicInput = ReadModel & {
   organization_id: string;
   product_economics_id: string;
+  supplier_quote_id: string | null;
   metric: string;
   value: string | null;
   classification: string;
@@ -413,9 +415,10 @@ export async function getProductHypothesisDetail(
     drafts = null,
     comparison = null,
     supplierComparison = null,
-    supplyReadiness = null;
+    supplyReadiness = null,
+    buildPackage = null;
   if (promotion.ok && promotion.data?.product_id) {
-    [origin, drafts, comparison, supplierComparison, supplyReadiness] = await Promise.all([
+    [origin, drafts, comparison, supplierComparison, supplyReadiness, buildPackage] = await Promise.all([
       apiGet<{
         product: Product;
         promotion: ProductPromotion;
@@ -437,6 +440,10 @@ export async function getProductHypothesisDetail(
         `/api/v1/products/${promotion.data.product_id}/supply-readiness`,
         query,
       ),
+      apiGet<BuildPackage>(
+        `/api/v1/products/${promotion.data.product_id}/build-package`,
+        query,
+      ),
     ]);
   }
   return {
@@ -452,5 +459,6 @@ export async function getProductHypothesisDetail(
     comparison,
     supplierComparison,
     supplyReadiness,
+    buildPackage,
   };
 }

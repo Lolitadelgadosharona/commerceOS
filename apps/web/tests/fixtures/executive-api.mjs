@@ -19,6 +19,8 @@ let approvalStatus = "pending";
 let promotionRequested = false;
 let promotionApproved = false;
 let productCreated = false;
+let buildRelationshipExecuted = false;
+let supplierCandidatePromoted = false;
 
 const base = {
   organization_id: organizationId,
@@ -407,7 +409,7 @@ const canonicalSupplierQuote = {
   payment_terms: "30% deposit; 70% before shipment",
   lead_time: "30 days",
   quote_date: "2026-08-30",
-  valid_until: "2026-09-30",
+  valid_until: "2026-08-31",
   classification: "quoted",
   source: "supplier quotation",
   confidence: 0.86,
@@ -475,8 +477,23 @@ const productScore = {
 const economicInputs = [
   {
     ...base,
+    id: "65656565-6565-4565-8565-656565656565",
+    product_economics_id: productEconomics.id,
+    supplier_quote_id: canonicalSupplierQuote.id,
+    metric: "estimated_product_cost",
+    value: "11.5000",
+    classification: "quoted",
+    source: "supplier quotation",
+    confidence: 0.86,
+    as_of: "2026-08-30T12:00:00Z",
+    evidence_reference: "quote:atlantic-1",
+    notes: "Supplier quote evidence; not Finance actual.",
+  },
+  {
+    ...base,
     id: "41414141-4141-4141-8141-414141414141",
     product_economics_id: productEconomics.id,
+    supplier_quote_id: null,
     metric: "estimated_shipping_cost",
     value: "0.0000",
     classification: "quoted",
@@ -490,6 +507,7 @@ const economicInputs = [
     ...base,
     id: "42424242-4242-4242-8242-424242424242",
     product_economics_id: productEconomics.id,
+    supplier_quote_id: null,
     metric: "customer_acquisition_cost",
     value: null,
     classification: "unknown",
@@ -500,6 +518,41 @@ const economicInputs = [
     notes: "Missing before decision",
   },
 ];
+const buildRelationship = () => ({
+  id: "66666666-7777-4666-8666-666666666666",
+  supplier_id: canonicalSupplierId,
+  approval_request_id: promotionApprovalId,
+  role: "primary",
+  status: buildRelationshipExecuted ? "approved" : "pending",
+});
+const buildPackage = () => ({
+  organization_id: organizationId,
+  product_id: productRecordId,
+  product_name: "Portable cooling mat",
+  product_truth_id: "67676767-6767-4767-8767-676767676767",
+  product_truth_version: 1,
+  specifications: { material: "cooling textile", dimensions: "60 × 40 cm" },
+  requirements: [],
+  approved_suppliers: buildRelationshipExecuted ? [canonicalSupplierId] : [],
+  supplier_relationships: [buildRelationship()],
+  supplier_fit: [
+    { requirement: "Material", required_value: "cooling textile", supplier_response: "cooling textile", evidence: [canonicalSupplierEvidence.id], status: "pass", gap: null },
+    { requirement: "Dimensions", required_value: "60 × 40 cm", supplier_response: null, evidence: [], status: "unknown", gap: "Supplier dimension evidence is UNKNOWN." },
+  ],
+  samples: [{ ...base, id: "68686868-6868-4868-8868-686868686868", supplier_id: canonicalSupplierId, sample_identifier: "SAMPLE-001", status: "received", review_status: "unknown", review_dimensions: {}, evidence_reference: "photo:sample-001" }],
+  validations: [{ ...base, id: "69696969-6969-4969-8969-696969696969", supplier_id: canonicalSupplierId, sample_id: "68686868-6868-4868-8868-686868686868", validation_type: "sample_observation", classification: "human_verified", result: "pass", observations: "Material matches the approved specification.", evidence_reference: "review:sample-001" }],
+  quote_ids: [canonicalSupplierQuote.id],
+  quote_economics_ids: [economicInputs[0].id],
+  blockers: buildRelationshipExecuted ? [] : [{ code: "approved_supplier", severity: "blocker", message: "Execute the approved supplier relationship.", references: [buildRelationship().id] }],
+  warnings: [
+    { code: "expired_quote", severity: "warning", message: "A supplier quote has expired and should be refreshed.", references: [canonicalSupplierQuote.id] },
+    { code: "single_supplier", severity: "warning", message: "Only one supplier is approved; this does not block Build Ready.", references: [] },
+  ],
+  status: buildRelationshipExecuted ? "conditional" : "not_ready",
+  next_action: buildRelationshipExecuted ? "Review Build Package warnings." : "Complete governed supplier selection execution.",
+  origin_opportunity_id: marketId,
+  origin_hypothesis_id: productHypothesisId,
+});
 const promotionReadiness = {
   organization_id: organizationId,
   product_hypothesis_id: productHypothesisId,
@@ -820,6 +873,8 @@ createServer((request, response) => {
     promotionRequested = false;
     promotionApproved = false;
     productCreated = false;
+    buildRelationshipExecuted = false;
+    supplierCandidatePromoted = false;
     response.writeHead(204).end();
     return;
   }
@@ -1140,6 +1195,20 @@ createServer((request, response) => {
       ],
       next_action: "Approved Product Truth is required.",
     });
+  if (url.pathname === "/api/v1/build-packages" && request.method === "GET")
+    return json(200, scenario === "empty" ? [] : [buildPackage()]);
+  if (url.pathname === `/api/v1/products/${productRecordId}/build-package` && request.method === "GET")
+    return json(200, buildPackage());
+  if (url.pathname === `/api/v1/suppliers/${canonicalSupplierId}/approve-for-product` && request.method === "POST") {
+    buildRelationshipExecuted = true;
+    return json(200, { ...base, ...buildRelationship(), organization_id: organizationId, product_id: productRecordId, source_candidate_id: null, approved_by: userId, approved_at: "2026-09-01T12:00:00Z" });
+  }
+  if (url.pathname === `/api/v1/supplier-candidates/${productSupplier.id}/promotion` && request.method === "GET")
+    return json(200, supplierCandidatePromoted ? { ...base, id: "70707070-7070-4070-8070-707070707070", supplier_candidate_id: productSupplier.id, supplier_profile_id: canonicalSupplierId, confirmed_by: userId, confirmed_at: "2026-09-01T12:00:00Z" } : null);
+  if (url.pathname === `/api/v1/supplier-candidates/${productSupplier.id}/promote` && request.method === "POST") {
+    supplierCandidatePromoted = true;
+    return json(201, { ...base, id: "70707070-7070-4070-8070-707070707070", supplier_candidate_id: productSupplier.id, supplier_profile_id: canonicalSupplierId, confirmed_by: userId, confirmed_at: "2026-09-01T12:00:00Z" });
+  }
   const commerceLists = {
     "/api/v1/market-sources": [marketSource],
     "/api/v1/market-signals": [marketSignal],

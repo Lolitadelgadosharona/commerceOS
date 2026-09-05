@@ -116,6 +116,9 @@ class ProductEconomicInputProvenance(IdMixin, TimestampMixin, VersionMixin, Base
     product_economics_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("product_economics.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    supplier_quote_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("supplier_quotes.id", ondelete="SET NULL"), index=True
+    )
     metric: Mapped[str] = mapped_column(String(60), nullable=False)
     value: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
     classification: Mapped[str] = mapped_column(String(30), nullable=False)

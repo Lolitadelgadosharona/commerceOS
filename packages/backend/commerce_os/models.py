@@ -40,6 +40,13 @@ from commerce_os.build.listing_models import (
 )
 from commerce_os.build.models import Product, ProductClaimPolicy, ProductKnowledgeItem, ProductTruth
 from commerce_os.build.promotion_models import ProductPromotion, ProductTruthDraft
+from commerce_os.build.readiness_models import (  # noqa: F401
+    BuildRequirementPolicy,
+    ProductBuildRequirement,
+    ProductSample,
+    SupplierCandidatePromotion,
+    SupplierValidationArtifact,
+)
 from commerce_os.decision.cfo_models import CFOInsight
 from commerce_os.decision.channel_models import (
     ChannelCandidate,

@@ -93,6 +93,7 @@ EconomicClassification = Literal[
 class ProductEconomicInputCreate(BaseModel):
     organization_id: UUID
     product_economics_id: UUID
+    supplier_quote_id: UUID | None = None
     metric: EconomicMetric
     value: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=4)
     classification: EconomicClassification
@@ -122,6 +123,7 @@ class ProductEconomicInputCreate(BaseModel):
 class ProductEconomicInputRead(ReadModel):
     organization_id: UUID
     product_economics_id: UUID
+    supplier_quote_id: UUID | None
     metric: str
     value: Decimal | None
     classification: str
