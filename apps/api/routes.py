@@ -83,6 +83,7 @@ from apps.api.revenue_execution_routes import router as revenue_execution_router
 from apps.api.revenue_launch_routes import router as revenue_launch_router
 from apps.api.revenue_operations_routes import router as revenue_operations_router
 from apps.api.sales_support_routes import router as sales_support_router
+from apps.api.shopify_channel_routes import router as shopify_channel_router
 from apps.api.strategic_account_routes import router as strategic_account_router
 from apps.api.supplier_intelligence_routes import router as supplier_intelligence_router
 
@@ -99,6 +100,7 @@ api_router.include_router(product_truth_router)
 api_router.include_router(supplier_intelligence_router)
 api_router.include_router(listing_intelligence_router)
 api_router.include_router(listing_governance_router, tags=["listing_governance"])
+api_router.include_router(shopify_channel_router, tags=["shopify_channel"])
 api_router.include_router(listing_geo_intelligence_router, tags=["ai_listing_geo_intelligence"])
 api_router.include_router(creative_strategy_router)
 api_router.include_router(channel_strategy_router, tags=["channel_strategy"])

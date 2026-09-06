@@ -106,7 +106,9 @@ export function DecisionCommitteeWorkspace({
                     (item) => item.id === approval.object_id,
                   )
                 : undefined;
-            const href = opportunity
+            const href = approval?.object_type === "shopify_publication"
+              ? "/channels/shopify"
+              : opportunity
               ? isDiscoveryOpportunity(opportunity)
                 ? `/opportunities/${opportunity.id}?kind=candidate`
                 : `/decision-committee/${opportunity.id}`
@@ -150,7 +152,9 @@ export function DecisionCommitteeWorkspace({
                 </dl>
                 {href ? (
                   <Link href={href}>
-                    {approval?.status === "pending"
+                    {approval?.object_type === "shopify_publication"
+                      ? "Open Shopify governance workspace →"
+                      : approval?.status === "pending"
                       ? "Review evidence and decide →"
                       : "Open decision evidence →"}
                   </Link>

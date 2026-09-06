@@ -70,9 +70,19 @@ from commerce_os.intelligence.research_services import (
     ResearchAnalystService,
     scoped_research,
 )
+from commerce_os.operations.shopify_adapter import (
+    DeterministicShopifyAdapter,
+    ShopifyAdapter,
+    ShopifyAdapterError,
+    ShopifyGraphQLAdapter,
+)
 from commerce_os.shared.config import get_settings
 from commerce_os.shared.database import SessionLocal
 from commerce_os.shared.outbox import OutboxEvent, OutboxStatus
+from commerce_os.shopify_services import (
+    SHOPIFY_PUBLICATION_EVENT,
+    ShopifyChannelService,
+)
 from redis import Redis
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -663,6 +673,43 @@ def consume_growth_job(session: Session, event: OutboxEvent) -> None:
         )
 
 
+def consume_shopify_job(
+    session: Session,
+    event: OutboxEvent,
+    adapter: ShopifyAdapter | None = None,
+) -> None:
+    """Execute one explicitly authorized Shopify publication with a service identity."""
+    if event.event_type != SHOPIFY_PUBLICATION_EVENT:
+        raise ValueError("Unsupported Shopify worker event type.")
+    publication_id = UUID(str(event.payload["publication_id"]))
+    worker = session.scalar(
+        select(User)
+        .where(
+            User.organization_id == event.organization_id,
+            User.principal_type == PrincipalType.SERVICE,
+            User.status == UserStatus.ACTIVE,
+        )
+        .order_by(User.created_at)
+        .limit(1)
+    )
+    if worker is None:
+        raise ValueError("No active service identity is configured for this organization.")
+    service = ShopifyChannelService(session)
+    publication = service.scoped_publication(publication_id, event.organization_id)
+    connection = service.connection(publication.connection_id, event.organization_id)
+    if adapter is None:
+        adapter = (
+            DeterministicShopifyAdapter(connection.store_domain)
+            if connection.authentication_mode == "mock"
+            else ShopifyGraphQLAdapter(
+                store_domain=connection.store_domain,
+                api_version=connection.api_version,
+                credential_reference=connection.credential_reference,
+            )
+        )
+    service.execute(publication.id, event.organization_id, worker.id, adapter)
+
+
 def process_next_growth_job(session: Session) -> bool:
     """Claim and process one durable job; retries remain visible and bounded."""
     now = datetime.now(UTC)
@@ -708,6 +755,61 @@ def process_next_growth_job(session: Session) -> bool:
     return True
 
 
+def process_next_shopify_job(session: Session) -> bool:
+    """Claim one publication event; retry only safe transient connector failures."""
+    now = datetime.now(UTC)
+    event = session.scalar(
+        select(OutboxEvent)
+        .where(
+            OutboxEvent.event_type == SHOPIFY_PUBLICATION_EVENT,
+            OutboxEvent.status.in_([OutboxStatus.PENDING, OutboxStatus.FAILED]),
+            OutboxEvent.available_at <= now,
+            OutboxEvent.attempts < MAX_JOB_ATTEMPTS,
+        )
+        .order_by(OutboxEvent.occurred_at)
+        .with_for_update(skip_locked=True)
+        .limit(1)
+    )
+    if event is None:
+        return False
+    event_id = event.id
+    event.status = OutboxStatus.PROCESSING
+    event.attempts += 1
+    session.commit()
+    try:
+        consume_shopify_job(session, event)
+        event = session.get(OutboxEvent, event_id)
+        if event is None:
+            raise ValueError("Claimed Shopify job disappeared.")
+        event.status = OutboxStatus.PUBLISHED
+        event.published_at = datetime.now(UTC)
+        event.last_error = None
+        session.commit()
+    except ShopifyAdapterError as exc:
+        session.rollback()
+        event = session.get(OutboxEvent, event_id)
+        if event is not None:
+            event.status = OutboxStatus.FAILED
+            event.last_error = f"{exc.category}: {str(exc)}"[:2000]
+            event.available_at = (
+                datetime.now(UTC) + timedelta(seconds=min(60, 2**event.attempts))
+                if exc.retryable
+                else datetime.max.replace(tzinfo=UTC)
+            )
+            session.commit()
+        logger.warning("Shopify publication failed safely; category=%s", exc.category)
+    except Exception as exc:
+        session.rollback()
+        event = session.get(OutboxEvent, event_id)
+        if event is not None:
+            event.status = OutboxStatus.FAILED
+            event.last_error = f"business_rule: {str(exc)}"[:2000]
+            event.available_at = datetime.max.replace(tzinfo=UTC)
+            session.commit()
+        logger.warning("Shopify publication rejected before external execution.")
+    return True
+
+
 def schedule_due_web_discovery(session: Session) -> bool:
     """Queue one due, founder-configured daily plan; execution remains evidence-only."""
     now = datetime.now(UTC)
@@ -748,7 +850,7 @@ def main() -> None:
     client = Redis.from_url(settings.redis_url, decode_responses=True)
     client.ping()
     logger.info(
-        "Commerce OS worker ready; external delivery disabled; principal=%s",
+        "Commerce OS worker ready; governed connector execution available; principal=%s",
         WORKER_PRINCIPAL,
     )
     signal.signal(signal.SIGTERM, stop_worker)
@@ -761,7 +863,7 @@ def main() -> None:
         )
         with SessionLocal() as session:
             scheduled = schedule_due_web_discovery(session)
-            processed = process_next_growth_job(session)
+            processed = process_next_shopify_job(session) or process_next_growth_job(session)
         if not processed and not scheduled:
             time.sleep(1)
 
