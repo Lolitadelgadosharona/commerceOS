@@ -36,3 +36,13 @@ export async function executeShopifyPublication(_: ShopifyActionState, form: For
   if(!result.ok)return {kind:"error",message:result.error.message};
   revalidatePath(`/channels/shopify/${productId}`);return {kind:"success",message:"Governed execution queued for the Worker."};
 }
+
+export async function decideShopifyPublication(_: ShopifyActionState, form: FormData): Promise<ShopifyActionState> {
+  const publicationId=String(form.get("publication_id")??""),approvalId=String(form.get("approval_request_id")??""),decision=String(form.get("decision")??""),reason=String(form.get("reason")??"").trim();
+  if(!UUID.test(publicationId)||!UUID.test(approvalId)||!["approved","rejected"].includes(decision)||reason.length<3)return {kind:"error",message:"A valid human decision and evidence-based reason are required."};
+  const ctx=await context();if(!ctx.ok)return {kind:"error",message:ctx.error.message};
+  const result=await apiPost(`/api/v1/approvals/${approvalId}/decision`,{decision,reason});
+  if(!result.ok)return {kind:"error",message:result.error.message};
+  revalidatePath(`/channels/shopify/publications/${publicationId}`);revalidatePath("/decision-committee");
+  return {kind:"success",message:`Publication ${decision}. No Shopify execution occurred.`};
+}

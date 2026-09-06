@@ -25,6 +25,10 @@ class ShopifyConnection(IdMixin, TimestampMixin, VersionMixin, Base):
     publication_policy: Mapped[dict[str, object]] = mapped_column(JSON, default=dict)
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"))
     validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    shop_gid: Mapped[str | None] = mapped_column(String(255))
+    merchant_name: Mapped[str | None] = mapped_column(String(255))
+    partner_development: Mapped[bool | None] = mapped_column(Boolean)
+    plan_display_name: Mapped[str | None] = mapped_column(String(100))
     last_error_category: Mapped[str | None] = mapped_column(String(50))
     last_error_message: Mapped[str | None] = mapped_column(Text)
 

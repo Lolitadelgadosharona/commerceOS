@@ -1,8 +1,9 @@
 from typing import Annotated
 from uuid import UUID
 
+from commerce_os.ai_runtime.adapters import EnvironmentCredentialResolver
 from commerce_os.build.models import Product
-from commerce_os.governance.models import User
+from commerce_os.governance.models import ApprovalRequest, User
 from commerce_os.operations.shopify_adapter import (
     DeterministicShopifyAdapter,
     ShopifyGraphQLAdapter,
@@ -21,12 +22,15 @@ from commerce_os.operations.shopify_schemas import (
     ReconciliationRequest,
     ShopifyConnectionCreate,
     ShopifyConnectionRead,
+    ShopifyDecisionDetail,
+    ShopifyExecutionStatus,
     ShopifyPublicationRead,
     ShopifyPublicationReadiness,
     ShopifyReconciliationRead,
     ShopifyWorkspaceRead,
 )
 from commerce_os.shared.database import get_session
+from commerce_os.shared.outbox import OutboxEvent
 from commerce_os.shopify_services import ShopifyChannelService
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
@@ -68,9 +72,15 @@ def connection_read(item: ShopifyConnection) -> ShopifyConnectionRead:
         granted_scopes=item.granted_scopes,
         api_version=item.api_version,
         status=item.status,
-        publication_policy=item.publication_policy,
+        publication_policy={
+            "media_required": bool(item.publication_policy.get("media_required", False))
+        },
         created_by=item.created_by,
         validated_at=item.validated_at,
+        shop_gid=item.shop_gid,
+        merchant_name=item.merchant_name,
+        partner_development=item.partner_development,
+        plan_display_name=item.plan_display_name,
         last_error_category=item.last_error_category,
         last_error_message=item.last_error_message,
     )
@@ -82,6 +92,10 @@ def translate(exc: Exception) -> ApiError:
     if isinstance(exc, LookupError):
         return ApiError(404, "not_found", str(exc))
     return ApiError(409, "shopify_governance", str(exc))
+
+
+def sequence_count(value: object) -> int:
+    return len(value) if isinstance(value, list) else 0
 
 
 @router.post("/connections", response_model=ShopifyConnectionRead, status_code=201)
@@ -237,6 +251,82 @@ def reconcile(
         raise translate(exc) from exc
 
 
+@router.post("/webhooks", status_code=202)
+async def receive_webhook(request: Request, session: SessionDependency) -> dict[str, str]:
+    store_domain = request.headers.get("x-shopify-shop-domain", "").lower()
+    webhook_id = request.headers.get("x-shopify-webhook-id", "")
+    topic = request.headers.get("x-shopify-topic", "")
+    signature = request.headers.get("x-shopify-hmac-sha256", "")
+    if not store_domain or not webhook_id or not topic or not signature:
+        raise ApiError(401, "invalid_webhook", "Required Shopify webhook headers are missing.")
+    if len(webhook_id) > 255 or len(topic) > 100:
+        raise ApiError(422, "invalid_webhook_metadata", "Shopify webhook metadata is invalid.")
+    connections = list(
+        session.scalars(
+            select(ShopifyConnection).where(ShopifyConnection.store_domain == store_domain)
+        )
+    )
+    if not connections:
+        raise ApiError(404, "shop_not_registered", "Shopify connection is not registered.")
+    if len(connections) != 1:
+        raise ApiError(409, "ambiguous_shop", "Shopify shop identity is not uniquely registered.")
+    connection = connections[0]
+    reference = connection.publication_policy.get("webhook_secret_reference")
+    if not isinstance(reference, str):
+        raise ApiError(409, "webhook_not_configured", "Webhook verification is not configured.")
+    try:
+        secret = EnvironmentCredentialResolver().resolve(reference)
+        event = ShopifyChannelService(session).record_verified_webhook(
+            connection=connection,
+            webhook_id=webhook_id,
+            topic=topic,
+            raw_body=await request.body(),
+            supplied_signature=signature,
+            secret=secret,
+        )
+    except PermissionError as exc:
+        raise ApiError(401, "invalid_webhook_signature", str(exc)) from exc
+    except RuntimeError as exc:
+        raise ApiError(409, "webhook_not_configured", str(exc)) from exc
+    return {"status": "accepted", "webhook_id": event.webhook_id}
+
+
+@router.get("/publications/{publication_id}/decision-detail", response_model=ShopifyDecisionDetail)
+def publication_decision_detail(
+    publication_id: UUID,
+    organization_id: UUID,
+    session: SessionDependency,
+) -> ShopifyDecisionDetail:
+    service = ShopifyChannelService(session)
+    publication = service.scoped_publication(publication_id, organization_id)
+    connection = service.connection(publication.connection_id, organization_id)
+    product = session.get(Product, publication.product_id)
+    approval = (
+        None
+        if publication.approval_request_id is None
+        else session.get(ApprovalRequest, publication.approval_request_id)
+    )
+    readiness = service.readiness(organization_id, publication.product_id, connection.id)
+    return ShopifyDecisionDetail(
+        publication=publication,
+        store_domain=connection.store_domain,
+        merchant_name=connection.merchant_name,
+        partner_development=connection.partner_development,
+        product_name="Unknown Product" if product is None else product.name,
+        projection_summary={
+            "title": publication.projection.get("title"),
+            "external_status": publication.projection.get("external_status"),
+            "variant_count": sequence_count(publication.projection.get("variants")),
+            "media_count": sequence_count(publication.projection.get("media")),
+            "inventory_quantities": [],
+        },
+        warnings=readiness.warnings,
+        risks=[issue.message for issue in readiness.blockers],
+        approval_reason=None if approval is None else approval.reason,
+        approval_status=None if approval is None else str(approval.status),
+    )
+
+
 @router.get("/workspace", response_model=ShopifyWorkspaceRead)
 def workspace(organization_id: UUID, session: SessionDependency) -> ShopifyWorkspaceRead:
     connections = list(
@@ -248,6 +338,14 @@ def workspace(organization_id: UUID, session: SessionDependency) -> ShopifyWorks
     service = ShopifyChannelService(session)
     products = list(
         session.scalars(select(Product).where(Product.organization_id == organization_id))
+    )
+    outbox = list(
+        session.scalars(
+            select(OutboxEvent).where(
+                OutboxEvent.organization_id == organization_id,
+                OutboxEvent.event_type == "shopify.publication_requested",
+            )
+        )
     )
     return ShopifyWorkspaceRead(
         connections=[connection_read(item) for item in connections],
@@ -278,4 +376,17 @@ def workspace(organization_id: UUID, session: SessionDependency) -> ShopifyWorks
                 .order_by(ShopifyReconciliation.checked_at.desc())
             )
         ),
+        executions=[
+            ShopifyExecutionStatus(
+                publication_id=UUID(str(item.payload["publication_id"])),
+                outbox_id=item.id,
+                status=str(item.status),
+                attempts=item.attempts,
+                available_at=item.available_at,
+                published_at=item.published_at,
+                last_error=item.last_error,
+            )
+            for item in outbox
+            if item.payload.get("publication_id")
+        ],
     )

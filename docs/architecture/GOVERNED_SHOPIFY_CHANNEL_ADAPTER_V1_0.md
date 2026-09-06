@@ -1,6 +1,6 @@
 # Governed Shopify Channel Adapter v1.0
 
-Status: frozen for Sprint 076
+Status: hardened with deterministic acceptance in Sprint 077
 
 ## Purpose and ownership
 
@@ -20,7 +20,8 @@ The projection is deterministic and version pinned:
 
 - the exact approved `ProductTruth` id/version;
 - the exact approved Listing id/version;
-- factual title, HTML description, vendor, product type, SEO data, options, variants, metafields and supplied media references;
+- factual title, HTML description, vendor, product type, SEO data, options and variants;
+- retained metafield candidates and supplied media references remain outside the current write-owned field set until their exact Shopify input contracts are separately approved;
 - external status fixed to `draft`;
 - no fabricated inventory quantities.
 
@@ -46,7 +47,17 @@ Failures are classified without token or payload leakage: authentication, author
 
 V1 rollback is governed compensating action: retain immutable publication/source history, restore an earlier approved Listing through a new authorization, and update the same external draft. Destructive deletion and automatic rollback are prohibited.
 
-A tenant-scoped immutable webhook event contract exists for future reconciliation. No public webhook receiver, signature validation endpoint or automatic mutation is enabled in Sprint 076. Poll/manual reconciliation is the only active inbound path.
+A public webhook receiver now authenticates deliveries with base64 HMAC-SHA256 over the untouched request body, resolves a unique registered shop, deduplicates by Shopify Webhook ID, and persists only safe delivery metadata and the payload hash. Deterministic signed fixtures validate the receiver. No webhook-triggered business mutation, public Mac tunnel, or real webhook subscription is enabled.
+
+The Admin GraphQL version is centralized in one backend configuration module. Sprint 077 contract fixtures validate the versioned endpoint, `productSet` create/update identifiers, draft status, full-list mapping boundary, scope behavior, and deliberate absence of inventory quantities. This is documentation/code-contract acceptance, not proof against a merchant schema.
+
+## Sprint 077 gate classification
+
+- Shopify engineering: deterministic acceptance is required to pass.
+- Real merchant validation: deferred until a founder-owned development/test store exists.
+- Production Shopify: not ready until OAuth, managed secrets, live webhook delivery, monitoring, and merchant validation pass.
+
+`NOT CONFIGURED` is a valid configuration state, not a Commerce OS failure. It does not block work outside Shopify or the start of Sprint 078.
 
 ## Explicit boundaries
 
@@ -55,4 +66,3 @@ A tenant-scoped immutable webhook event contract exists for future reconciliatio
 - No invented inventory, variants, media, price, claims or SEO.
 - No Amazon, Etsy, Walmart, ads, Creative Factory, AI agent, purchasing, payment, freight, production deployment or Customer 360 behavior.
 - Live Commerce to Customer Acquisition remains missing: a draft product alone cannot create traffic, checkout demand or revenue.
-
