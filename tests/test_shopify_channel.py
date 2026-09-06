@@ -1,4 +1,9 @@
+import hashlib
+import hmac
+import json
+from base64 import b64encode
 from datetime import UTC, datetime
+from urllib.error import HTTPError
 
 import pytest
 from commerce_os.build.listing_governance_models import ListingVersion
@@ -9,8 +14,9 @@ from commerce_os.governance.rbac import RbacService
 from commerce_os.operations.shopify_adapter import (
     DeterministicShopifyAdapter,
     ShopifyAdapterError,
+    ShopifyGraphQLAdapter,
 )
-from commerce_os.operations.shopify_models import ShopifyExternalResource
+from commerce_os.operations.shopify_models import ShopifyExternalResource, ShopifyWebhookEvent
 from commerce_os.operations.shopify_schemas import (
     PublicationRequestCreate,
     ShopifyConnectionCreate,
@@ -21,7 +27,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from apps.worker.main import consume_shopify_job
+from apps.worker.main import consume_shopify_job, process_next_shopify_job
 from tests.test_listing_governance import draft, ready_foundation
 
 
@@ -136,6 +142,64 @@ def authorize_and_queue(session: Session, state: dict[str, object]):  # type: ig
     return publication, reviewer
 
 
+def next_listing(
+    session: Session,
+    state: dict[str, object],
+    source: ListingVersion,
+    *,
+    version: int,
+    title: str,
+    reason: str,
+) -> ListingVersion:
+    source.status = "superseded"
+    item = ListingVersion(
+        **{
+            key: getattr(source, key)
+            for key in (
+                "organization_id",
+                "product_id",
+                "product_truth_id",
+                "product_truth_version",
+                "subtitle",
+                "summary",
+                "description",
+                "customer_problem",
+                "solution",
+                "features",
+                "benefits",
+                "specifications",
+                "use_cases",
+                "whats_included",
+                "warnings",
+                "care_usage",
+                "shipping_facts",
+                "return_facts",
+                "risk_reversal",
+                "seo_title",
+                "meta_description",
+                "slug_suggestion",
+                "primary_topic",
+                "secondary_topics",
+                "structured_attributes",
+                "commercial_price",
+                "currency",
+                "price_status",
+                "created_by",
+            )
+        },
+        listing_version=version,
+        status="approved",
+        title=title,
+        change_reason=reason,
+        approved_by=state["user"].id,
+        approved_at=datetime.now(UTC),
+    )
+    session.add(item)
+    session.commit()
+    state["listing"] = item
+    return item
+
+
 def test_connection_scope_validation_and_serialization_never_exposes_credential(
     client: TestClient, db_session: Session
 ) -> None:
@@ -156,6 +220,15 @@ def test_connection_scope_validation_and_serialization_never_exposes_credential(
     assert response.json()["credential_configured"] is True
     assert response.json()["required_scopes"] == ["read_products", "write_products"]
     assert "SHOPIFY_TEST_TOKEN" not in response.text
+
+
+def test_mock_validation_records_safe_merchant_identity(db_session: Session) -> None:
+    state = foundation(db_session, "identity")
+    connection = state["connection"]
+    assert connection.shop_gid == "gid://shopify/Shop/1"
+    assert connection.merchant_name == "Deterministic Development Store"
+    assert connection.partner_development is True
+    assert connection.plan_display_name == "Development"
 
 
 def test_readiness_requires_connection_approved_listing_price_variants_and_media_policy(
@@ -239,51 +312,14 @@ def test_new_listing_requires_new_authorization_then_updates_existing_resource(
     )
     original_external_id = first_resource.external_product_id
     old: ListingVersion = state["listing"]
-    old.status = "superseded"
-    new = ListingVersion(
-        **{
-            key: getattr(old, key)
-            for key in (
-                "organization_id",
-                "product_id",
-                "product_truth_id",
-                "product_truth_version",
-                "subtitle",
-                "summary",
-                "description",
-                "customer_problem",
-                "solution",
-                "features",
-                "benefits",
-                "specifications",
-                "use_cases",
-                "whats_included",
-                "warnings",
-                "care_usage",
-                "shipping_facts",
-                "return_facts",
-                "risk_reversal",
-                "seo_title",
-                "meta_description",
-                "slug_suggestion",
-                "primary_topic",
-                "secondary_topics",
-                "structured_attributes",
-                "commercial_price",
-                "currency",
-                "price_status",
-                "created_by",
-            )
-        },
-        listing_version=2,
-        status="approved",
+    new = next_listing(
+        db_session,
+        state,
+        old,
+        version=2,
         title="Governed Product v2",
-        change_reason="Approved update",
-        approved_by=state["user"].id,
-        approved_at=datetime.now(UTC),
+        reason="Approved update",
     )
-    db_session.add(new)
-    db_session.commit()
     readiness = state["service"].readiness(
         state["organization"].id, state["product"].id, state["connection"].id
     )
@@ -322,6 +358,61 @@ def test_external_drift_is_visible_and_never_overwritten(db_session: Session) ->
     )
 
 
+def test_missing_external_resource_requires_manual_intervention(db_session: Session) -> None:
+    state = foundation(db_session, "missing")
+    publication, _ = authorize_and_queue(db_session, state)
+    worker = service_worker(db_session, state)
+    state["service"].execute(publication.id, state["organization"].id, worker.id, state["adapter"])
+    resource = state["service"].external_resource(
+        state["organization"].id, state["connection"].id, state["product"].id
+    )
+    del state["adapter"].resources[resource.external_product_id]
+    result = state["service"].reconcile(
+        state["product"].id,
+        state["connection"].id,
+        state["organization"].id,
+        state["user"].id,
+        state["adapter"],
+    )
+    assert result.status == "missing_external_resource"
+
+
+def test_rollback_is_a_fresh_approved_compensating_listing(db_session: Session) -> None:
+    state = foundation(db_session, "rollback")
+    original: ListingVersion = state["listing"]
+    original_title = original.title
+    first, _ = authorize_and_queue(db_session, state)
+    worker = service_worker(db_session, state)
+    state["service"].execute(first.id, state["organization"].id, worker.id, state["adapter"])
+    external_id = (
+        state["service"]
+        .external_resource(state["organization"].id, state["connection"].id, state["product"].id)
+        .external_product_id
+    )
+    changed = next_listing(
+        db_session, state, original, version=2, title="Approved change", reason="Forward change"
+    )
+    second, _ = authorize_and_queue(db_session, state)
+    state["service"].execute(second.id, state["organization"].id, worker.id, state["adapter"])
+    restored = next_listing(
+        db_session,
+        state,
+        changed,
+        version=3,
+        title=original_title,
+        reason="Governed compensating rollback to prior safe content",
+    )
+    third, _ = authorize_and_queue(db_session, state)
+    state["service"].execute(third.id, state["organization"].id, worker.id, state["adapter"])
+    resource = state["service"].external_resource(
+        state["organization"].id, state["connection"].id, state["product"].id
+    )
+    assert resource.external_product_id == external_id
+    assert resource.source_listing_version_id == restored.id
+    assert state["adapter"].resources[external_id].owned_fields["title"] == original_title
+    assert first.id != second.id != third.id
+
+
 def test_failures_are_safe_and_retryability_is_explicit(db_session: Session) -> None:
     state = foundation(db_session, "failure")
     publication, _ = authorize_and_queue(db_session, state)
@@ -333,6 +424,15 @@ def test_failures_are_safe_and_retryability_is_explicit(db_session: Session) -> 
         )
     assert error.value.retryable and publication.last_error_category == "rate_limit"
     assert "token" not in publication.last_error_message.lower()
+    state["service"].queue_execution(publication.id, state["organization"].id, state["user"].id)
+    events = list(
+        db_session.scalars(
+            select(OutboxEvent).where(
+                OutboxEvent.payload["publication_id"].as_string() == str(publication.id)
+            )
+        )
+    )
+    assert len(events) == 1
 
 
 def test_cross_tenant_connection_and_execution_are_denied(db_session: Session) -> None:
@@ -349,3 +449,227 @@ def test_cross_tenant_connection_and_execution_are_denied(db_session: Session) -
             foreign_worker.id,
             first["adapter"],
         )
+
+
+def test_product_set_contract_is_draft_versioned_and_inventory_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    class Response:
+        headers = {"X-Shopify-API-Access-Scopes": "read_products,write_products"}
+
+        def __enter__(self):  # type: ignore[no-untyped-def]
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return json.dumps(
+                {
+                    "data": {
+                        "productSet": {
+                            "product": {
+                                "id": "gid://shopify/Product/1",
+                                "status": "DRAFT",
+                                "variants": {"nodes": [{"id": "gid://shopify/ProductVariant/2"}]},
+                            },
+                            "userErrors": [],
+                        }
+                    }
+                }
+            ).encode()
+
+    def urlopen(request, timeout):  # type: ignore[no-untyped-def]
+        captured["url"] = request.full_url
+        captured["headers"] = dict(request.header_items())
+        captured["body"] = json.loads(request.data)
+        captured["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setenv("SHOPIFY_CONTRACT_TOKEN", "deterministic-secret-fixture")
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    adapter = ShopifyGraphQLAdapter(
+        store_domain="contract.myshopify.com",
+        api_version="2026-07",
+        credential_reference="SHOPIFY_CONTRACT_TOKEN",
+    )
+    projection = {
+        "title": "Safe Product",
+        "description_html": "Evidence-backed description",
+        "vendor": "Commerce OS",
+        "product_type": "test",
+        "handle": "safe-product",
+        "seo": {"title": "Safe Product", "description": "Safe"},
+        "options": [],
+        "variants": [{"sku": "SAFE-1", "price": "40.00"}],
+        "inventory_quantities": [],
+    }
+    result = adapter.update_product("gid://shopify/Product/1", projection)
+    body = captured["body"]
+    variables = body["variables"]  # type: ignore[index]
+    assert captured["url"] == "https://contract.myshopify.com/admin/api/2026-07/graphql.json"
+    assert variables["identifier"] == {"id": "gid://shopify/Product/1"}  # type: ignore[index]
+    assert variables["input"]["status"] == "DRAFT"  # type: ignore[index]
+    assert "inventoryQuantities" not in variables["input"]  # type: ignore[operator]
+    assert result.status == "draft"
+    assert "deterministic-secret-fixture" not in json.dumps(captured["body"])
+
+
+def test_graphql_reconciliation_normalizes_shopify_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Response:
+        headers: dict[str, str] = {}
+
+        def __enter__(self):  # type: ignore[no-untyped-def]
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return json.dumps(
+                {
+                    "data": {
+                        "product": {
+                            "id": "gid://shopify/Product/1",
+                            "title": "Safe Product",
+                            "descriptionHtml": "Evidence-backed description",
+                            "vendor": "Commerce OS",
+                            "productType": "test",
+                            "handle": "safe-product",
+                            "status": "DRAFT",
+                            "seo": {"title": "Safe Product", "description": "Safe"},
+                            "options": [{"name": "Title", "optionValues": [{"name": "Default"}]}],
+                            "variants": {
+                                "nodes": [
+                                    {
+                                        "id": "gid://shopify/ProductVariant/2",
+                                        "sku": "SAFE-1",
+                                        "price": "40.00",
+                                        "selectedOptions": [{"name": "Title", "value": "Default"}],
+                                    }
+                                ]
+                            },
+                        }
+                    }
+                }
+            ).encode()
+
+    monkeypatch.setenv("SHOPIFY_RECONCILIATION_TOKEN", "deterministic-secret-fixture")
+    monkeypatch.setattr("urllib.request.urlopen", lambda request, timeout: Response())
+    adapter = ShopifyGraphQLAdapter(
+        store_domain="reconciliation.myshopify.com",
+        api_version="2026-07",
+        credential_reference="SHOPIFY_RECONCILIATION_TOKEN",
+    )
+    result = adapter.fetch_product("gid://shopify/Product/1")
+    assert result is not None
+    assert result.owned_fields["description_html"] == "Evidence-backed description"
+    assert result.owned_fields["product_type"] == "test"
+    assert result.owned_fields["external_status"] == "draft"
+    assert result.owned_fields["variants"] == [
+        {
+            "sku": "SAFE-1",
+            "price": "40.00",
+            "optionValues": [{"optionName": "Title", "name": "Default"}],
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    ("status", "category", "retryable"),
+    [
+        (401, "authentication", False),
+        (403, "authorization_scope", False),
+        (429, "rate_limit", True),
+        (503, "network", True),
+    ],
+)
+def test_graphql_failure_classification_is_safe(
+    monkeypatch: pytest.MonkeyPatch, status: int, category: str, retryable: bool
+) -> None:
+    monkeypatch.setenv("SHOPIFY_FAILURE_TOKEN", "must-never-appear")
+
+    def fail(request, timeout):  # type: ignore[no-untyped-def]
+        raise HTTPError(
+            request.full_url, status, "provider detail with must-never-appear", {}, None
+        )
+
+    monkeypatch.setattr("urllib.request.urlopen", fail)
+    adapter = ShopifyGraphQLAdapter(
+        store_domain="failure-contract.myshopify.com",
+        api_version="2026-07",
+        credential_reference="SHOPIFY_FAILURE_TOKEN",
+    )
+    with pytest.raises(ShopifyAdapterError) as caught:
+        adapter.fetch_product("gid://shopify/Product/1")
+    assert caught.value.category == category
+    assert caught.value.retryable is retryable
+    assert "must-never-appear" not in str(caught.value)
+
+
+def test_webhook_hmac_verification_is_public_idempotent_and_payload_safe(
+    client: TestClient, db_session: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = foundation(db_session, "webhook")
+    state["connection"].publication_policy = {
+        "media_required": False,
+        "webhook_secret_reference": "SHOPIFY_WEBHOOK_TEST_SECRET",
+    }
+    db_session.commit()
+    secret = "signed-fixture-secret"
+    monkeypatch.setenv("SHOPIFY_WEBHOOK_TEST_SECRET", secret)
+    body = b'{"id":123,"title":"safe fixture"}'
+    signature = b64encode(hmac.digest(secret.encode(), body, "sha256")).decode()
+    headers = {
+        "X-Shopify-Shop-Domain": "webhook.myshopify.com",
+        "X-Shopify-Webhook-Id": "fixture-delivery-1",
+        "X-Shopify-Topic": "products/update",
+        "X-Shopify-Hmac-Sha256": signature,
+    }
+    first = client.post("/api/v1/shopify/webhooks", content=body, headers=headers)
+    second = client.post("/api/v1/shopify/webhooks", content=body, headers=headers)
+    assert first.status_code == second.status_code == 202
+    events = list(db_session.scalars(select(ShopifyWebhookEvent)))
+    assert len(events) == 1
+    assert events[0].payload_hash == hashlib.sha256(body).hexdigest()
+    assert "safe fixture" not in json.dumps(events[0].__dict__, default=str)
+    invalid = client.post(
+        "/api/v1/shopify/webhooks",
+        content=body,
+        headers={
+            **headers,
+            "X-Shopify-Webhook-Id": "fixture-delivery-2",
+            "X-Shopify-Hmac-Sha256": "invalid",
+        },
+    )
+    assert invalid.status_code == 401
+
+
+@pytest.mark.parametrize("retryable", [True, False])
+def test_worker_schedules_only_retryable_connector_failures(
+    db_session: Session, monkeypatch: pytest.MonkeyPatch, retryable: bool
+) -> None:
+    state = foundation(db_session, f"worker-{str(retryable).lower()}")
+    publication, _ = authorize_and_queue(db_session, state)
+
+    def fail(*_: object, **__: object) -> None:
+        raise ShopifyAdapterError(
+            "rate_limit" if retryable else "validation", "Safe failure.", retryable
+        )
+
+    monkeypatch.setattr("apps.worker.main.consume_shopify_job", fail)
+    assert process_next_shopify_job(db_session) is True
+    event = db_session.scalar(
+        select(OutboxEvent).where(
+            OutboxEvent.payload["publication_id"].as_string() == str(publication.id)
+        )
+    )
+    assert event is not None and event.status == OutboxStatus.FAILED
+    if retryable:
+        assert event.available_at.year < 9999
+    else:
+        assert event.available_at.year == 9999

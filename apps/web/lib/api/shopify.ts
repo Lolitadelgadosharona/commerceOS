@@ -14,6 +14,10 @@ export type ShopifyConnection = ReadModel & {
   status: string;
   publication_policy: Record<string, unknown>;
   validated_at: string | null;
+  shop_gid: string | null;
+  merchant_name: string | null;
+  partner_development: boolean | null;
+  plan_display_name: string | null;
   last_error_category: string | null;
   last_error_message: string | null;
 };
@@ -84,12 +88,35 @@ export type ShopifyReconciliation = ReadModel & {
   differences: string[];
   checked_at: string;
 };
+export type ShopifyExecution = {
+  publication_id: string;
+  outbox_id: string;
+  status: string;
+  attempts: number;
+  available_at: string;
+  published_at: string | null;
+  last_error: string | null;
+};
 export type ShopifyWorkspace = {
   connections: ShopifyConnection[];
   products: ShopifyReadiness[];
   publications: ShopifyPublication[];
   resources: ShopifyResource[];
   reconciliations: ShopifyReconciliation[];
+  executions: ShopifyExecution[];
+};
+
+export type ShopifyDecisionDetail = {
+  publication: ShopifyPublication;
+  store_domain: string;
+  merchant_name: string | null;
+  partner_development: boolean | null;
+  product_name: string;
+  projection_summary: Record<string, unknown>;
+  warnings: ShopifyIssue[];
+  risks: string[];
+  approval_reason: string | null;
+  approval_status: string | null;
 };
 
 export function getShopifyWorkspace(organizationId: string): Promise<ApiResult<ShopifyWorkspace>> {
@@ -104,5 +131,14 @@ export function getShopifyReadiness(
   return apiGet(`/api/v1/shopify/products/${productId}/readiness`, {
     organization_id: organizationId,
     ...(connectionId ? { connection_id: connectionId } : {}),
+  });
+}
+
+export function getShopifyDecisionDetail(
+  publicationId: string,
+  organizationId: string,
+): Promise<ApiResult<ShopifyDecisionDetail>> {
+  return apiGet(`/api/v1/shopify/publications/${publicationId}/decision-detail`, {
+    organization_id: organizationId,
   });
 }

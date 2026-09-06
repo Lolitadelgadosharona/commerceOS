@@ -2,12 +2,20 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from commerce_os.operations.shopify_config import SHOPIFY_ADMIN_API_VERSION
 from commerce_os.shared.schemas import ReadModel
 
-SHOPIFY_REQUIRED_SCOPES = ["read_products", "write_products"]
-SHOPIFY_API_VERSION = "2026-07"
+# Backward-compatible import for the Sprint 076 service surface.
+SHOPIFY_API_VERSION = SHOPIFY_ADMIN_API_VERSION
+
+
+class ShopifyPublicationPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    media_required: bool = False
+    webhook_secret_reference: str | None = Field(default=None, pattern=r"^[A-Z][A-Z0-9_]{2,199}$")
 
 
 class ShopifyConnectionCreate(BaseModel):
@@ -18,7 +26,7 @@ class ShopifyConnectionCreate(BaseModel):
     authentication_mode: Literal["local_token", "oauth", "mock"] = "local_token"
     credential_reference: str = Field(pattern=r"^[A-Z][A-Z0-9_]{2,199}$")
     granted_scopes: list[str] = Field(default_factory=list)
-    publication_policy: dict[str, object] = Field(default_factory=dict)
+    publication_policy: ShopifyPublicationPolicy = Field(default_factory=ShopifyPublicationPolicy)
 
     @field_validator("credential_reference")
     @classmethod
@@ -42,6 +50,10 @@ class ShopifyConnectionRead(ReadModel):
     publication_policy: dict[str, object]
     created_by: UUID
     validated_at: datetime | None
+    shop_gid: str | None
+    merchant_name: str | None
+    partner_development: bool | None
+    plan_display_name: str | None
     last_error_category: str | None
     last_error_message: str | None
 
@@ -165,9 +177,33 @@ class ShopifyReconciliationRead(ReadModel):
     checked_by: UUID
 
 
+class ShopifyExecutionStatus(BaseModel):
+    publication_id: UUID
+    outbox_id: UUID
+    status: str
+    attempts: int
+    available_at: datetime
+    published_at: datetime | None
+    last_error: str | None
+
+
 class ShopifyWorkspaceRead(BaseModel):
     connections: list[ShopifyConnectionRead]
     products: list[ShopifyPublicationReadiness]
     publications: list[ShopifyPublicationRead]
     resources: list[ShopifyExternalResourceRead]
     reconciliations: list[ShopifyReconciliationRead]
+    executions: list[ShopifyExecutionStatus]
+
+
+class ShopifyDecisionDetail(BaseModel):
+    publication: ShopifyPublicationRead
+    store_domain: str
+    merchant_name: str | None
+    partner_development: bool | None
+    product_name: str
+    projection_summary: dict[str, object]
+    warnings: list[ReadinessIssue]
+    risks: list[str]
+    approval_reason: str | None
+    approval_status: str | None

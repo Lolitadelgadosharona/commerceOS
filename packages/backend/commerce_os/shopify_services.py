@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+from base64 import b64decode
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -15,16 +17,21 @@ from commerce_os.governance.audit import AuditService
 from commerce_os.governance.executive_models import DecisionQueueItem
 from commerce_os.governance.models import ApprovalRequest, ApprovalStatus, PrincipalType, User
 from commerce_os.operations.models import Brand
-from commerce_os.operations.shopify_adapter import ShopifyAdapter, ShopifyAdapterError
+from commerce_os.operations.shopify_adapter import (
+    ShopifyAdapter,
+    ShopifyAdapterError,
+    connector_owned_fields,
+)
+from commerce_os.operations.shopify_config import SHOPIFY_REQUIRED_SCOPES
 from commerce_os.operations.shopify_models import (
     ShopifyConnection,
     ShopifyExternalResource,
     ShopifyPublication,
     ShopifyReconciliation,
+    ShopifyWebhookEvent,
 )
 from commerce_os.operations.shopify_schemas import (
     SHOPIFY_API_VERSION,
-    SHOPIFY_REQUIRED_SCOPES,
     PublicationRequestCreate,
     ReadinessIssue,
     ShopifyConnectionCreate,
@@ -32,7 +39,7 @@ from commerce_os.operations.shopify_schemas import (
     ShopifyPublicationReadiness,
 )
 from commerce_os.shared.events import BusinessEventEnvelope, EventActor
-from commerce_os.shared.outbox import add_to_outbox
+from commerce_os.shared.outbox import OutboxEvent, OutboxStatus, add_to_outbox
 
 SHOPIFY_PUBLICATION_EVENT = "shopify.publication_requested"
 
@@ -75,11 +82,11 @@ class ShopifyChannelService:
             display_name=payload.display_name,
             authentication_mode=payload.authentication_mode,
             credential_reference=payload.credential_reference,
-            required_scopes=SHOPIFY_REQUIRED_SCOPES,
+            required_scopes=list(SHOPIFY_REQUIRED_SCOPES),
             granted_scopes=payload.granted_scopes,
             api_version=SHOPIFY_API_VERSION,
             status="not_configured" if payload.authentication_mode != "mock" else "configured",
-            publication_policy=payload.publication_policy,
+            publication_policy=payload.publication_policy.model_dump(exclude_none=True),
             created_by=actor.id,
         )
         self.session.add(item)
@@ -109,6 +116,10 @@ class ShopifyChannelService:
             if result.store_domain != connection.store_domain:
                 raise ShopifyAdapterError("validation", "Credential resolves to another store.")
             connection.granted_scopes = result.granted_scopes
+            connection.shop_gid = result.shop_gid
+            connection.merchant_name = result.merchant_name
+            connection.partner_development = result.partner_development
+            connection.plan_display_name = result.plan_display_name
             missing = set(connection.required_scopes) - set(result.granted_scopes)
             connection.status = "scope_missing" if missing else "ready"
             connection.validated_at = datetime.now(UTC)
@@ -475,19 +486,31 @@ class ShopifyChannelService:
             raise ValueError("Publication must be authorized before explicit execution.")
         item.status = "queued"
         item.execution_requested_by = actor.id
-        add_to_outbox(
-            self.session,
-            BusinessEventEnvelope(
-                event_type=SHOPIFY_PUBLICATION_EVENT,
-                actor=EventActor(actor_type="human", actor_id=str(actor.id)),
-                source="operations.shopify",
-                idempotency_key=f"{item.idempotency_key}:execute",
-                correlation_id=uuid4(),
-                organization_id=organization_id,
-                product_id=item.product_id,
-                payload={"publication_id": str(item.id)},
-            ),
+        event_key = f"{item.idempotency_key}:execute"
+        event = self.session.scalar(
+            select(OutboxEvent).where(
+                OutboxEvent.organization_id == organization_id,
+                OutboxEvent.idempotency_key == event_key,
+            )
         )
+        if event is None:
+            add_to_outbox(
+                self.session,
+                BusinessEventEnvelope(
+                    event_type=SHOPIFY_PUBLICATION_EVENT,
+                    actor=EventActor(actor_type="human", actor_id=str(actor.id)),
+                    source="operations.shopify",
+                    idempotency_key=event_key,
+                    correlation_id=uuid4(),
+                    organization_id=organization_id,
+                    product_id=item.product_id,
+                    payload={"publication_id": str(item.id)},
+                ),
+            )
+        elif event.status == OutboxStatus.FAILED:
+            event.status = OutboxStatus.PENDING
+            event.available_at = datetime.now(UTC)
+            event.last_error = None
         self.audit.record(
             organization_id=organization_id,
             actor_type="human",
@@ -592,7 +615,11 @@ class ShopifyChannelService:
         resource = self.external_resource(organization_id, connection_id, product_id)
         listing = self.latest_listing(organization_id, product_id)
         external = None if resource is None else adapter.fetch_product(resource.external_product_id)
-        commerce = None if listing is None else self.project(listing).model_dump(mode="json")
+        commerce = (
+            None
+            if listing is None
+            else connector_owned_fields(self.project(listing).model_dump(mode="json"))
+        )
         commerce_hash = None if commerce is None else canonical_hash(commerce)
         external_hash = None if external is None else canonical_hash(external.owned_fields)
         if resource is None or external is None:
@@ -627,6 +654,46 @@ class ShopifyChannelService:
             entity_id=item.id,
             metadata={"result": status, "automatic_overwrite": False},
         )
+        self.session.commit()
+        self.session.refresh(item)
+        return item
+
+    def record_verified_webhook(
+        self,
+        *,
+        connection: ShopifyConnection,
+        webhook_id: str,
+        topic: str,
+        raw_body: bytes,
+        supplied_signature: str,
+        secret: str,
+    ) -> ShopifyWebhookEvent:
+        """Verify raw-body HMAC and persist only safe, idempotent delivery metadata."""
+        try:
+            supplied = b64decode(supplied_signature, validate=True)
+        except ValueError:
+            supplied = b""
+        expected = hmac.digest(secret.encode(), raw_body, "sha256")
+        if not supplied or not hmac.compare_digest(expected, supplied):
+            raise PermissionError("Shopify webhook signature is invalid.")
+        existing = self.session.scalar(
+            select(ShopifyWebhookEvent).where(
+                ShopifyWebhookEvent.connection_id == connection.id,
+                ShopifyWebhookEvent.webhook_id == webhook_id,
+            )
+        )
+        if existing:
+            return existing
+        item = ShopifyWebhookEvent(
+            organization_id=connection.organization_id,
+            connection_id=connection.id,
+            webhook_id=webhook_id,
+            topic=topic,
+            payload_hash=hashlib.sha256(raw_body).hexdigest(),
+            signature_valid=True,
+            processed_at=datetime.now(UTC),
+        )
+        self.session.add(item)
         self.session.commit()
         self.session.refresh(item)
         return item

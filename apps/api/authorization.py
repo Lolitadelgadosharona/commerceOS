@@ -10,7 +10,13 @@ from sqlalchemy.orm import Session
 
 from apps.api.errors import ApiError
 
-PUBLIC_PATHS = {"/api/v1/health", "/api/v1/auth/login", "/docs", "/openapi.json"}
+PUBLIC_PATHS = {
+    "/api/v1/health",
+    "/api/v1/auth/login",
+    "/api/v1/shopify/webhooks",
+    "/docs",
+    "/openapi.json",
+}
 
 
 async def enforce_authorization(
