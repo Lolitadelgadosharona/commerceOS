@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import type { ListingPackage, ShopifyProjection } from "../lib/api/listings";
 import type { ApiResult } from "../lib/api/types";
+import type { ShopifyReadiness } from "../lib/api/shopify";
 
 const label = (input: string) => input.replaceAll("_", " ");
 const value = (input: unknown) =>
@@ -52,7 +53,7 @@ export function ListingWorkspace({ result }: { result: ApiResult<ListingPackage[
   );
 }
 
-export function ListingDetail({ item, shopify }: { item: ListingPackage; shopify: ShopifyProjection | null }) {
+export function ListingDetail({ item, shopify, channel }: { item: ListingPackage; shopify: ShopifyProjection | null; channel: ShopifyReadiness | null }) {
   const listing = item.listing;
   return (
     <div className="commerce-workspace listing-workspace">
@@ -72,7 +73,7 @@ export function ListingDetail({ item, shopify }: { item: ListingPackage; shopify
       </section>
       <section className="commerce-grid commerce-grid-wide">
         <Panel title="Listing Readiness" eyebrow="Backend-owned decision"><div className="readiness-list">{item.blockers.map((issue) => <article className="readiness-blocker" key={issue.code}><span>BLOCKER</span><strong>{label(issue.code)}</strong><p>{issue.message}</p></article>)}{item.warnings.map((issue) => <article className="readiness-warning" key={issue.code}><span>WARNING — non-blocking</span><strong>{label(issue.code)}</strong><p>{issue.message}</p></article>)}</div><p className="panel-footnote"><strong>{item.status.toUpperCase()}</strong> · Approval is human-governed and does not publish.</p></Panel>
-        <Panel title="Shopify Readiness Projection" eyebrow="Read-only · future Sprint"><Content name="Projection status" text={shopify?.status}/><Content name="External Shopify ID" text={shopify?.external_id}/><Content name="Publication authorized" text={shopify?.publication_authorized ? "YES" : "NO"}/><Content name="Approved price" text={shopify?.price ? `${shopify.price} ${shopify.currency ?? ""}` : "UNKNOWN — assumptions are not copied"}/><p>{shopify?.missing_fields.length ? `Missing: ${shopify.missing_fields.join(", ")}` : "Core projection fields complete."}</p></Panel>
+        <Panel title="Shopify Readiness Projection" eyebrow="Governed channel adapter · no automatic publishing"><Content name="Projection status" text={channel?.status ?? shopify?.status}/><Content name="Authorization" text={channel?.authorization_status ?? (shopify?.publication_authorized ? "AUTHORIZED" : "NOT REQUESTED")}/><Content name="External Shopify ID" text={channel?.external_product_id ?? shopify?.external_id}/><Content name="Drift" text={channel?.drift_status}/><Content name="Approved price" text={shopify?.price ? `${shopify.price} ${shopify.currency ?? ""}` : "UNKNOWN — assumptions are not copied"}/><p>{channel?.blockers.length ? `Blocked: ${channel.blockers.map((x) => x.message).join(" · ")}` : "Current approved Listing can enter governed Shopify review."}</p><Link className="primary-button" href={`/channels/shopify/${item.product_id}`}>Open governed Shopify workspace →</Link></Panel>
       </section>
       <section className="boundary-panel"><p className="eyebrow">Governance & version history</p><h2>Listing v{listing?.listing_version ?? "—"} · {listing?.status ?? "missing"}</h2><p>Derived from Product Truth v{listing?.product_truth_version ?? "—"}. Approved versions are immutable; changes create a new version and supersede the prior approved representation.</p><strong>LISTING READY ≠ PUBLISH AUTHORIZATION</strong></section>
     </div>

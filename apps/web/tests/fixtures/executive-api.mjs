@@ -619,6 +619,8 @@ const listingPackage = {
   origin_hypothesis_id: productHypothesisId,
 };
 const shopifyProjection = { status: "draft_concept", external_id: null, title: listingVersion.title, description: listingVersion.description, product_type: "pet", vendor: "Commerce OS", price: "39.00", currency: "USD", seo_title: listingVersion.seo_title, seo_description: listingVersion.meta_description, metafield_candidates: listingVersion.structured_attributes, missing_fields: ["shipping"], publication_authorized: false };
+const shopifyConnection = { ...base, id: "76767676-7676-4676-8676-767676767676", store_domain: "commerce-os-dev.myshopify.com", display_name: "Commerce OS Dev", authentication_mode: "mock", credential_configured: true, required_scopes: ["read_products", "write_products"], granted_scopes: ["read_products", "write_products"], api_version: "2026-07", status: "ready", publication_policy: { media_required: false }, validated_at: "2026-09-05T12:00:00Z", last_error_category: null, last_error_message: null };
+const shopifyReadiness = { organization_id: organizationId, product_id: productRecordId, connection_id: shopifyConnection.id, product_truth_id: "67676767-6767-4767-8767-676767676767", product_truth_version: 1, listing_version_id: listingVersion.id, listing_version: 1, projection: { title: listingVersion.title, description_html: listingVersion.description, vendor: "Commerce OS Labs", product_type: "pet", handle: null, seo: { title: listingVersion.seo_title, description: listingVersion.meta_description }, options: [], variants: [{ title: "Default", price: "39.00", sku: "COOL-001" }], metafields: listingVersion.structured_attributes, media: [], external_status: "draft", inventory_quantities: [] }, projection_hash: "fixture-hash", status: "conditional", blockers: [], warnings: [{ code: "media_optional", severity: "warning", message: "No approved media is supplied; draft may be created without media." }], media_status: "optional_missing", publication_status: "not_published", authorization_status: "not_requested", external_resource_id: null, external_product_id: null, drift_status: "unknown", operation: "create", next_action: "Request publication authorization." };
 const promotionReadiness = {
   organization_id: organizationId,
   product_hypothesis_id: productHypothesisId,
@@ -1269,6 +1271,10 @@ createServer((request, response) => {
     return json(200, listingPackage);
   if (url.pathname === `/api/v1/products/${productRecordId}/shopify-readiness` && request.method === "GET")
     return json(200, shopifyProjection);
+  if (url.pathname === "/api/v1/shopify/workspace" && request.method === "GET")
+    return json(200, { connections: [shopifyConnection], products: [shopifyReadiness], publications: [], resources: [], reconciliations: [] });
+  if (url.pathname === `/api/v1/shopify/products/${productRecordId}/readiness` && request.method === "GET")
+    return json(200, shopifyReadiness);
   if (url.pathname === `/api/v1/products/${productRecordId}/build-package` && request.method === "GET")
     return json(200, buildPackage());
   if (url.pathname === `/api/v1/suppliers/${canonicalSupplierId}/approve-for-product` && request.method === "POST") {

@@ -1,6 +1,6 @@
 # Commerce OS Architecture and Governance Index
 
-Status: Sprint 075 Governed Listing Intelligence
+Status: Sprint 076 Governed Shopify Channel Adapter
 
 ## Governing documents
 
@@ -9,6 +9,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | Document | Purpose |
 |---|---|
 | [AI Commerce OS Constitution v1.0](./governance/AI_COMMERCE_OS_CONSTITUTION_V1_0.md) | Mission, principles, AI permissions, and owner authority |
+| [Governed Shopify Channel Adapter v1.0](./architecture/GOVERNED_SHOPIFY_CHANNEL_ADAPTER_V1_0.md) | Version-pinned Shopify draft projection, separate authorization/execution, idempotency and reconciliation |
 | [Commerce OS PRD v1.0](./product/COMMERCE_OS_PRD_V1_0.md) | Product goals, users, workflows, and acceptance principles |
 | [Incremental Architecture Freeze v1.1](./architecture/ARCHITECTURE_FREEZE_V1_1.md) | Frozen domain structure and incremental capabilities |
 | [Repository Reality Audit v1.0](./architecture/REPOSITORY_REALITY_AUDIT_V1_0.md) | Observed source, stack, database, API, test, CI, and deployment state |
@@ -131,6 +132,7 @@ Read these documents together. If they conflict, the [Constitution](./governance
 | [Sprint 043 Completion Notes](./planning/SPRINT_043_COMPLETION.md) | Governed provider execution, controls, provenance, structured output, and Research composition |
 | [Sprint 044 Completion Notes](./planning/SPRINT_044_COMPLETION.md) | Operational Research Runs, templates, evidence grounding, worker execution, results, and review |
 | [Sprint 074 Completion Notes](./planning/SPRINT_074_COMPLETION.md) | Governed supplier validation, Product Build Package, canonical Build Readiness, and UI evidence |
+| [Sprint 076 Completion Notes](./planning/SPRINT_076_COMPLETION.md) | Governed Shopify connection, draft publication, Worker execution and reconciliation evidence |
 | [MVP Boundary](./product/MVP_BOUNDARY_V1_0.md) | Phase 1 inclusions, exclusions, and scope-control rules |
 
 ## Planning and evidence

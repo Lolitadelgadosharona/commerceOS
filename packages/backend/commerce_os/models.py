@@ -378,6 +378,13 @@ from commerce_os.operations.models import (
     SalesOpportunity,
     Store,
 )
+from commerce_os.operations.shopify_models import (
+    ShopifyConnection,
+    ShopifyExternalResource,
+    ShopifyPublication,
+    ShopifyReconciliation,
+    ShopifyWebhookEvent,
+)
 from commerce_os.operations.strategic_account_models import (
     AccountStakeholder,
     StrategicAccountProfile,
@@ -385,6 +392,11 @@ from commerce_os.operations.strategic_account_models import (
 from commerce_os.shared.outbox import OutboxEvent
 
 __all__ = [
+    "ShopifyConnection",
+    "ShopifyPublication",
+    "ShopifyExternalResource",
+    "ShopifyReconciliation",
+    "ShopifyWebhookEvent",
     "AICostObservation",
     "AIModelCapability",
     "AIProvider",
